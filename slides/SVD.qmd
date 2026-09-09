@@ -30,15 +30,6 @@ bibliography: ../reference.bib
 }
 </style>
 
-## SVD
-
-::: {.center}
-**B. Charlier, N. Verzelen, J. Salmon**
-
-INRAE / Université de Montpellier
-:::
-
-# Algèbre linéaire
 
 ## La décomposition spectrale
 

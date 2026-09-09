@@ -79,22 +79,70 @@ print(wine.frame.head().to_string(max_cols=8))
 ```
 :::
 
-## Objectifs
+**Objectif:** trouver une représentation, dans un espace de dimension réduite, permettant de mettre en évidence d’éventuelles structures au sein des données.
 
-L’**analyse en composantes principales (ACP)** est une méthode exploratoire et descriptive permettant d’étudier un tableau de données comportant plusieurs variables quantitatives (réduction de dimension).
+## Représentation graphique
+
+On est rapidement limité
+
+- En dimension 1 ou  2 on peut les représenter graphiquement
+- Si $3$ voir $4$ c’est plus compliqué, mais on on peut bricoler
+- Si $p > 4$ ca devient franchement compliqué 
 
 
-- [Individus]{.blue}: identifier des profils similaires ou différents, étudier leur variabilité et représenter graphiquement dans un espace de faible dimension
+::: {.panel-tabset}
+### Nuage 2D
+```{r}
+#| echo: false
+#| fig-width: 6
+#| fig-height: 4
 
-- [variables]{.orange}: étudier leur structure de dépendance (corrélations), identifier d’éventuels groupes de variables liées et de les représenter graphiquement.
+set.seed(123)
+n <- 80 
+x  <- rnorm(n)
+y <- 0.7*x + rnorm(n, sd = 0.7)
+plot(x, y, pch = 19, xlab = "Variable 1", ylab = "Variable 2", main = "Nuage des individus dans R²")
+```
 
-**Idée:** trouver une représentation de faible dimension la plus fiable/cohérente/précise.
 
-**Moyen:** il faut choisir un critère:  Exploiter la structure géométrique (euclidienne) des données pour construire un sous-espace vectoriel de faible dimension dans lequel les données sont représentées en préservant au mieux leur structure et leur variabilité
+### Nuage 3D
+```{r}
+#| echo: false
 
-**Référence:** en ligne [@besse_acp] un livre [@escofier_pages2016].
+library(plotly)
 
-## Le tableau de donnees
+# TODO: use armadillo
+set.seed(123)
+
+n <- 120
+u <- runif(n, -2, 2)
+v <- runif(n, -2, 2)
+w <- sin(u * 2.5) + cos(v * 2.5) + rnorm(n, sd = 0.25)
+
+x <- u + 0.3 * rnorm(n)
+y <- v + 0.3 * rnorm(n)
+z <- w
+
+plot_ly(
+  x = x, y = y, z = z,
+  type = "scatter3d",
+  mode = "markers",
+  marker = list(size = 4, opacity = 0.8, color = "#2e74b5")
+)
+```
+
+### Nuage 3D+t
+```{r}
+#| echo: false
+
+# exemple de nuage 3D+t. 
+```
+
+:::
+
+
+
+## Le tableau de données
 
 Le tableau ([individus]{.blue},[variables]{.orange}) est représenté sous la forme d’une matrice $X$ de taille $n\times p$: 
 $$
@@ -149,75 +197,49 @@ X[:, j]  # variable j
 
 :::
 
-# Principe de l'ACP
-
-## Nuage des individus
+## Dualité
 
 
-**Représentation graphique:** Chaque individu est un point dans $\mathbb{R}^p$
+<br>
+<br>
 
-- Si $p \in \{1, 2\}$ on peut les représenter graphiquement;
-- Si $p = \{3, 4 \}$, c’est plus compliqué, mais on est capable de le faire ;
-- Si $p > 4$ ce n'est pas possible à représenter ou même imaginer !
-
-
-::: {.panel-tabset}
-### Nuage 2D
-```{r}
-#| echo: false
-#| fig-width: 6
-#| fig-height: 4
-
-set.seed(123)
-n <- 80 
-x  <- rnorm(n)
-y <- 0.7*x + rnorm(n, sd = 0.7)
-plot(x, y, pch = 19, xlab = "Variable 1", ylab = "Variable 2", main = "Nuage des individus dans R²")
-```
+- Espace $E$ des individus (direct) : Une matrice $n \times p$ code un nuage de $n$ points dans $\mathbb{R}^p$. À chaque individu $i$ on associe le vecteur colonne $X_{i,:} \in \mathbb{R}^p$ (“les valeurs d’une ligne mis en colonne”). Ce sont des éléments d’un espace vectoriel $E$ de dimension $p$ : on peut prendre $\mathbb{R}^p$ muni de la base canonique $\mathcal{E}$ et d’une métrique de matrice $M$ lui conférant une structure d’espace euclidien.
 
 
-### Nuage 3D
-```{r}
-#| echo: false
+<br>
 
-library(plotly)
+- Espace $F$ des variables (dual) : de la même manière, cette même matrice $n \times p$ code un nuage de $p$ points dans $\mathbb{R}^n$...  À la $j$-ème variable, on associe le vecteur colonne $X_{:,j}\in\mathbb{R}^n$. C’est un élément d’un espace vectoriel noté $F$ de dimension $n$ : prendre $\mathbb{R}^n$ muni de la base canonique $\mathcal{F}$ et d’une métrique de matrice diagonale $D = \operatorname{Diag}(w_1 , \cdots , w_n )$ lui conférant une structure d’espace euclidien.
 
-# TODO: use armadillo
-set.seed(123)
 
-n <- 120
-u <- runif(n, -2, 2)
-v <- runif(n, -2, 2)
-w <- sin(u * 2.5) + cos(v * 2.5) + rnorm(n, sd = 0.25)
+<br>
 
-x <- u + 0.3 * rnorm(n)
-y <- v + 0.3 * rnorm(n)
-z <- w
+**En pratique:** le plus souvent on a $M = Id_p$ et $D = Id_n$ (i.e $w_1 = \cdots  = w_n = 1$). Mais cette formulation plus générale permet d’inclure nombre de cas particuliers dans le formalisme de l’ACP.
 
-plot_ly(
-  x = x, y = y, z = z,
-  type = "scatter3d",
-  mode = "markers",
-  marker = list(size = 4, opacity = 0.8, color = "#2e74b5")
-)
-```
 
-### Nuage 3D+t
-```{r}
-#| echo: false
 
-# exemple de nuage 3D+t. 
-```
+## Objectifs
 
-:::
+L’**analyse en composantes principales (ACP)** est une méthode de statistique exploratoire permettant de décrire un grand tableau de données quantitatives de type individus variables.
 
-## Nuage des individus
+**Question:** Lorsqu’on étudie simultanément un nombre important de variables, comment en faire une représentation globale ? On recherche de plus à:
+
+- [Individus]{.blue}: identifier des profils similaires ou différents, étudier leur variabilité et représenter graphiquement dans un espace de faible dimension
+
+- [variables]{.orange}: étudier leur structure de dépendance (corrélations), identifier d’éventuels groupes de variables liées et de les représenter graphiquement.
+
+**Idée:** L’ACP est un simple changement de base : passer d’une représentation dans la base canonique des variables initiales à une représentation dans la base des *facteurs*. Les facteurs sont des combinaisons linéaires des variables (vecteurs propres de la matrice des corrélations). 
+
+**Interprétation :** On ne sélectionne qu’une petite partie des facteurs et cela permet de réaliser des graphiques dans cet espace de faible dimension (dimension égale au nombre de facteurs retenus). Les graphiques peuvent éventuellement permettre de comprendre la structure des données analysées. Cette interprétation est guidée par des indicateurs numériques.
+
+**Référence:** en ligne [@besse_acp] un livre [@escofier_pages2016].
+
+
+## Les méthodes linéaires
 
 Remarque pour $p = 3$
 
 - On ne représente pas réellement le nuage en 3 dimensions
-
-- On l’observe selon différents points de vue (plans de projection)
+- On l’observe selon différents points de vue (**projection**)
 
 - Certains points de vue sont meilleurs que d’autres : ce sont ceux où la forme du nuage est la moins altérée
 
@@ -230,40 +252,61 @@ Remarque pour $p = 3$
 
 <br>
 
-
 ### Objectif de l’ACP
 
 Trouver le plan de projection permettant de visualiser une approximation en 2 dimensions du nuage des individus qui vit dans $\mathbb{R}^p$.
 
-## Pre-traitement : centrage et reduction
 
-Notation: la moyenne et la variance de $X_{:,j}$ sont définies par
+# Principe de l'ACP
+
+## Centrage et réduction
+
+Dans ce cours,  (et par défaut dans de nombreuses implémentations de l’ACP), le nuage de points des individus est centré et réduit (i.e. « on centre et on réduit colonne par colonne »).
+
+- **Centrage :** on note $\bar{X} = (\bar{X}_{:,j})_{j=1}^p = \Big(\frac{1}{n}\sum_{i=1}^{n} X_{i,j}\Big)_{j=1}^p$ le vecteur ligne des moyennes pour les $p$ variables. La matrice des données centrées est
+
 $$
-\bar{X}_{:,j}
-= \frac{1}{n}\sum_{i=1}^{n} X_{i,j},
+Y = X - \mathbf{1}_n \bar{X},
 \qquad
-s^2_{X_{:,j}}
-= \frac{1}{n}\sum_{i=1}^{n}
-\left(X_{i,j}-\bar{X}_{:,j}\right)^2.
+\text{où }
+\mathbf{1}_n ={\small 
+\begin{pmatrix}
+1 \\
+\vdots \\
+1
+\end{pmatrix}}
+\in \mathbb{R}^n.
+$$
+
+- **Réduction :** pour éviter les problèmes d’échelle, on réduit chaque colonne de $X$ à variance 1^[cela ne détruit pas la structure de corrélation du nuage de points]. On note $s^2_{X_{:,j}}=\frac{1}{n}\sum_{i=1}^{n}\left(X_{i,j}-\bar{X}_{:,j}\right)^2$ la variance^[Nous utiliserons l’écart-type non corrigé.] de la colonne $j$ et on pose
+
+$$
+M_{1/s}
+=
+\operatorname{Diag}
+\left(
+\tfrac{1}{s_{X_{:,1}}},
+\dots,
+\tfrac{1}{s_{X_{:,p}}}
+\right)
+\in \mathbb{R}^{p\times p}.
+$$
+ La matrice des données centrée-réduite est
+$$
+Z = Y M_{1/s}
 $$
 
 
-Nous utiliserons l'ecart-type non corrige. 
+## Pré-traitement
 
 <br>
 
-Dans ce cours, les données sont systématiquement **centrées et réduites** colonne par colonne :
-$$
-X_{i,j} \leftarrow \frac{X_{i,j} - \bar{X}_{:,j}}{s_{X_{:,j}}}.
-$$
+- Travailler avec la métrique $M = M_{\frac{1}{s^2}}$ (dans l'espace des individus) sur le tableau centré $Y$ revient donc à travailler avec la métrique identité $M = I_p$ sur le tableau centré réduit.
 
-Ce traitement amène à moyenne 0 et variance a 1 et supprime les effets d'échelle (unites de mesure). 
+<br>
 
-::: {.callout-note}
-### Consequence
+- L’ACP « usuelle » revient à centrer et réduire les observations, puis à utiliser la métrique identité : c’est l’ACP normée.
 
-Pour les données standardisées, le centre de gravité du nuage des individus est l’origine. Sa matrice d’inertie est la matrice de corrélation des données initiales et son inertie totale est égale à $p$ (dimension de l’espace des individus).
-:::
 
 ## Inertie d'un nuage de point
 
@@ -274,7 +317,9 @@ G = (\bar{a}_{:,1}, \ldots, \bar{a}_{:,p}) = \left(\frac{1}{n}\sum_{i=1}^n a_{i,
 \frac{1}{n}\sum_{i=1}^n a_{i,p}\right) \in \mathbb R^p.
 $$
 
-- La **matrice d'inertie** est définie par
+- La **matrice d'inertie** est définie par 
+
+<!-- TODO: ajouter matrice de corelation / variance covariance-->
 
 $$
 S =
@@ -290,6 +335,8 @@ A_1-G\\
 A_n-G
 \end{pmatrix} \in \mathbb R^{p \times p}.
 $$
+Pour les données centrée, le centre de gravité du nuage des individus est l’origine. 
+
 
 - L'**inertie** du nuage autour de son centre de gravité est la moyenne des distances **au carré** des points $A_i$ à $G$ :
 $$
@@ -303,6 +350,30 @@ $$
 \operatorname{tr}(S).
 $$
 
+
+
+## Lien statistique et géométrie
+
+Les $n$ valeurs relevées pour chaque variable peuvent être vues comme $n$ réalisations indépendantes d’une v.a.
+
+- Pour des variables centrées $Y$ et $D = Id_n$ , on a $\langle Y_{:,j} , Y_{:,k} \rangle_F = \sum_{i=1}^n Y_{i,j}  Y_{i,k}$ et à un facteur $\frac{1}{n}$ près
+$$
+\frac{1}{n}\| Y_{:,j} \| \propto \text{écart type} \quad \text{ et } \quad \langle Y_{:,j} , Y_{:,k} \rangle_F \propto \text{covariance}
+$$
+
+- La **matrice de variance :** c’est la matrice $p\times p$ notée $V$ dont l'entrée $j,k$ contient $\operatorname{cov} (X_{:,j} , X_{:,k}) = \frac{1}{n}\sum_{i=1}^{n}(X_{i,j}-\bar{X}_{:,j}) (X_{i,k}-\bar{X}_{:,k})$. On a, dans le cas de données centrée $Y$,
+$$
+V =  \frac{1}{n} Y^\top Y 
+$$
+C'est donc aussi la matrice d'inertie de $Y$
+
+- La **matrice de corrélation** $S \in \mathbb{R}^{p\times p}$ contient toutes les corrélations:
+
+$$
+S = \left (\operatorname{cor}(X_{:,j},X_{:,k}) \right)_{j,k=1^p} = \left (\frac{\operatorname{cov}(X_{:,j},X_{:,k})}{s_{X_{:,j}} s_{X_{:,k}}} \right)_{j,k=1}^p.
+$$
+
+La matrice d’inertie (et de variance) des donnée centrée-réduite $Z$ est la matrice de corrélation des données initiales $X$ et son inertie totale est égale à $p$ (dimension de l’espace des individus).
 
 
 ## Droite d'inertie maximale
@@ -501,11 +572,11 @@ layout(
 - On cherche donc la droite de projection qui modifie le moins l’inertie totale du
 nuage de point après projection.
 
-- Plus formellement, on cherche une droite $(D)$, passant par l'origine, telle que
+- Plus formellement, on cherche une droite $(D)$, passant par l'origine $O$, telle que
 $$
 \frac{1}{n}
 \sum_{i=1}^n
-\|H_i\|^2
+\|OH_i\|^2
 $$
 
 soit maximale, où $H_i$ est le projeté orthogonal de l'individu $X_{i,:}$ sur $(D)$.
@@ -832,7 +903,7 @@ u_1,\ldots,u_q,
 $$
 qui définissent un sous-espace de dimension $q$ sur lequel l'inertie des projections est maximale.
 
-### Solution
+### Solution: sous espaces emboîtées
 
 1. $u_1$ est la direction d'inertie maximale ;
 
@@ -882,14 +953,20 @@ $$
 
 ## L'Analyse en Composantes Principales
 
+<br>
+
 Réaliser une Analyse en Composantes Principales s'effectue en **3 étapes** :
 
 1. **Calculer et diagonaliser** la matrice de covariance (ou de corrélation) $S$.
+
+<br>
 
 2. **Ranger les valeurs propres** par ordre décroissant :
 $$
 \lambda_1 \geq \lambda_2 \geq \cdots \geq \lambda_p \geq 0.
 $$
+
+<br>
 
 3. Pour chaque valeur propre $\lambda_k$, **identifier un vecteur propre** $u_k$ associé.
 
@@ -900,7 +977,12 @@ La valeur propre $\lambda_k$ mesure l'**inertie portée par la direction princip
 :::
 
 
-## Example classique
+## Exemple classique
+
+
+::: {.r-stack}
+
+::: {.fragment .fade-out data-fragment-index=0}
 
 Moyennes des températures mensuelles sur la période 1991-2020 dans 14 villes
 françaises
@@ -942,7 +1024,12 @@ L’ACP va nous aider à simplifier les données de sorte à
 -  identifier les profils de villes en terme de températures
 - étudier la variabilité de ces profils.
 
-## Example classique
+:::
+
+
+::: {.fragment .fade-in data-fragment-index=0}
+
+
 Moyennes des températures mensuelles sur la période 1991-2020 dans 14 villes
 françaises après réduction.
 
@@ -959,6 +1046,10 @@ print_table(
 ```
 ::: {.callout-note}
 (Lati et Long sont des variables supplémentaires → mises de côté)
+:::
+
+:::
+
 :::
 
 
@@ -1000,9 +1091,9 @@ On cherche à
 - Réduire la dimension des données → Jusqu’à combien de dimensions peut-on projeter le nuage de points ?
 
 
-## Combien d'axes conserver ?
+## Qualité de la représentation
 
-La part d'inertie expliquée par les $k$ premiers axes est :
+On a vu que l'inertie totale du nuage est $\sum_{j=1}^p \lambda_j$. La **part d'inertie expliquée** par les $k$ premiers axes est :
 
 $$
 i_k =
@@ -1010,13 +1101,17 @@ i_k =
 {\sum_{j=1}^p \lambda_j}.
 $$
 
-::: {.callout-note}
-L'**inertie totale** du nuage est $\sum_{j=1}^p \lambda_j$.
-:::
 
-::: columns
 
-::: {.column width="70%"}
+**Choix du nombre de dimension:** se fait souvent sur des critères empiriques... Cela dépend aussi de la ﬁnalité de l’ACP : 
+
+- pour de la description de données on a souvent $q \leq 4$ (au delà diﬃcultés d’interprétation), 
+- pour de la compression $q$ peut être beaucoup plus grand
+
+
+## Combien d'axes conserver ?
+
+
 ```{r}
 #| echo: false
 #| fig-width: 10
@@ -1037,25 +1132,26 @@ ggplot(eig, aes(x = axe, y = cum_variance, group = 1)) +
 
 ```
 
-:::
-
-::: {.column width="30%"}
-On a $i_1 = 0.824$ et $i_2 = 0.992$. On peut choisir le plus petit $k$ pour lequel $i_k$ dépasse un seuil, par exemple $0{,}80$. Deux axes dans l'exemple.
-:::
-
-:::
 
 
+**Méthode du seuil:** On peut choisir le plus petit $k$ pour lequel $i_k$ dépasse un seuil. Si on prend 0.90, dans l'example on a $i_1 = 0.824$ et $i_2 = 0.992$ ce qui donne 2 axes.
+
+**Méthode pratique:** ne retenir que les dimensions que l’on peut interpréter...
+
+**Méthode de Kaiser:** Ne retenir que les directions principales qui expliquent
+une proportion de l’inertie supérieure à $\frac{1}{p}$. Dans l’exemple : cela correspond à $q = 1$. Mais mieux vaut couper avant/apres un décrochement...
 
 
 ## Combien d'axes conserver ?
 
-Le graphique des valeurs propres (*scree plot*) fournit un second outil :
+**Méthode du coude:** sur “l’éboulis” des valeurs propres, on observe un
+décrochement (coude) suivi d’une décroissance régulière : sélectionner les axes
+avant le décrochement.
 
-on retient les axes situés avant le **coude** de la courbe.
+Le graphique des valeurs propres (*scree plot*) on lit:
+
 
 ::: {.panel-tabset}
-
 
 ### Température des villes
 
@@ -1100,76 +1196,6 @@ Le coude se situe ici autour de l'axe 3 : on conserverait donc les 3 premiers ax
 :::
 
 
-
-## Visualisation des individus
-
-Représentation du nuage de points par rapport aux 2 premières composantes principales.
-
-::: {.columns style="align-items: center;"}
-
-::: {.column width="70%"}
-
-:::{.r-stack}
-:::{.fragment .fade-out data-fragment-index=1}
-```{r}
-#| echo: false
-#| fig-width: 12
-#| fig-height: 12
-#| out-width: "100%"
-
-ind <- as.data.frame(acp$ind$coord)
-ind$ville <- rownames(ind)
-
-plot(
-  acp,
-  choix = "ind",
-  axes = c(1, 2),
-  cex = 1.7,
-  invisible = "quali",
-  cex.axis = 1.6,
-  cex.lab = 1.6
-)
-
-```
-:::
-
-:::{.fragment .fade-in-then-out data-fragment-index=1}
-```{r}
-#| echo: false
-#| fig-width: 12
-#| fig-height: 12
-#| out-width: "100%"
-
-ind <- as.data.frame(acp$ind$coord)
-ind$ville <- rownames(ind)
-
-plot(
-  acp,
-  choix = "ind",
-  axes = c(1, 2),
-  cex = 1.7,
-  invisible = "quali",
-  habillage = "Région",
-  legend = list(x = "topright", bty = "n"),
-  cex.axis = 1.6,
-  cex.lab = 1.6
-)
-
-```
-:::
-
-:::
-:::
-
-::: {.column width="30%"}
-
-- axe 1: oppose villes les plus chaudes aux plus froides (Nice et Lille)
-- axe 2: oppose les des climats oceaniques aux climats plus continentaux, amplitude saisonniere (Brest et Strasbourg)
-
-:::
-
-:::
-
 # Étude du nuage des individus
 
 
@@ -1204,6 +1230,296 @@ On peut représenter le nuage des individus dans le plan défini par les deux pr
 :::
 
 
+## Visualisation des individus
+
+Représentation du nuage de points par rapport aux 2 premières composantes principales.
+
+::: {.columns style="align-items: center;"}
+
+::: {.column width="70%"}
+
+```{r}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 7
+#| out-width: "100%"
+
+ind <- as.data.frame(acp$ind$coord)
+ind$ville <- rownames(ind)
+
+plot(
+  acp,
+  choix = "ind",
+  axes = c(1, 2),
+  cex = 1.7,
+  invisible = "quali",
+  cex.axis = 1.6,
+  cex.lab = 1.6
+)
+
+```
+
+:::
+
+::: {.column width="30%"}
+
+- axe 1: oppose villes les plus chaudes aux plus froides (Nice et Lille)
+- axe 2: oppose les des climats oceaniques aux climats plus continentaux, amplitude saisonniere (Brest et Strasbourg)
+
+:::
+
+:::
+
+
+
+## Qualité de représentation
+
+
+La **qualité de représentation d’un individu** $i$ sur un avec principal est mesurée par le cosinus carré de l’angle entre l’axe factoriel et le vecteur $X_{i,:}$ (ou $Z_{i,:}$ si centré-réduit). Pour un individu $i$ sur l'axe $k$ :
+$$
+\cos^2_{i,k}
+=
+\frac{C_{i,k}^2}{d^2(i,G)},
+$$
+où $d^2(i,G)$ est la distance au carré entre l'individu $i$ et le centre de gravité.
+
+- on a $0 \leq \cos^2_{i,k} \leq 1$
+- Plus le cosinus carré est proche de $1$, plus l'individu sera proche de l’axe factoriel et donc sera bien représenté sur cet axe ( $\cos^2$ proche de $0$ : l'axe représente **peu** l'individu).
+- Pour connaître la qualité de la représentation sur un espace $E_q$ on ajoute simplement les $q$ cosinus carrés. Dans le plan $(k,l)$, on peut additionner les deux qualités de représentation :
+$$
+\cos^2_{i,(k,l)}
+=
+\cos^2_{i,k}+\cos^2_{i,l}.
+$$
+Un point dont le $\cos^2$ est élevé dans le plan est donc **bien représenté** par ce plan.
+
+::: {.callout-tip}
+Il est préférable d'interpréter les points **bien représentés** et les
+**contributions les plus fortes**, en mobilisant la connaissance du contexte
+des données.
+
+**Contribution** → *le point participe-t-il fortement à la construction de l'axe ?*
+
+**$\cos^2$** → *le point est-il bien représenté par l'axe ?*
+:::
+
+
+
+## Contribution
+
+
+La contribution de l'individu $i$ à l'axe $k$ est :
+
+$$
+\operatorname{contrib}^{(ind)}_{i,k}
+=
+\frac{C_{i,k}^2}{n\lambda_k}
+=
+\frac{\text{inertie de }i\text{ sur l'axe }k}
+{\text{inertie totale de l'axe }k}.
+$$
+
+On a
+
+$$
+0 \leq \operatorname{contrib}^{(ind)}_{i,k} \leq 1
+$$
+
+et
+
+$$
+\sum_{i=1}^n
+\operatorname{contrib}^{(ind)}_{i,k}
+=1.
+$$
+Ou parfois en pourcentage (somme à 100)
+
+**Interprétation :** un individu qui a une grande coordonnée en valeur absolue sur l'axe $k$ contribue fortement à la construction de cet axe.
+
+
+
+
+
+
+
+
+## Visualisation des individus
+
+Représentation du nuage de points par rapport aux 2 premières composantes principales.
+
+::: {.columns style="align-items: center;"}
+
+::: {.column width="70%"}
+
+```{r}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 7
+#| out-width: "100%"
+
+ind <- as.data.frame(acp$ind$coord)
+ind$ville <- rownames(ind)
+
+plot(
+  acp,
+  choix = "ind",
+  axes = c(1, 2),
+  cex = 1.7,
+  invisible = "quali",
+  cex.axis = 1.6,
+  cex.lab = 1.6
+)
+
+```
+
+:::
+
+::: {.column width="30%"}
+
+- tous les individus sont correctement représenté sur les premier plan principal
+
+- Brest, Lyon, Nantes sont quasiment ortogonaux à $C_1$
+
+:::
+
+:::
+
+::: {.panel-tabset}
+
+
+###  $\cos^2$:
+
+::: {.columns style="align-items: center;"}
+
+::: {.column width="50%"}
+
+```{r}
+#| echo: false
+
+
+print_table(acp$ind$cos2[1:7,1:2])
+```
+
+:::
+
+::: {.column width="50%"}
+
+```{r}
+#| echo: false
+
+
+print_table(acp$ind$cos2[8:14,1:2])
+```
+
+:::
+
+:::
+
+### Contrib:
+
+::: {.columns style="align-items: center;"}
+
+::: {.column width="50%"}
+
+```{r}
+#| echo: false
+
+
+print_table(acp$ind$contrib[1:7,1:2])
+```
+
+:::
+
+::: {.column width="50%"}
+
+```{r}
+#| echo: false
+
+
+print_table(acp$ind$contrib[8:14,1:2])
+```
+
+:::
+
+:::
+
+:::
+
+
+
+## Visualisation des individus (ajout de variables supplémentaires)
+
+Représentation du nuage de points par rapport aux 2 premières composantes principales.
+
+::: {.columns style="align-items: center;"}
+
+::: {.column width="70%"}
+
+:::{.r-stack}
+:::{.fragment .fade-out data-fragment-index=0}
+```{r}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 7
+#| out-width: "100%"
+
+ind <- as.data.frame(acp$ind$coord)
+ind$ville <- rownames(ind)
+
+plot(
+  acp,
+  choix = "ind",
+  axes = c(1, 2),
+  cex = 1.7,
+  invisible = "quali",
+  cex.axis = 1.6,
+  cex.lab = 1.6
+)
+
+```
+:::
+
+:::{.fragment .fade-in-then-out data-fragment-index=0}
+```{r}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 7
+#| out-width: "100%"
+
+ind <- as.data.frame(acp$ind$coord)
+ind$ville <- rownames(ind)
+
+plot(
+  acp,
+  choix = "ind",
+  axes = c(1, 2),
+  cex = 1.7,
+  invisible = "quali",
+  habillage = "Région",
+  legend = list(x = "topright", bty = "n"),
+  cex.axis = 1.6,
+  cex.lab = 1.6
+)
+
+```
+:::
+
+:::
+:::
+
+::: {.column width="30%"}
+
+- ajout d'une variable supplémenaire qualitative (Région)
+- 
+:::
+
+:::
+
+
+
+
+# Étude du nuage des variables
+
 
 ## Résultats de l’ACP
 
@@ -1237,7 +1553,9 @@ $$
 
 ## Résultats de l’ACP
 
-La corrélation entre une variable \(X_{:,j} \in \mathbb R^n\) et une composante principale \(C_{:,k} \in \mathbb R^n\) est donnée par :
+
+La corrélation entre une variable $X_{:,j} \in \mathbb R^n$ et une composante principale $C_{:,k} \in \mathbb R^n$ est donnée par :
+
 $$
 \operatorname{Cor}(X_{:,j},C_{:,k})
 =
@@ -1260,24 +1578,14 @@ W
 \Sigma_X^{-1/2}P\Lambda^{1/2}
 $$
 
-où
+où $\Sigma_X = \operatorname{Diag}\left(\operatorname{Var}(X_{:,1}),\ldots, \operatorname{Var}(X_{:,p})\right) \in \mathbb R^{p \times p}$ est la matrice diagonale des variances des variables (Si les données sont centrées-réduites, alors $\Sigma_X=I_p$).
 
-$$
-\Sigma_X =
-\operatorname{Diag}
-\left(
-\operatorname{Var}(X_{:,1}),\ldots,
-\operatorname{Var}(X_{:,p})
-\right) \in \mathbb R^{p \times p}
-$$
+**Interprétation des composantes principales :** On mesure la relation entre $C_k$ et la variable $X_{:,j}$ l’aide de la corrélation $r (C_k , X_{:,j})$. 
 
-est la matrice diagonale des variances des variables.
 
 ::: {.callout-note}
-Si les données sont **centrées-réduites**, alors $\Sigma_X=I_p$,
+On peut représenter les variables dans le plan défini par les deux premiers axes en considérant les deux premières colonnes de $W$. Étant donnés $C_1$ et $C_2$, on trace le “cercle de corrélations” : la variable $j$ est représentée par un point de coordonnées $(r(C_1 , X_{:,j}), $r (C_2 , X_{:,j}))$ dans le disque. 
 :::
-
-On peut représenter les variables dans le plan défini par les deux premiers axes en considérant les deux premières colonnes de $W$.
 
 
 ## Visualisation des variables
@@ -1300,19 +1608,24 @@ plot(
   axes = c(1, 2),
   cex = 1.7,
   invisible = "quanti.sup",
-  cex.axis = 1.6,
-  cex.lab = 1.6
+  cex.axis = 2.2,
+  cex.lab = 4.2
 )
 ```
 
 :::
 
 ::: {.column width="40%"}
+
+::: {.fragment}
 - Le coefficient de corrélation entre Oct et $C_1$ vaut $\sim 0{,}95$.
 
 - Tous les mois sont fortement et positivement corrélés à $C_1$.
 
-- Seuls les mois Janv, Fev, Juin et Juil sont fortement corrélés à $C_2$.
+- Les mois Mars, Oct, Avri, Sept (inter saison) sont les moins fortement corrélés à $C_2$.
+
+- correlation de signe opposé entre $C_2$ et les mois Janv, Dece, Fevr (hiver) et Aout, Mai, Juin, Juil (été) 
+:::
 :::
 
 :::
@@ -1321,25 +1634,58 @@ plot(
 - Des directions opposées indiquent des corrélations opposées.
 
 
-## Exploiter sa connaissance des données
+
+## Qualité de la représentation
 
 
-- On remarque dans les données que, tout au long de l’année, il fait plus froid à Lille et plus chaud à Nice relativement aux autres villes de France.
+- La qualité de représentation d’une variable $j$ sur le $k$-ème axe factoriel dual est exprimée par le coefficient de corrélation linéaire^[Quand les données sont centrée-réduites, on peut en prendre le carré et retrouver le $\cos^2$] $r(C_k , X_{:,j})$ entre la variable initiale $X_{:,j}$ et la nouvelle variable $C_k$. 
+
+- La valeur de cette corrélation sera également très importante pour interpréter ces nouveaux axes factoriels en fonction des variables initiales.
+
+- Les variables les mieux expliquées correspondent aux points les plus proches du cercle unité.
 
 
-- On peut vérifier que la **température moyenne annuelle** est très fortement corrélée à $C_1$.
-
-- On remarque également que Brest est la ville où les **amplitudes thermiques** sont les plus faibles au cours de l’année, contrairement à Strasbourg.
+**Remarque :** bien qu’ayant retenu un sous-espace factoriel expliquant une part importante de l’inertie totale, il est possible que certaines variables ou individus d’intérêt soient mal représentés dans ce sous-espace. Il sera alors intéressant de compléter le sous-espace factoriel en ajoutant des axes factoriels supplémentaires de sorte que ces variables ou individus d’intérêt soient bien représentés
 
 
-- On peut vérifier que l’**amplitude thermique annuelle** est très fortement corrélée à $C_2$.
 
-:::{.callout-tip}
-**La richesse des interprétations vient surtout de la connaissance des données.**
 
-Il n’est pas toujours aussi aisé de faire des liens directs avec des variables supplémentaires !
 
-:::
+## Contribution
+
+
+Pour une variable $j$, sa contribution à l'axe $k$ est :
+
+$$
+\operatorname{contrib}^{(var)}_{j,k}
+=
+\frac{W_{j,k}^2}{p\lambda_k}.
+$$
+
+On a également
+
+$$
+0 \leq \operatorname{contrib}^{(var)}_{j,k} \leq 1
+$$
+
+et
+
+$$
+\sum_{j=1}^p
+\operatorname{contrib}^{(var)}_{j,k}
+=1.
+$$
+
+**Interprétation :** une variable qui a une forte corrélation avec l'axe $k$ contribue fortement à sa construction.
+
+
+
+
+
+
+
+
+
 
 
 ## Ajout de variables supplémentaires
@@ -1379,6 +1725,46 @@ plot(
 :::
 
 
+
+## Exploiter sa connaissance des données
+
+<br>
+
+
+- On remarque dans les données que, tout au long de l’année, il fait plus froid à Lille et plus chaud à Nice relativement aux autres villes de France.
+
+<br>
+
+- On peut vérifier que la **température moyenne annuelle** est très fortement corrélée à $C_1$.
+
+<br>
+
+- On remarque également que Brest est la ville où les **amplitudes thermiques** sont les plus faibles au cours de l’année, contrairement à Strasbourg.
+
+<br>
+
+- On peut vérifier que l’**amplitude thermique annuelle** est très fortement corrélée à $C_2$.
+
+:::{.callout-tip}
+**La richesse des interprétations vient surtout de la connaissance des données.**
+
+Il n’est pas toujours aussi aisé de faire des liens directs avec des variables supplémentaires !
+
+:::
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--
 ## En résumé
 
 ### On est capable de :
@@ -1395,50 +1781,9 @@ plot(
 
 - étudié les liaisons entre les variables.
 
-
-# Étude du nuage des variables
-
-## Nuage des variables
-
-### Problème
-
-Chaque variable est un point de $\mathbb{R}^n$, et on souhaite obtenir une représentation dans un espace de dimension $m<n$, typiquement $m=2$.
-
-On cherche à nouveau $m$ directions orthogonales
-$$
-v_1,\ldots,v_m,
-$$
-mais cette fois en maximisant la **corrélation globale avec les variables**.
+-->
 
 
-### Solution
-
-1. $v_1$ est la direction maximisant $\sum_{j=1}^p \rho^2(v,X_{:,j})$.
-
-2. $v_2$ est la direction orthogonale à $v_1$ qui maximise $\sum_{j=1}^p \rho^2(v,X_{:,j})$.
-
-3. $\ldots$
-
-où $\rho(U,V)$ désigne le **coefficient de corrélation** entre $U$ et $V$.
-
-## Plot twist
-
-On retrouve **exactement la même représentation** que lors de l’étude du nuage des individus !
-
-```{r}
-#| echo: false
-#| fig-width: 12
-#| fig-height: 12
-#| out-width: "100%"
-plot(
-  acp,
-  choix = "varcor",
-  axes = c(1, 2),
-  cex = 1.7,
-  cex.axis = 1.6,
-  cex.lab = 1.6
-)
-```
 
 ## La dualité individus / variables
 
@@ -1497,121 +1842,65 @@ sont reliés directement par $X$.
 **La représentation des individus et celle des variables sont donc deux faces du même objet.**
 
 
-# Aide a l'interpretation
+## Vocabulaire
+	
+  
+- Espaces factoriels directs: ce sont les $p$ sev $Vect\{u_k\}$ engendrés par les $u_k\in\mathbb{R}^p$ (directions de plus grande inertie).
 
-## Contribution
-
-::: {.r-stack}
-
-::: {.fragment .fade-out data-fragment-index=1}
-
-La contribution de l'individu $i$ à l'axe $k$ est :
-
+- Espaces factoriels duals: ce sont les sev engendrés par les composantes principales. La $k$-ème composante principale est le vecteur $C_k \in \mathbb{R}^n$ des coordonnées des $n$ individus sur l'axe factoriel $Vect\{u_k\}$. En ACP normé on a:
 $$
-\operatorname{contrib}^{(ind)}_{i,k}
-=
-\frac{C_{i,k}^2}{n\lambda_k}
-=
-\frac{\text{inertie de }i\text{ sur l'axe }k}
-{\text{inertie totale de l'axe }k}.
+			C_k = X u_k
 $$
 
-On a
+La composante principale $C_k$ est donc une combinaison linéaire des variables $X_{:,j}$ et peut être vue comme une nouvelle variable dans le sous-espace factoriel dual.
 
+## Nuage des variables
+
+### Problème
+
+Chaque variable est un point de $\mathbb{R}^n$, et on souhaite obtenir une représentation dans un espace de dimension $m<n$, typiquement $m=2$.
+
+On cherche à nouveau $m$ directions orthogonales
 $$
-0 \leq \operatorname{contrib}^{(ind)}_{i,k} \leq 1
+v_1,\ldots,v_m,
 $$
-
-et
-
-$$
-\sum_{i=1}^n
-\operatorname{contrib}^{(ind)}_{i,k}
-=1.
-$$
-
-**Interprétation :** un individu qui a une grande coordonnée en valeur absolue sur l'axe $k$ contribue fortement à la construction de cet axe.
-
-:::
-
-::: {.fragment .fade-in-then-out data-fragment-index=1}
-
-Pour une variable $j$, sa contribution à l'axe $k$ est :
-
-$$
-\operatorname{contrib}^{(var)}_{j,k}
-=
-\frac{W_{j,k}^2}{p\lambda_k}.
-$$
-
-On a également
-
-$$
-0 \leq \operatorname{contrib}^{(var)}_{j,k} \leq 1
-$$
-
-et
-
-$$
-\sum_{j=1}^p
-\operatorname{contrib}^{(var)}_{j,k}
-=1.
-$$
-
-**Interprétation :** une variable qui a une forte corrélation avec l'axe $k$ contribue fortement à sa construction.
-
-:::
-
-:::
+mais cette fois en maximisant la **corrélation globale avec les variables**.
 
 
-## Qualité de représentation
+### Solution
 
-La qualité de représentation, souvent appelée $\cos^2$, mesure la part de l'information d'un individu ou d'une variable portée par un axe. Pour un individu $i$ sur l'axe $k$ :
+1. $v_1$ est la direction maximisant $\sum_{j=1}^p \rho^2(v,X_{:,j})$.
 
-$$
-\cos^2_{i,k}
-=
-\frac{C_{i,k}^2}{d^2(i,G)},
-$$
+2. $v_2$ est la direction orthogonale à $v_1$ qui maximise $\sum_{j=1}^p \rho^2(v,X_{:,j})$.
 
-où $d^2(i,G)$ est la distance au carré entre l'individu $i$ et le centre de gravité.
+3. $\ldots$
 
-On a :
+où $\rho(U,V)$ désigne le **coefficient de corrélation** entre $U$ et $V$.
 
-$$
-0 \leq \cos^2_{i,k} \leq 1.
-$$
+## Plot twist
 
-::: {.callout-note}
-**Interprétation :**
+On retrouve **exactement la même représentation** que lors de l’étude du nuage des individus !
 
-- $\cos^2$ proche de $1$ : l'individu est **bien représenté** par l'axe ;
-- $\cos^2$ proche de $0$ : l'axe représente **peu** l'individu.
+```{r}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 12
+#| out-width: "100%"
+plot(
+  acp,
+  choix = "varcor",
+  axes = c(1, 2),
+  cex = 1.7,
+  cex.axis = 1.6,
+  cex.lab = 1.6
+)
+```
 
-:::
 
-Pour une représentation dans le plan $(k,l)$, on peut additionner les deux
-qualités de représentation :
 
-$$
-\cos^2_{i,(k,l)}
-=
-\cos^2_{i,k}+\cos^2_{i,l}.
-$$
 
-Un point dont le $\cos^2$ est élevé dans le plan est donc **bien représenté**
-par ce plan.
 
-::: {.callout-tip}
-Il est préférable d'interpréter les points **bien représentés** et les
-**contributions les plus fortes**, en mobilisant la connaissance du contexte
-des données.
 
-**Contribution** → *le point participe-t-il fortement à la construction de l'axe ?*
-
-**$\cos^2$** → *le point est-il bien représenté par l'axe ?*
-:::
 
 
 ## Exemple : temperatures de villes francaises
@@ -1715,3 +2004,7 @@ Principaux résultats :
 <br><br>
 
 L'ACP fournit une representation de dimension reduite qui conserve au mieux l'inertie du nuage des individus. Elle aide a comparer des profils, a resumer les liaisons entre variables et a construire une interpretation informee par les donnees et leur contexte.
+
+
+## Réferences
+
