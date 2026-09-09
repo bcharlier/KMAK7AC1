@@ -5,8 +5,8 @@ author: "B. Charlier, N. Verzelen, J. Salmon"
 date: ""
 format:
   revealjs:
-    theme: ../../slides/metropolis.scss
-    css: ../../table.css
+    theme: metropolis.scss
+    css: ../table.css
     slide-number: true
     code-line-numbers: false
     width: 1024
@@ -15,7 +15,7 @@ format:
     history: false
     toc: true
     toc-depth: 1
-bibliography: ../../reference.bib
+bibliography: ../reference.bib
 ---
 
 <style>

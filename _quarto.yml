@@ -63,7 +63,7 @@ website:
       collapse-level: 3
       contents:
         - slides/presentation.qmd
-        - slide/SVD.qmd
+        - slides/SVD.qmd
         - slides/ACP.qmd
 
     - id: TD
