@@ -47,7 +47,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install jupyter numpy pandas matplotlib scikit-learn
+          python -m pip install jupyter numpy pandas matplotlib scikit-learn plotly
 
       - name: Configure Python for reticulate
         run: echo "RETICULATE_PYTHON=$(python -c 'import sys; print(sys.executable)')" >> "$GITHUB_ENV"

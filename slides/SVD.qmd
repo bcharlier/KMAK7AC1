@@ -16,10 +16,6 @@ format:
     toc: true
     toc-depth: 1
 bibliography: ../reference.bib
-
-knitr:
-  opts_chunk:
-    prompt: true
 ---
 
 <style>
@@ -85,10 +81,10 @@ $\langle u_i,u_j\rangle=\delta_{ij}$ et $\langle v_i,v_j\rangle=\delta_{ij}$.
 
 ::: {.r-stack}
 ::: {.fragment .fade-in-then-out}
-![](srcimages/SVD_fatmatrix.svg){width="95%"}
+![](images/SVD_fatmatrix.svg){width="95%"}
 :::
 ::: {.fragment .fade-in-then-out}
-![](srcimages/SVD_thinmatrix.svg){width="95%"}
+![](images/SVD_thinmatrix.svg){width="95%"}
 :::
 :::
 
@@ -128,11 +124,11 @@ Les deux premières vues correspondent à une matrice large ;
 ::: {.r-stack}
 
 ::: {.fragment .fade-in-then-out}
-![](srcimages/SVD_fatmatrix.svg){width="95%"}
+![](images/SVD_fatmatrix.svg){width="95%"}
 :::
 
 ::: {.fragment .fade-in-then-out}
-![](srcimages/SVD_fatmatrix_compact.svg){width="95%"}
+![](images/SVD_fatmatrix_compact.svg){width="95%"}
 :::
 
 :::
@@ -142,11 +138,11 @@ Les deux suivantes à une matrice haute.
 ::: {.r-stack}
 
 ::: {.fragment .fade-in-then-out}
-![](srcimages/SVD_thinmatrix.svg){width="95%"}
+![](images/SVD_thinmatrix.svg){width="95%"}
 :::
 
 ::: {.fragment .fade-in-then-out}
-![](srcimages/SVD_thinmatrix_compact.svg){width="95%"}
+![](images/SVD_thinmatrix_compact.svg){width="95%"}
 :::
 
 :::
