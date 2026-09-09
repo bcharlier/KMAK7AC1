@@ -16,6 +16,10 @@ format:
     toc: true
     toc-depth: 1
 bibliography: ../reference.bib
+
+knitr:
+  opts_chunk:
+    prompt: true
 ---
 
 <style>
