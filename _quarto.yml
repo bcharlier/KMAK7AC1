@@ -15,6 +15,7 @@ project:
   - cours/index.qmd
   - slides/index.qmd
   - slides/ACP.qmd
+  - slides/SVD.qmd
   - slides/presentation.qmd
   - td/1_ACP/TD.qmd
   - tp/index.qmd
@@ -62,6 +63,7 @@ website:
       collapse-level: 3
       contents:
         - slides/presentation.qmd
+        - slide/SVD.qmd
         - slides/ACP.qmd
 
     - id: TD
@@ -84,6 +86,7 @@ website:
 format:
   html:
     theme: [lux, custom.scss]
+    css: table.css
 
     html-math-method: katex
     number-sections: false

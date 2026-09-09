@@ -1,14 +1,14 @@
 ---
-title: "Statistique Exploratoire et Apprentissage non supervisé"
+title: "Introduction -- Statistique Exploratoire et Apprentissage non supervisé"
 subtitle: "Présentation de l'UE"
 author: "Benjamin Charlier, Adrien Mazoyer"
 date: ""
 format:
   revealjs:
     theme: metropolis.scss
+    css: ../table.css
     slide-level: 2
     toc: false
-    toc-depth: 1
     email-obfuscation: javascript
     slide-number: true
     code-line-numbers: false

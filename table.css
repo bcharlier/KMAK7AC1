@@ -1,0 +1,49 @@
+/* Shared table styling for HTML pages and RevealJS slides. */
+.table {
+  width: 100%;
+  margin: auto;
+  table-layout: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.75em !important;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.table > :not(caption) > * > * {
+  padding: 0.25em 0.6em;
+  border-bottom-width: 0;
+}
+
+.table > :not(caption) > tr > :first-child {
+  white-space: nowrap;
+}
+
+.table > :not(caption) > tr > :not(:first-child) {
+  text-align: center;
+}
+
+.table > thead > tr > th {
+  background: #343a40;
+  color: #ffffff;
+  font-weight: 600;
+  padding: 0.3em 0.6em;
+  border: none;
+}
+
+.table > tbody > tr:nth-child(even) > * {
+  background: #e9ecef;
+}
+
+.table > tbody > tr:nth-child(odd) > * {
+  background: #ffffff;
+}
+
+.table > tbody > tr > td:first-child {
+  font-weight: 600;
+}
+
+.table > tbody > tr:hover > * {
+  background: #dbeafe;
+}

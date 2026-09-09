@@ -1,0 +1,452 @@
+---
+title: "Décomposition en valeurs singulières"
+subtitle: "Chapitre 0 -- Décomposition en valeurs singulières"
+author: "B. Charlier, N. Verzelen, J. Salmon"
+date: ""
+format:
+  revealjs:
+    theme: ../../slides/metropolis.scss
+    css: ../../table.css
+    slide-number: true
+    code-line-numbers: false
+    width: 1024
+    height: 768
+    progress: true
+    history: false
+    toc: true
+    toc-depth: 1
+bibliography: ../../reference.bib
+---
+
+<style>
+.reveal .r-stack > .fragment {
+  width: 100%;
+}
+
+.reveal .r-stack > .fragment img {
+  display: block;
+  width: 95%;
+  margin: 0 auto;
+}
+</style>
+
+## SVD
+
+::: {.center}
+**B. Charlier, N. Verzelen, J. Salmon**
+
+INRAE / Université de Montpellier
+:::
+
+# Algèbre linéaire
+
+## La décomposition spectrale
+
+::: {.callout-note title="Théorème spectral"}
+Une matrice symétrique $S \in \mathbb{R}^{n \times n}$ est diagonalisable en base orthonormée : il existe $\lambda_1 \geq \cdots \geq \lambda_n$ et une matrice orthogonale $U \in \mathbb{R}^{n \times n}$ telles que
+
+$$S = U\,\operatorname{diag}(\lambda_1,\ldots,\lambda_n)U^\top
+\qquad\text{ou}\qquad
+SU=U\,\operatorname{diag}(\lambda_1,\ldots,\lambda_n).$$
+:::
+
+Si $U=[u_1,\ldots,u_n]$, alors
+
+$$S=\sum_{i=1}^n \lambda_i u_i u_i^\top,
+\qquad S u_i=\lambda_i u_i.$$
+
+Une matrice $U$ est orthogonale si $U^\top U=UU^\top=I_n$, ou encore
+$\langle u_i,u_j\rangle=\delta_{ij}$.
+
+Les $\lambda_i$ sont les **valeurs propres** et les $u_i$ les **vecteurs propres** associés.
+
+## La décomposition en valeurs singulières
+
+::: {.callout-note title="Théorème"}
+Pour toute matrice $X \in \mathbb{R}^{n \times p}$, il existe des matrices orthogonales $U \in \mathbb{R}^{n \times n}$ et $V \in \mathbb{R}^{p \times p}$ telles que
+
+$$U^\top X V=\Sigma=\operatorname{diag}(s_1,\ldots,s_{\min(n,p)}),$$
+
+avec $s_1 \geq \cdots \geq s_{\min(n,p)}\geq 0$. Ainsi,
+
+$$\boxed{X=U\Sigma V^\top}.$$
+:::
+
+On écrit $U=[u_1,\ldots,u_n]$ et $V=[v_1,\ldots,v_p]$, avec
+$\langle u_i,u_j\rangle=\delta_{ij}$ et $\langle v_i,v_j\rangle=\delta_{ij}$.
+
+**Démonstration :** diagonaliser $X^\top X$ [@Golub_VanLoan96].
+
+## SVD : visualisation
+
+::: {.r-stack}
+::: {.fragment .fade-in-then-out}
+![](srcimages/SVD_fatmatrix.svg){width="95%"}
+:::
+::: {.fragment .fade-in-then-out}
+![](srcimages/SVD_thinmatrix.svg){width="95%"}
+:::
+:::
+
+## SVD : propriété variationnelle
+
+Les $s_j$ sont les **valeurs singulières** de $X$ ; les $u_j$ (resp. $v_j$) sont les **vecteurs singuliers à gauche** (resp. **à droite**).
+
+::: {.callout-note title="Propriété variationnelle de la plus grande valeur singulière"}
+$$s_1=\max_{\substack{u\in\mathbb{R}^n,\ v\in\mathbb{R}^p\\\|u\|=\|v\|=1}} u^\top Xv.$$
+:::
+
+Le lagrangien est
+$$\mathcal{L}(u,v)=u^\top Xv-\lambda_1(\|u\|^2-1)-\lambda_2(\|v\|^2-1).$$
+
+Les conditions du premier ordre donnent
+$$Xv=2\lambda_1u,\qquad X^\top u=2\lambda_2v,$$
+
+puis
+$$X^\top Xv=\alpha v,\qquad XX^\top u=\alpha u,$$
+avec $\alpha=4\lambda_1\lambda_2$.
+
+## SVD réduite
+
+Partons de $X=U\Sigma V^\top$. En ne gardant que les $r=\operatorname{rank}(X)$ valeurs singulières non nulles,
+
+$$\boxed{X=\sum_{i=1}^r s_i u_i v_i^\top
+=U_r\operatorname{diag}(s_1,\ldots,s_r)V_r^\top}.$$
+
+Les matrices $u_i v_i^\top$ sont de rang $1$. Les $u_i$ et les $v_i$ sont orthonormés et engendrent respectivement les espaces des colonnes et des lignes de $X$ :
+
+$$\operatorname{span}(x_1,\ldots,x_p)=\operatorname{span}(u_1,\ldots,u_r).$$
+
+## SVD réduite : visualisation
+
+Les deux premières vues correspondent à une matrice large ;
+
+::: {.r-stack}
+
+::: {.fragment .fade-in-then-out}
+![](srcimages/SVD_fatmatrix.svg){width="95%"}
+:::
+
+::: {.fragment .fade-in-then-out}
+![](srcimages/SVD_fatmatrix_compact.svg){width="95%"}
+:::
+
+:::
+
+Les deux suivantes à une matrice haute.
+
+::: {.r-stack}
+
+::: {.fragment .fade-in-then-out}
+![](srcimages/SVD_thinmatrix.svg){width="95%"}
+:::
+
+::: {.fragment .fade-in-then-out}
+![](srcimages/SVD_thinmatrix_compact.svg){width="95%"}
+:::
+
+:::
+
+
+## SVD et meilleure approximation
+
+::: {.callout-note title="Théorème (meilleure approximation de rang $k$)"}
+Soit $X=\sum_{i=1}^r s_i u_i v_i^\top$ la SVD compacte de $X\in\mathbb{R}^{n\times p}$ et
+$X_k=\sum_{i=1}^k s_i u_i v_i^\top$. Alors
+
+$$\min_{\operatorname{rank}(Z)=k}\|X-Z\|_2
+=\|X-X_k\|_2=s_{k+1}.$$
+:::
+
+La norme spectrale est définie par
+$$\|X\|_2=\sup_{\|u\|=1}\|Xu\|=s_1(X).$$
+
+Ce résultat est crucial pour l’analyse en composantes principales (ACP).
+
+## SVD et meilleure approximation : illustration
+
+Approximation de rang $k$ d'une matrice gaussienne $A\in\mathbb{R}^{9\times 6}$ : 
+
+```{python}
+#| echo: false
+#| warning: false
+
+import numpy as np
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+from sklearn.decomposition import TruncatedSVD
+
+np.random.seed(990)
+
+n, p = 9, 6
+A = np.random.randn(n, p)
+
+ks = list(range(1, p + 1))
+approxs = []
+for k in ks:
+    if k < p:
+        tsvd = TruncatedSVD(n_components=k)
+        Xk = tsvd.fit_transform(A) @ tsvd.components_
+    else:
+        Xk = A.copy()  # rang plein : approximation exacte
+    approxs.append(Xk)
+
+vmin = min(A.min(), min(Xk.min() for Xk in approxs))
+vmax = max(A.max(), max(Xk.max() for Xk in approxs))
+
+fig = make_subplots(
+    rows=1, cols=3,
+    subplot_titles=("Matrice $A$", "Approximation $X_k$", "Résidu $X_k - A$"),
+)
+
+viridis_colorbar = dict(orientation="h", thickness=15, len=0.6, x=0.29, xanchor="center", y=-0.12, yanchor="top")
+rdbu_colorbar = dict(orientation="h", thickness=15, len=0.27, x=0.855, xanchor="center", y=-0.12, yanchor="top")
+
+frames = [
+    go.Frame(
+        name=str(k),
+        data=[
+            go.Heatmap(z=A[::-1], zmin=vmin, zmax=vmax, colorscale="Viridis",
+                       showscale=True, colorbar=viridis_colorbar),
+            go.Heatmap(z=Xk[::-1], zmin=vmin, zmax=vmax, colorscale="Viridis", showscale=False),
+            go.Heatmap(z=(Xk - A)[::-1], zmin=-2, zmax=2, colorscale="RdBu",
+                       showscale=True, colorbar=rdbu_colorbar),
+        ],
+        traces=[0, 1, 2],
+    )
+    for k, Xk in zip(ks, approxs)
+]
+
+fig.add_trace(frames[0].data[0], row=1, col=1)
+fig.add_trace(frames[0].data[1], row=1, col=2)
+fig.add_trace(frames[0].data[2], row=1, col=3)
+fig.frames = frames
+
+steps = [
+    dict(
+        method="animate",
+        args=[[str(k)], {"frame": {"duration": 0, "redraw": True}, "mode": "immediate"}],
+        label=f"k={k}",
+    )
+    for k in ks
+]
+
+fig.update_layout(
+    sliders=[dict(
+        active=0, steps=steps, currentvalue={"prefix": "Rang k : "},
+        x=0.1, len=0.85, xanchor="left", y=-0.32, yanchor="top",
+    )],
+    height=480,
+    margin=dict(l=20, r=20, t=40, b=100),
+)
+fig.update_xaxes(showticklabels=False)
+fig.update_yaxes(showticklabels=False)
+fig.show()
+```
+
+
+
+<!-- 
+# Pseudo-inverse
+
+## Définition
+
+::: {.callout-note title="Pseudo-inverse"}
+Si $X=\sum_{i=1}^r s_i u_i v_i^\top$ avec $r=\operatorname{rank}(X)$, alors
+
+$$\boxed{X^+=\sum_{i=1}^r\frac{1}{s_i}v_i u_i^\top}.$$
+:::
+
+Si $X\in\mathbb{R}^{n\times n}$ est inversible, alors $X^+=X^{-1}$. En effet,
+
+::: {.fragment}
+$$XX^+=\sum_{j=1}^n s_j u_jv_j^\top
+\sum_{i=1}^n\frac{1}{s_i}v_i u_i^\top.$$
+:::
+
+::: {.fragment}
+$$=\sum_{j=1}^n\sum_{i=1}^n
+s_j\frac{1}{s_i}u_jv_j^\top v_i u_i^\top.$$
+:::
+
+::: {.fragment}
+$$=\sum_{j=1}^n\sum_{i=1}^n
+s_j\frac{1}{s_i}\delta_{ij}u_j u_i^\top
+=\sum_{i=1}^n u_i u_i^\top=I_n.$$
+:::
+
+## SVD et numérique
+
+Les fonctions SVD et pseudo-inverse sont disponibles dans les bibliothèques numériques classiques, par exemple **NumPy**.
+
+```python
+U, s, Vt = np.linalg.svd(X, full_matrices=False)
+X_reconstructed = U @ np.diag(s) @ Vt
+Xinv = np.linalg.pinv(X)
+```
+
+::: {.callout-warning}
+Dans NumPy, la troisième sortie est $V^\top$ (`Vt`), et non $V$.
+L'option `full_matrices=True/False` permet d'obtenir les versions complète ou réduite.
+:::
+
+::: {.callout-tip title="Exercice"}
+Évaluer numériquement le théorème de meilleure approximation de rang fixé pour une matrice gaussienne de taille $9\times 6$, avec $k=3$ (voir le notebook `SVD.ipynb` associé).
+:::
+
+# L'approche SVD pour les moindres carrés
+
+## Retour sur les moindres carrés
+
+Partons de la SVD compacte $X=\sum_{i=1}^r s_i u_i v_i^\top$ et de la décomposition
+$y=\sum_{i=1}^n u_i u_i^\top y$.
+
+::: {.fragment}
+$$\|X\beta-y\|^2=\left\|\sum_{i=1}^r s_i u_i v_i^\top\beta
+-\sum_{i=1}^n u_i u_i^\top y\right\|^2.$$
+:::
+
+::: {.fragment}
+$$=\left\|\sum_{i=1}^r u_i(s_i v_i^\top\beta-u_i^\top y)
+-\sum_{i=r+1}^n u_i u_i^\top y\right\|^2.$$
+:::
+
+::: {.fragment}
+$$=\left\|\sum_{i=1}^r u_i(s_i v_i^\top\beta-u_i^\top y)\right\|^2
++\left\|\sum_{i=r+1}^n u_i u_i^\top y\right\|^2.$$
+:::
+
+::: {.fragment}
+$$\boxed{\|X\beta-y\|^2=\sum_{i=1}^r(s_i v_i^\top\beta-u_i^\top y)^2
++\sum_{i=r+1}^n(u_i^\top y)^2.}$$
+:::
+
+Le premier terme est annulé en choisissant
+$$\hat\beta=\sum_{i=1}^r\frac{y^\top u_i}{s_i}v_i=X^+y.$$
+
+## Retour sur les moindres carrés : suite
+
+Ainsi,
+
+$$\boxed{\hat\beta=X^+y\in\arg\min_{\beta\in\mathbb{R}^p}
+\frac12\|X\beta-y\|^2}.$$
+
+L'ensemble de toutes les solutions est
+
+$$\left\{X^+y+\sum_{i=r+1}^p\alpha_i v_i:
+(\alpha_{r+1},\ldots,\alpha_p)\in\mathbb{R}^{p-r}\right\}.$$
+
+$X^+y$ est **la solution de norme euclidienne minimale**.
+
+## Le biais dans le cas général
+
+Sous l'hypothèse $y=X\beta^\star+\varepsilon$ et $\mathbb{E}(\varepsilon)=0$,
+
+::: {.fragment}
+$$\mathbb{E}(\hat\beta)=\mathbb{E}(X^+y)
+=\mathbb{E}(X^+X\beta^\star+X^+\varepsilon)=X^+X\beta^\star.$$
+:::
+
+::: {.fragment}
+$$=\sum_{i=1}^r\frac{1}{s_i}v_i u_i^\top
+\sum_{j=1}^r s_j u_jv_j^\top\beta^\star.$$
+:::
+
+::: {.fragment}
+$$=\sum_{j=1}^r v_jv_j^\top\beta^\star=\Pi_l\beta^\star.$$
+:::
+
+- $\Pi_l=\sum_{i=1}^r v_iv_i^\top=X^+X$ est le projecteur sur l'espace des lignes de $X$.
+- $\Pi_c=\sum_{i=1}^r u_iu_i^\top=XX^+$ est le projecteur sur l'espace des colonnes de $X$.
+
+Si $\operatorname{rank}(X)=p$, les moindres carrés sont sans biais.
+
+## Variance dans le cas général
+
+::: {.callout-note title="Matrice de variance-covariance des moindres carrés"}
+Sous l'hypothèse homoscédastique $\mathbb{E}(\varepsilon\varepsilon^\top)=\sigma^2I_n$,
+
+$$\operatorname{Cov}(\hat\beta)=\sigma^2X^+(X^+)^\top
+=\sum_{i=1}^r\frac{\sigma^2}{s_i^2}v_iv_i^\top.$$
+:::
+
+::: {.fragment}
+En posant $V=\operatorname{Cov}(\hat\beta)$,
+$$V=\mathbb{E}\left[(\hat\beta-\mathbb{E}\hat\beta)
+(\hat\beta-\mathbb{E}\hat\beta)^\top\right].$$
+:::
+
+::: {.fragment}
+$$=\mathbb{E}\left[(X^+\varepsilon)(X^+\varepsilon)^\top\right]
+=\mathbb{E}\left[X^+\varepsilon\varepsilon^\top(X^+)^\top\right].$$
+:::
+
+::: {.fragment}
+$$=\sigma^2X^+(X^+)^\top
+=\sum_{i=1}^r\frac{\sigma^2}{s_i^2}v_iv_i^\top.$$
+:::
+
+Les petites valeurs singulières produisent donc de grandes variances dans les directions correspondantes.
+
+## Risque de prédiction
+
+::: {.callout-note title="Risque quadratique de prédiction"}
+Sous l'hypothèse homoscédastique,
+
+$$R_{\rm pred}=\mathbb{E}\left[(\hat\beta-\beta^\star)^\top
+(X^\top X)(\hat\beta-\beta^\star)\right]
+=\sigma^2\operatorname{rank}(X).$$
+:::
+
+::: {.fragment}
+Le terme de biais est nul après projection par $X$ et
+$$R_{\rm pred}=\mathbb{E}\left[(X^+\varepsilon)^\top
+(X^\top X)(X^+\varepsilon)\right].$$
+:::
+
+::: {.fragment}
+$$=\operatorname{tr}\left[\mathbb{E}(\varepsilon^\top\Pi_c^\top\Pi_c\varepsilon)\right]
+=\mathbb{E}\left[\operatorname{tr}(\Pi_c\varepsilon\varepsilon^\top\Pi_c^\top)\right].$$
+:::
+
+::: {.fragment}
+$$=\operatorname{tr}\left[\Pi_c\mathbb{E}(\varepsilon\varepsilon^\top)\Pi_c^\top\right]
+=\sigma^2\operatorname{tr}(\Pi_c)=\sigma^2\operatorname{rank}(X).$$
+:::
+
+# Stabilité numérique
+
+## Quelques mots de stabilité numérique
+
+Prenons $\hat\beta=X^+y$ comme solution des moindres carrés. Si l'on observe $y+\Delta$ au lieu de $y$, alors
+
+$$\hat\beta^\Delta=X^+(y+\Delta)
+=\hat\beta+X^+\Delta
+=\hat\beta+\sum_{i=1}^r\frac{1}{s_i}v_i u_i^\top\Delta.$$
+
+Les petites valeurs singulières amplifient donc les erreurs d'observation.
+
+## Exemple de problème de conditionnement
+
+Pour une matrice $X\in\mathbb{R}^{10\times 6}$, une perturbation dans la direction $u_i$ est amplifiée dans la solution par le facteur $1/s_i$.
+
+```{python}
+#| echo: false
+#| warning: false
+import numpy as np
+import matplotlib.pyplot as plt
+
+singular_values = np.array([10, 4, 1.5, 0.5, 0.08, 0.01])
+plt.figure(figsize=(7, 3.5))
+plt.semilogy(range(1, 7), 1 / singular_values, "o-", color="#e67e22")
+plt.xlabel("Indice de la valeur singulière")
+plt.ylabel("Facteur d'amplification $1/s_i$")
+plt.xticks(range(1, 7))
+plt.grid(alpha=0.25)
+plt.tight_layout()
+```
+
+## Références
+
+La référence bibliographique disponible dans le projet est [@escofier_pages2016].
+ -->

@@ -1,11 +1,12 @@
 ---
-title: "Chapitre 1 - Analyse en composantes principales"
+title: "Chapitre 1 -- Analyse en composantes principales"
 subtitle: "ACP"
 author: "Benjamin Charlier, Adrien Mazoyer"
 date: ""
 format:
   revealjs:
     theme: metropolis.scss
+    css: ../table.css
     slide-level: 2
     toc: true
     toc-depth: 1
@@ -18,11 +19,19 @@ format:
     progress: true
     history: false
 
+bibliography: ../reference.bib
 
 knitr:
   opts_chunk:
     prompt: true
 ---
+
+```{r}
+#| label: setup
+#| include: false
+source("../R/functions.R")
+```
+
 # Objectifs
 
 
@@ -910,11 +919,6 @@ temperature <- read.csv(
 )
 
 ```
-<style>
-table {
-  font-size: 0.55em;
-}
-</style>
 
 ```{r}
 #| echo: false
@@ -927,7 +931,7 @@ temperature_affichage <- cbind(
   temperature_sup
 )
 
-knitr::kable(
+print_table(
   temperature_affichage,
   caption = "Températures mensuelles et coordonnées géographiques"
 )
@@ -941,11 +945,6 @@ L’ACP va nous aider à simplifier les données de sorte à
 ## Example classique
 Moyennes des températures mensuelles sur la période 1991-2020 dans 14 villes
 françaises après réduction.
-<style>
-table {
-  font-size: 0.55em;
-}
-</style>
 
 ```{r}
 #| echo: false
@@ -953,7 +952,7 @@ table {
 # Variables actives : températures mensuelles
 temperature_mois_centered_reduced <- scale(temperature_mois, center = TRUE, scale = TRUE)
 
-knitr::kable(
+print_table(
   round(temperature_mois_centered_reduced, 2),
   caption = "Températures mensuelles centrées-réduites"
 )
@@ -1646,6 +1645,73 @@ L'objet retourne contient notamment :
 - `ind$coord`, `ind$contrib`, `ind$cos2` : resultats pour les individus ;
 - `var$coord`, `var$contrib`, `var$cos2` : resultats pour les variables.
 
+
+
+## Autres implementations de l'ACP en R
+
+R propose aussi `prcomp()` et `princomp()`.
+
+### Avec `prcomp()`
+
+```{r}
+#| eval: false
+
+X.acp <- prcomp(
+  X,
+  center = TRUE,
+  scale. = TRUE
+)
+```
+
+Principaux résultats :
+
+- `sdev` : écarts-types des composantes ;
+- `rotation` : axes principaux ;
+- `x` : coordonnées des individus.
+
+Valeurs propres :
+```{r}
+#| eval: false
+
+valeurs_propres <- resultat$sdev^2
+```
+
+## Réaliser une ACP en Python
+
+On recommende l'ACP implémentée dans `scikit-learn`. Voir la [documentation](https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html) 
+
+Centrage et réduction:
+
+```{python}
+#| eval: false
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+```
+
+
+Calculer l'ACP
+
+```{python}
+#| eval: false
+
+from sklearn.decomposition import PCA
+
+pca = PCA(n_components=5)
+resultat = pca.fit_transform(X_scaled)
+```
+
+
+Principaux résultats :
+
+`pca.explained_variance_` : valeurs propres ;
+`pca.explained_variance_ratio_` : parts d'inertie ;
+`pca.components_` : axes principaux ;
+`resultat` : coordonnées des individus.
+
 ## A retenir
+
+<br><br>
 
 L'ACP fournit une representation de dimension reduite qui conserve au mieux l'inertie du nuage des individus. Elle aide a comparer des profils, a resumer les liaisons entre variables et a construire une interpretation informee par les donnees et leur contexte.
