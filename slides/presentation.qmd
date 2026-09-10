@@ -17,6 +17,8 @@ format:
     format:
     width: 1024
     height: 768
+    history: false
+
 
 knitr:
   opts_chunk:

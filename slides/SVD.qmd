@@ -7,14 +7,16 @@ format:
   revealjs:
     theme: metropolis.scss
     css: ../table.css
-    slide-number: true
-    code-line-numbers: false
     width: 1024
+    slide-level: 2
     height: 768
+    slide-number: true
     progress: true
     history: false
     toc: true
     toc-depth: 1
+    code-line-numbers: false
+
 bibliography: ../reference.bib
 ---
 

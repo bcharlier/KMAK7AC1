@@ -7,17 +7,17 @@ format:
   revealjs:
     theme: metropolis.scss
     css: ../table.css
+    width: 1024
+    height: 768
     slide-level: 2
+    slide-number: true
+    progress: true
+    history: false
     toc: true
     toc-depth: 1
-    slide-number: true
     code-line-numbers: false
     eval: true
     echo: true
-    width: 1024
-    height: 768
-    progress: true
-    history: false
 
 bibliography: ../reference.bib
 
