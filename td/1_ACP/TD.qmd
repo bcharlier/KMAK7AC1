@@ -145,9 +145,9 @@ cidre.acp$var$cos2[, 1:3] |>
 
 ainsi que les deux représentations graphiques suivantes.
 
-::: {.columns}
+::: {.panel-tabset}
 
-::: {.column width="50%"}
+### Dim 1-2
 ```{r}
 #| echo: false
 #| out-width: "100%"
@@ -158,9 +158,8 @@ plot(
   axes = c(1, 2),
 )
 ```
-:::
 
-::: {.column width="50%"}
+### Dim 2-3
 ```{r}
 #| echo: false
 #| out-width: "100%"
@@ -171,7 +170,124 @@ plot(
   axes = c(2, 3),
 )
 ```
-:::
+
+### Interactif 3D
+```{r}
+#| echo: false
+#| out-width: "100%"
+
+suppressPackageStartupMessages(library(plotly))
+
+variables <- as.data.frame(cidre.acp$var$coord[, 1:3])
+variables$nom <- rownames(variables)
+
+theta <- seq(0, 2 * pi, length.out = 80)
+phi <- seq(0, pi, length.out = 40)
+sphere <- expand.grid(theta = theta, phi = phi)
+sphere$x <- cos(sphere$theta) * sin(sphere$phi)
+sphere$y <- sin(sphere$theta) * sin(sphere$phi)
+sphere$z <- cos(sphere$phi)
+
+segments <- data.frame(
+  x = as.vector(rbind(rep(0, nrow(variables)), variables$Dim.1, NA)),
+  y = as.vector(rbind(rep(0, nrow(variables)), variables$Dim.2, NA)),
+  z = as.vector(rbind(rep(0, nrow(variables)), variables$Dim.3, NA))
+)
+
+plot_ly() |>
+  add_surface(
+    x = matrix(sphere$x, nrow = length(theta), ncol = length(phi)),
+    y = matrix(sphere$y, nrow = length(theta), ncol = length(phi)),
+    z = matrix(sphere$z, nrow = length(theta), ncol = length(phi)),
+    opacity = 0.15,
+    showscale = FALSE,
+    colorscale = list(c(0, "lightgray"), c(1, "lightgray")),
+    name = "Sphère unité",
+    hoverinfo = "none"
+  ) |>
+  add_trace(
+    data = segments,
+    x = ~x,
+    y = ~y,
+    z = ~z,
+    type = "scatter3d",
+    mode = "lines",
+    line = list(color = "#2e74b5", width = 3),
+    showlegend = FALSE,
+    hoverinfo = "none"
+  ) |>
+  add_trace(
+    data = variables,
+    x = ~Dim.1,
+    y = ~Dim.2,
+    z = ~Dim.3,
+    type = "scatter3d",
+    mode = "markers+text",
+    text = ~nom,
+    textposition = "top center",
+    marker = list(size = 4, color = "#d95f02"),
+    hovertemplate = paste(
+      "%{text}<br>",
+      "Axe 1: %{x:.2f}<br>",
+      "Axe 2: %{y:.2f}<br>",
+      "Axe 3: %{z:.2f}<extra></extra>"
+    ),
+    name = "Variables"
+  ) |>
+  layout(
+    scene = list(
+      xaxis = list(title = "Axe 1", range = c(-1.1, 1.1)),
+      yaxis = list(title = "Axe 2", range = c(-1.1, 1.1)),
+      zaxis = list(title = "Axe 3", range = c(-1.1, 1.1)),
+      camera = list(projection = list(type = "orthographic")),
+      aspectmode = "cube"
+    ),
+    updatemenus = list(
+      list(
+        type = "buttons",
+        direction = "right",
+        x = 0.05,
+        y = 1.12,
+        buttons = list(
+          list(
+            label = "XY",
+            method = "relayout",
+            args = list(list(
+              scene.camera = list(
+                eye = list(x = 0, y = 0, z = 2.5),
+                up = list(x = 0, y = 1, z = 0),
+                projection = list(type = "orthographic")
+              )
+            ))
+          ),
+          list(
+            label = "YZ",
+            method = "relayout",
+            args = list(list(
+              scene.camera = list(
+                eye = list(x = 2.5, y = 0, z = 0),
+                up = list(x = 0, y = 0, z = 1),
+                projection = list(type = "orthographic")
+              )
+            ))
+          ),
+          list(
+            label = "XZ",
+            method = "relayout",
+            args = list(list(
+              scene.camera = list(
+                eye = list(x = 0, y = 2.5, z = 0),
+                up = list(x = 0, y = 0, z = 1),
+                projection = list(type = "orthographic")
+              )
+            ))
+          )
+        )
+      )
+    ),
+    margin = list(l = 55, r = 20, b = 55, t = 20)
+  )
+```
 
 :::
 
@@ -209,15 +325,14 @@ cidre.acp$ind$cos2[, 1:3] |>
 :::
 
 
-ainsi que les deux représentations graphiques suivantes.
+ainsi que les représentations graphiques suivantes.
 
-::: {.columns}
+::: {.panel-tabset}
 
-::: {.column width="50%"}
+### Dim 1-2
 ```{r}
 #| echo: false
 #| out-width: "100%"
-
 
 plot(
   cidre.acp,
@@ -225,9 +340,8 @@ plot(
   axes = c(1, 2),
 )
 ```
-:::
 
-::: {.column width="50%"}
+### Dim 2-3
 ```{r}
 #| echo: false
 #| out-width: "100%"
@@ -238,13 +352,95 @@ plot(
   axes = c(2, 3),
 )
 ```
-:::
+
+### Interactif 3D
+```{r}
+#| echo: false
+#| out-width: "100%"
+
+suppressPackageStartupMessages(library(plotly))
+
+individus <- as.data.frame(cidre.acp$ind$coord[, 1:3])
+individus$nom <- rownames(individus)
+
+plot_ly(
+  data = individus,
+  x = ~Dim.1,
+  y = ~Dim.2,
+  z = ~Dim.3,
+  type = "scatter3d",
+  mode = "markers+text",
+  text = ~nom,
+  textposition = "top center",
+  marker = list(size = 7, color = "#2e74b5"),
+  hovertemplate = paste(
+    "%{text}<br>",
+    "Axe 1: %{x:.2f}<br>",
+    "Axe 2: %{y:.2f}<br>",
+    "Axe 3: %{z:.2f}<extra></extra>"
+  ),
+  name = "Individus"
+) |>
+  layout(
+    scene = list(
+      xaxis = list(title = "Axe 1"),
+      yaxis = list(title = "Axe 2"),
+      zaxis = list(title = "Axe 3"),
+      camera = list(projection = list(type = "orthographic")),
+      aspectmode = "cube"
+    ),
+    updatemenus = list(
+      list(
+        type = "buttons",
+        direction = "right",
+        x = 0.05,
+        y = 1.12,
+        buttons = list(
+          list(
+            label = "XY",
+            method = "relayout",
+            args = list(list(
+              scene.camera = list(
+                eye = list(x = 0, y = 0, z = 2.5),
+                up = list(x = 0, y = 1, z = 0),
+                projection = list(type = "orthographic")
+              )
+            ))
+          ),
+          list(
+            label = "YZ",
+            method = "relayout",
+            args = list(list(
+              scene.camera = list(
+                eye = list(x = 2.5, y = 0, z = 0),
+                up = list(x = 0, y = 0, z = 1),
+                projection = list(type = "orthographic")
+              )
+            ))
+          ),
+          list(
+            label = "XZ",
+            method = "relayout",
+            args = list(list(
+              scene.camera = list(
+                eye = list(x = 0, y = 2.5, z = 0),
+                up = list(x = 0, y = 0, z = 1),
+                projection = list(type = "orthographic")
+              )
+            ))
+          )
+        )
+      )
+    ),
+    margin = list(l = 55, r = 20, b = 55, t = 20)
+  )
+```
 
 :::
   
-  a. Quels individus seraient représentatifs de profils opposés par rapport au premier axe principal ?
+  a. Les individus sont ils bien représentés ?
   
-  b. Même question pour les deux autres axes.
+  b. Quels individus seraient représentatifs de profils opposés par rapport au premier axe principal ? Même question pour les deux autres axes.
   
   c. Proposer des profils de cidres, en précisant leurs caractéristiques principales.
 
@@ -274,9 +470,40 @@ envie de conserver ?
 
 ```{r}
 deca.acp = PCA(decastar[, 1:11], quanti.sup= 11 )
+```
+
+:::{.panel-tabset}
+
+### Tableau
+
+```{r}
+#| echo: false
+
+
 deca.acp$eig |>
   print_table()
 ```
+
+
+### Valeur propres
+
+```{r}
+#| echo: false
+plot(deca.acp$eig[,1])
+```
+
+### Inertie cumulée
+
+```{r}
+#| echo: false
+plot(deca.acp$eig[,3])
+```
+
+
+
+
+:::
+
 
 4. Commenter les résultats numériques et graphiques ci-dessous en terme d’individus et de variables (suivre le
 modèle de l’exercice précédent)
@@ -295,14 +522,124 @@ deca.acp$ind$contrib[, 1:4] |>
 
 ::: {.column}
 
+
 ```{r}
-deca.acp$var$contrib[, 1:4] |>
+deca.acp$ind$cos2[, 1:4] |>
   print_table()
 ```
-
 :::
 
 :::
+
+::: {.panel-tabset}
+
+### Dim 1-2
+
+```{r}
+#| echo: false
+#| out-width: "100%"
+
+
+plot(
+  deca.acp,
+  choix = "ind",
+  axes = c(1, 2),
+  invisible = "quanti.sup",
+)
+```
+
+
+### Dim 1-2 (QLT)
+
+```{r}
+#| echo: false
+#| out-width: "100%"
+
+ind_dim12 <- data.frame(
+  Dim.1 = deca.acp$ind$coord[, 1],
+  Dim.2 = deca.acp$ind$coord[, 2],
+  nom = rownames(deca.acp$ind$coord),
+  cos2 = rowSums(deca.acp$ind$cos2[, 1:2])
+)
+
+ggplot2::ggplot(ind_dim12, ggplot2::aes(Dim.1, Dim.2, color = cos2)) +
+  ggplot2::geom_hline(yintercept = 0, color = "gray80") +
+  ggplot2::geom_vline(xintercept = 0, color = "gray80") +
+  ggplot2::geom_point(size = 3) +
+  ggplot2::geom_text(ggplot2::aes(label = nom), vjust = -0.8, show.legend = FALSE) +
+  ggplot2::scale_color_gradient2(
+    low = "#d73027",
+    mid = "#fee08b",
+    high = "#1a9850",
+    midpoint = 0.5,
+    limits = c(0, 1),
+    name = "cos2 cumulé"
+  ) +
+  ggplot2::labs(
+    title = "Individus - cos2 cumulé sur les dimensions 1-2",
+    x = "Dimension 1",
+    y = "Dimension 2"
+  ) +
+  ggplot2::coord_equal() +
+  ggplot2::theme_minimal()
+```
+
+
+### Dim 3-4
+
+```{r}
+#| echo: false
+#| out-width: "100%"
+
+
+plot(
+  deca.acp,
+  choix = "ind",
+  axes = c(3, 4),
+  invisible = "quanti.sup",
+)
+```
+
+
+### Dim 3-4 (QLT)
+
+```{r}
+#| echo: false
+#| out-width: "100%"
+
+ind_dim12 <- data.frame(
+  Dim.3 = deca.acp$ind$coord[, 3],
+  Dim.4 = deca.acp$ind$coord[, 4],
+  nom = rownames(deca.acp$ind$coord),
+  cos2 = rowSums(deca.acp$ind$cos2[, 3:4])
+)
+
+ggplot2::ggplot(ind_dim12, ggplot2::aes(Dim.3, Dim.4, color = cos2)) +
+  ggplot2::geom_hline(yintercept = 0, color = "gray80") +
+  ggplot2::geom_vline(xintercept = 0, color = "gray80") +
+  ggplot2::geom_point(size = 3) +
+  ggplot2::geom_text(ggplot2::aes(label = nom), vjust = -0.8, show.legend = FALSE) +
+  ggplot2::scale_color_gradient2(
+    low = "#d73027",
+    mid = "#fee08b",
+    high = "#1a9850",
+    midpoint = 0.5,
+    limits = c(0, 1),
+    name = "cos2 cumulé"
+  ) +
+  ggplot2::labs(
+    title = "Individus - cos2 cumulé sur les dimensions 3-4",
+    x = "Dimension 3",
+    y = "Dimension 4"
+  ) +
+  ggplot2::coord_equal() +
+  ggplot2::theme_minimal()
+```
+
+
+
+:::
+
 
 
 
@@ -311,7 +648,7 @@ deca.acp$var$contrib[, 1:4] |>
 ::: {.column}
 
 ```{r}
-deca.acp$ind$cos2[, 1:4] |>
+deca.acp$var$contrib[, 1:4] |>
   print_table()
 ```
 
@@ -328,48 +665,13 @@ deca.acp$var$cos2[, 1:4] |>
 
 :::
 
-::: {.columns}
-
-::: {.column}
-
-```{r}
-#| echo: false
-#| out-width: "100%"
 
 
-plot(
-  deca.acp,
-  choix = "ind",
-  axes = c(1, 2),
-  invisible = "quanti.sup",
-)
-```
 
-:::
+::: {.panel-tabset}
 
-::: {.column}
+### Dim 1-2
 
-```{r}
-#| echo: false
-#| out-width: "100%"
-
-
-plot(
-  deca.acp,
-  choix = "ind",
-  axes = c(3, 4),
-  invisible = "quanti.sup",
-)
-```
-
-:::
-
-:::
-
-
-::: {.columns}
-
-::: {.column}
 
 ```{r}
 #| echo: false
@@ -383,9 +685,8 @@ plot(
 )
 ```
 
-:::
 
-::: {.column}
+### Dim 3-4
 
 ```{r}
 #| echo: false
@@ -399,16 +700,120 @@ plot(
 )
 ```
 
-:::
+
+### Interactive plot
+
+```{r}
+#| echo: false
+#| out-width: "100%"
+
+suppressPackageStartupMessages(library(plotly))
+
+variables <- as.data.frame(deca.acp$var$coord[, 1:3])
+variables$nom <- rownames(variables)
+
+segments <- data.frame(
+  x = as.vector(rbind(rep(0, nrow(variables)), variables$Dim.1, NA)),
+  y = as.vector(rbind(rep(0, nrow(variables)), variables$Dim.2, NA)),
+  z = as.vector(rbind(rep(0, nrow(variables)), variables$Dim.3, NA))
+)
+
+plot_ly() |>
+  add_trace(
+    data = segments,
+    x = ~x,
+    y = ~y,
+    z = ~z,
+    type = "scatter3d",
+    mode = "lines",
+    line = list(color = "#2e74b5", width = 3),
+    showlegend = FALSE,
+    hoverinfo = "none"
+  ) |>
+  add_trace(
+    data = variables,
+    x = ~Dim.1,
+    y = ~Dim.2,
+    z = ~Dim.3,
+    type = "scatter3d",
+    mode = "markers+text",
+    text = ~nom,
+    textposition = "top center",
+    marker = list(size = 4, color = "#d95f02"),
+    hovertemplate = paste(
+      "%{text}<br>",
+      "Axe 1: %{x:.2f}<br>",
+      "Axe 2: %{y:.2f}<br>",
+      "Axe 3: %{z:.2f}<extra></extra>"
+    ),
+    name = "Variables"
+  ) |>
+  layout(
+    scene = list(
+      xaxis = list(title = "Axe 1"),
+      yaxis = list(title = "Axe 2"),
+      zaxis = list(title = "Axe 3"),
+      camera = list(projection = list(type = "orthographic")),
+      aspectmode = "cube"
+    ),
+    updatemenus = list(
+      list(
+        type = "buttons",
+        direction = "right",
+        x = 0.05,
+        y = 1.12,
+        buttons = list(
+          list(
+            label = "XY",
+            method = "relayout",
+            args = list(list(
+              scene.camera = list(
+                eye = list(x = 0, y = 0, z = 2.5),
+                up = list(x = 0, y = 1, z = 0),
+                projection = list(type = "orthographic")
+              )
+            ))
+          ),
+          list(
+            label = "YZ",
+            method = "relayout",
+            args = list(list(
+              scene.camera = list(
+                eye = list(x = 2.5, y = 0, z = 0),
+                up = list(x = 0, y = 0, z = 1),
+                projection = list(type = "orthographic")
+              )
+            ))
+          ),
+          list(
+            label = "XZ",
+            method = "relayout",
+            args = list(list(
+              scene.camera = list(
+                eye = list(x = 0, y = 2.5, z = 0),
+                up = list(x = 0, y = 0, z = 1),
+                projection = list(type = "orthographic")
+              )
+            ))
+          )
+        )
+      )
+    ),
+    margin = list(l = 55, r = 20, b = 55, t = 20)
+  )
+```
+
 
 :::
 
 5. On se propose à présent de mettre en parallèle le classement des athlètes avec les résultats obtenus. Commenter les graphiques ci-dessous.
 
 
-::: {.columns}
+::: {.panel-tabset}
 
-::: {.column}
+
+### Dim 1-2
+
 
 ```{r}
 #| echo: false
@@ -421,9 +826,8 @@ plot(
 )
 ```
 
-:::
 
-::: {.column}
+### Dim 3-4
 
 ```{r}
 #| echo: false
@@ -436,6 +840,150 @@ plot(
 )
 ```
 
-:::
+### Interactive plot
+
+```{r}
+#| echo: false
+#| out-width: "100%"
+
+suppressPackageStartupMessages(library(plotly))
+
+variables <- as.data.frame(deca.acp$var$coord[, 1:3])
+variables$nom <- rownames(variables)
+
+rang <- data.frame(
+  Dim.1 = deca.acp$quanti.sup$coord["Rank", "Dim.1"],
+  Dim.2 = deca.acp$quanti.sup$coord["Rank", "Dim.2"],
+  Dim.3 = deca.acp$quanti.sup$coord["Rank", "Dim.3"],
+  nom = "Rang"
+)
+
+rang_segment <- data.frame(
+  x = c(0, rang$Dim.1, NA),
+  y = c(0, rang$Dim.2, NA),
+  z = c(0, rang$Dim.3, NA)
+)
+
+segments <- data.frame(
+  x = as.vector(rbind(rep(0, nrow(variables)), variables$Dim.1, NA)),
+  y = as.vector(rbind(rep(0, nrow(variables)), variables$Dim.2, NA)),
+  z = as.vector(rbind(rep(0, nrow(variables)), variables$Dim.3, NA))
+)
+
+plot_ly() |>
+  add_trace(
+    data = segments,
+    x = ~x,
+    y = ~y,
+    z = ~z,
+    type = "scatter3d",
+    mode = "lines",
+    line = list(color = "#2e74b5", width = 3),
+    showlegend = FALSE,
+    hoverinfo = "none"
+  ) |>
+  add_trace(
+    data = variables,
+    x = ~Dim.1,
+    y = ~Dim.2,
+    z = ~Dim.3,
+    type = "scatter3d",
+    mode = "markers+text",
+    text = ~nom,
+    textposition = "top center",
+    marker = list(size = 4, color = "#d95f02"),
+    hovertemplate = paste(
+      "%{text}<br>",
+      "Axe 1: %{x:.2f}<br>",
+      "Axe 2: %{y:.2f}<br>",
+      "Axe 3: %{z:.2f}<extra></extra>"
+    ),
+    name = "Variables"
+  ) |>
+  add_trace(
+    data = rang_segment,
+    x = ~x,
+    y = ~y,
+    z = ~z,
+    type = "scatter3d",
+    mode = "lines",
+    line = list(color = "#1b9e77", width = 5),
+    showlegend = FALSE,
+    hoverinfo = "none"
+  ) |>
+  add_trace(
+    data = rang,
+    x = ~Dim.1,
+    y = ~Dim.2,
+    z = ~Dim.3,
+    type = "scatter3d",
+    mode = "lines+markers+text",
+    text = ~nom,
+    textposition = "top center",
+    line = list(color = "#1b9e77", width = 5),
+    marker = list(size = 4, color = "#1b9e77"),
+    hovertemplate = paste(
+      "%{text}<br>",
+      "Axe 1: %{x:.2f}<br>",
+      "Axe 2: %{y:.2f}<br>",
+      "Axe 3: %{z:.2f}<extra></extra>"
+    ),
+    name = "Variable supplémentaire"
+  ) |>
+  layout(
+    scene = list(
+      xaxis = list(title = "Axe 1"),
+      yaxis = list(title = "Axe 2"),
+      zaxis = list(title = "Axe 3"),
+      camera = list(projection = list(type = "orthographic")),
+      aspectmode = "cube"
+    ),
+    updatemenus = list(
+      list(
+        type = "buttons",
+        direction = "right",
+        x = 0.05,
+        y = 1.12,
+        buttons = list(
+          list(
+            label = "XY",
+            method = "relayout",
+            args = list(list(
+              scene.camera = list(
+                eye = list(x = 0, y = 0, z = 2.5),
+                up = list(x = 0, y = 1, z = 0),
+                projection = list(type = "orthographic")
+              )
+            ))
+          ),
+          list(
+            label = "YZ",
+            method = "relayout",
+            args = list(list(
+              scene.camera = list(
+                eye = list(x = 2.5, y = 0, z = 0),
+                up = list(x = 0, y = 0, z = 1),
+                projection = list(type = "orthographic")
+              )
+            ))
+          ),
+          list(
+            label = "XZ",
+            method = "relayout",
+            args = list(list(
+              scene.camera = list(
+                eye = list(x = 0, y = 2.5, z = 0),
+                up = list(x = 0, y = 0, z = 1),
+                projection = list(type = "orthographic")
+              )
+            ))
+          )
+        )
+      )
+    ),
+    margin = list(l = 55, r = 20, b = 55, t = 20)
+  )
+```
 
 :::
+
