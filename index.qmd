@@ -42,9 +42,9 @@ Compétences acquises
 |---|---|---|
 | 07/09 | CM/TD | ACP |
 | 09/09 | CM/TD | ACP |
-| 21/09 | CM/TD | ACP |
+| 10/09 | CM/TD | ACP |
+| 21/09 | CM/TD | ACP/ACM |
 | 23/09 | CM/TD | ACM |
-| ??/09 | CM/TD | ACM |
 | 28/09 | CM/TD | ACM |
 | ??/09 | CM/TD | AFM |
 | 30/09 | CM/TD | AFM |

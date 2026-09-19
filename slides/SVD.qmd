@@ -1,12 +1,12 @@
 ---
 title: "Décomposition en valeurs singulières"
-subtitle: "Chapitre 0 -- Décomposition en valeurs singulières"
+subtitle: "SVD"
 author: "B. Charlier, N. Verzelen, J. Salmon"
 date: ""
 format:
   revealjs:
     theme: metropolis.scss
-    css: ../table.css
+    css: table.css
     width: 1024
     slide-level: 2
     height: 768

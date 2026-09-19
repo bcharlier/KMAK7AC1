@@ -47,3 +47,34 @@
 .table > tbody > tr:hover > * {
   background: #dbeafe;
 }
+
+/* Shared centering for data tables to keep a uniform look across slides */
+.data-table table {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  width: fit-content !important;
+  max-width: 100%;
+  border-collapse: collapse;
+  text-align: center !important;
+  font-size: 0.85em;
+}
+
+.data-table th,
+.data-table td {
+  text-align: center !important;
+  padding: 0.25em 0.5em;
+  vertical-align: middle;
+}
+
+.data-table thead th {
+  vertical-align: middle;
+  text-align: center !important;
+}
+
+.data-table thead th[colspan] {
+  text-align: center !important;
+}
+
+.data-table tbody td:first-child {
+  font-weight: 600;
+}

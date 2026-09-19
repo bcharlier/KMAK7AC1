@@ -10,12 +10,12 @@ print_table <- function(data, digits = 3, caption = "") {
     )
   }
 
-  align <- c("l", rep("c", ncol(data)))
+  align <- rep("c", ncol(data))
   knitr::kable(
     data,
     format = "html",
     align = align,
     caption = caption,
-    table.attr = 'class="table"'
+    table.attr = 'class="table" style="width: auto; max-width: 100%; margin: 0 auto; table-layout: auto;"'
   )
 }

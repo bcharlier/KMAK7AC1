@@ -1,0 +1,748 @@
+---
+title: "Analyse Factorielle des Correspondences"
+subtitle: "AFC"
+author: "Benjamin Charlier,"
+date: ""
+format:
+  revealjs:
+    theme: metropolis.scss
+    css: table.css
+    width: 1024
+    height: 768
+    slide-level: 2
+    slide-number: true
+    progress: true
+    history: false
+    toc: true
+    toc-depth: 1
+    code-line-numbers: false
+    eval: true
+    echo: true
+
+bibliography: ../reference.bib
+
+knitr:
+  opts_chunk:
+    prompt: true
+---
+
+```{r}
+#| label: setup
+#| include: false
+source("../R/functions.R")
+```
+
+# Tableaux de contingence bivariés
+
+## Tableau de contingence
+
+Un tableau de contingence est une matrice $K \in \mathbb{R}^{q \times m}$ obtenue en croisant deux variables qualitatives $X_1$ et $X_2$, ayant respectivement $q$ et $m$ modalités, observées sur un échantillon de $n$ individus.
+
+::: {.panel-tabset}
+
+### Tableau
+
+::: {.data-table style="font-size: .55em;"}
+|     | $1$ | $\cdots$ | $s$ | $\cdots$ | $m$ | Total |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| $1$ | $n_{11}$ | $\cdots$ | $n_{1s}$ | $\cdots$ | $n_{1m}$ | $n_{1.}$ |
+| $\vdots$ | $\vdots$ |  | $\vdots$ |  | $\vdots$ | $\vdots$ |
+| $i$ | $n_{i1}$ | $\cdots$ | $n_{is}$ | $\cdots$ | $n_{im}$ | $n_{i.}$ |
+| $\vdots$ | $\vdots$ |  | $\vdots$ |  | $\vdots$ | $\vdots$ |
+| $q$ | $n_{q1}$ | $\cdots$ | $n_{qs}$ | $\cdots$ | $n_{qm}$ | $n_{q.}$ |
+| Total | $n_{.1}$ | $\cdots$ | $n_{.s}$ | $\cdots$ | $n_{.m}$ | $n_{..}=n$ |
+:::
+
+On note :
+
+- $n_{is}$ le nombre d'individus possédant les modalités $i$ et $s$ ;
+- $n_{i.}=\sum_{s=1}^{m} n_{is}$ le nombre d'individus possédant la modalité $i$ ;
+- $n_{.s}=\sum_{i=1}^{q} n_{is}$ le nombre d'individus possédant la modalité $s$ ;
+- $n_{..}=\sum_{i=1}^{q}\sum_{s=1}^{m} n_{is}=n$ le nombre total d'individus.
+
+### Exemple 
+
+```{r}
+library(FactoMineR)
+data(HairEyeColor)
+
+K <- HairEyeColor[,,"Female"]
+K
+sum(K)
+```
+
+:::
+
+## Tableau des fréquences
+
+En divisant par $n$ le tableau $K$, on a le tableau des fréquences
+$F=(f_{is})_{1\leq i\leq q,\,1\leq s\leq m}$:
+
+::: {.panel-tabset}
+
+### Tableau
+
+::: {.data-table style="font-size: .55em;"}
+|     | $1$ | $\cdots$ | $s$ | $\cdots$ | $m$ | Total |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| $1$ | $f_{11}$ | $\cdots$ | $f_{1s}$ | $\cdots$ | $f_{1m}$ | $f_{1.}$ |
+| $\vdots$ | $\vdots$ |  | $\vdots$ |  | $\vdots$ | $\vdots$ |
+| $i$ | $f_{i1}$ | $\cdots$ | $f_{is}$ | $\cdots$ | $f_{im}$ | $f_{i.}$ |
+| $\vdots$ | $\vdots$ |  | $\vdots$ |  | $\vdots$ | $\vdots$ |
+| $q$ | $f_{q1}$ | $\cdots$ | $f_{qs}$ | $\cdots$ | $f_{qm}$ | $f_{q.}$ |
+| Total | $f_{.1}$ | $\cdots$ | $f_{.s}$ | $\cdots$ | $f_{.m}$ | $f_{..}=1$ |
+:::
+
+- Les fréquences et leurs marginales sont $f_{is}=\frac{n_{is}}{n}$, $f_{i.}=\sum_{s=1}^{m}f_{is}=\frac{n_{i.}}{n}$, $f_{.s}=\sum_{i=1}^{q}f_{is}=\frac{n_{.s}}{n}$.
+
+- On note ensuite les vecteurs des poids des lignes et des colonnes :
+
+$$
+r=(f_{1.},\ldots,f_{i.},\ldots,f_{q.})^\mathsf{T},
+\qquad
+c=(f_{.1},\ldots,f_{.s},\ldots,f_{.m})^\mathsf{T}.
+$$
+
+Les matrices diagonales associées sont
+$D_r=\operatorname{diag}(r)\in\mathbb{R}^{q\times q}$ et $D_c=\operatorname{diag}(c)\in\mathbb{R}^{m\times m}$.
+
+### Exemple 
+
+```{r}
+F <- K/sum(K)
+round(F*100,digit=2)
+```
+
+
+::: {.columns}
+
+::: {.column}
+
+```{r}
+r <- rowSums(F)
+round(r,digit=2)
+barplot(r)
+```
+
+
+:::
+
+::: {.column}
+
+
+```{r}
+c <- colSums(F)
+round(c,digit=2)
+barplot(c)
+```
+
+:::
+
+:::
+
+:::
+
+## Tableau des profils lignes (conditionnelle en ligne)
+
+Le tableau des profils lignes $L$ est obtenu en divisant chaque ligne $i$ de $F$ par son poids $f_{i.}$.
+
+:::{.panel-tabset}
+
+### Tableau
+
+::: {.data-table style="font-size: .55em;"}
+|     | $1$ | $\cdots$ | $s$ | $\cdots$ | $m$ |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| $1$ | $f_{11}/f_{1.}$ | $\cdots$ | $f_{1s}/f_{1.}$ | $\cdots$ | $f_{1m}/f_{1.}$ |
+| $\vdots$ | $\vdots$ |  | $\vdots$ |  | $\vdots$ |
+| $i$ | $f_{i1}/f_{i.}$ | $\cdots$ | $f_{is}/f_{i.}$ | $\cdots$ | $f_{im}/f_{i.}$ |
+| $\vdots$ | $\vdots$ |  | $\vdots$ |  | $\vdots$ |
+| $q$ | $f_{q1}/f_{q.}$ | $\cdots$ | $f_{qs}/f_{q.}$ | $\cdots$ | $f_{qm}/f_{q.}$ |
+:::
+
+On note $\ell_{is}=\tfrac{f_{is}}{f_{i.}}=\tfrac{n_{is}}{n_{i.}}$ le terme général de $L =D_r^{-1}F$.
+
+- **Métrique des poids :** les profils lignes forment un nuage de $q$ vecteurs de $\mathbb{R}^m$, pondérés par $D_r\in\mathbb{R}^{q\times q}$. Le profil ligne moyen (centre de gravité du nuage) est $c=\sum_{i=1}^{q} f_{i.} L_{i:} \in \mathbb{R}^m$ (poids des colonnes)
+
+  On peut alors centrer la matrice des profils lignes,
+
+  $$
+  L^c = \left(\tfrac{f_{is}}{f_{i.}}-f_{.s}\right)_{i,s}^{}
+      = \left(\tfrac{f_{is}-f_{i.}f_{.s}}{f_{i.}}\right)_{i,s}^{}
+      = D_r^{-1}\left(F-r c^\top\right).
+  $$
+
+- **Distance du $\chi^2$:** métrique euclidienne avec poids $D_c^{-1} \in \mathbb{R}^{m\times m}$
+
+$$
+d(L_{i:},L_{i':})
+=(L_{i:}-L_{i':})^\mathsf{T}D_c^{-1}(L_{i:}-L_{i':})
+=\sum_{s=1}^{m}\frac{1}{f_{.s}}
+\left(\frac{f_{is}}{f_{i.}}-\frac{f_{i's}}{f_{i'.}}\right)^2.
+$$
+
+
+### Exemple
+
+```{r}
+# Matrice des profils-lignes L (distributions conditionnelles en ligne)
+
+L <- sweep(F,1,STATS=r,FUN="/")
+round(L,digits=2)
+```
+
+:::
+
+## Tableau des profils colonnes
+
+Le tableau des profils colonnes $C$ est obtenu en divisant chaque colonne $s$ de $F$ par son poids $f_{.s}$.
+
+:::{.panel-tabset}
+
+### Tableau
+
+::: {.data-table style="font-size: .55em;"}
+|     | $1$ | $\cdots$ | $s$ | $\cdots$ | $m$ |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| $1$ | $f_{11}/f_{.1}$ | $\cdots$ | $f_{1s}/f_{.s}$ | $\cdots$ | $f_{1m}/f_{.m}$ |
+| $\vdots$ | $\vdots$ |  | $\vdots$ |  | $\vdots$ |
+| $i$ | $f_{i1}/f_{.1}$ | $\cdots$ | $f_{is}/f_{.s}$ | $\cdots$ | $f_{im}/f_{.m}$ |
+| $\vdots$ | $\vdots$ |  | $\vdots$ |  | $\vdots$ |
+| $q$ | $f_{q1}/f_{.1}$ | $\cdots$ | $f_{qs}/f_{.s}$ | $\cdots$ | $f_{qm}/f_{.m}$ |
+:::
+
+On note $c_{is}=\tfrac{f_{is}}{f_{.s}}=\tfrac{n_{is}}{n_{.s}}$ le terme général de $C=FD_c^{-1}$.
+
+- **Métrique des poids :** les profils colonnes forment un nuage de $m$ vecteurs de $\mathbb{R}^q$, pondérés par les $D_c\in\mathbb{R}^{m\times m}$. Le profil colonne moyen est $r=\sum_{s=1}^{m} f_{.s}C_{:s} \in\mathbb{R}^q$ (poids des lignes)
+
+  On peut alors centrer la matrice des profils colonnes:
+  $$
+  C^c = \left(\frac{f_{is}}{f_{.s}}-f_{i.}\right)_{i,s}^{}
+      = \left(\frac{f_{is}-f_{i.}f_{.s}}{f_{.s}}\right)_{i,s}^{}
+      = \left(F-r c^\top\right)D_c^{-1}.
+  $$
+
+- **Distance du $\chi^2$:** métrique euclidienne avec poids $D_r^{-1}\in \mathbb{R}^{q\times q}.$
+$$
+d(C_{:s},C_{:s'})
+=(C_{:s}-C_{:s'})^\mathsf{T}D_r^{-1}(C_{:s}-C_{:s'})
+=\sum_{i=1}^{q}\frac{1}{f_{i.}}
+\left(\frac{f_{is}}{f_{.s}}-\frac{f_{is'}}{f_{.s'}}\right)^2.
+$$
+
+### Exemple
+
+```{r}
+# Matrice des profils-colonnes C (distributions conditionnelles en colonne)
+
+C <- sweep(F,2,STATS=c,FUN="/")
+round(C,digits=2)
+```
+
+:::
+
+
+## Liaison entre lignes et colonnes
+
+En cas d'indépendance entre $X_1$ et $X_2$, on a :
+
+:::{.panel-tabset}
+
+### Taux de liaison
+
+$$
+f_{is}=f_{i.}f_{.s}
+\quad\Longleftrightarrow\quad
+n_{is}=\frac{n_{i.}n_{.s}}{n}.
+$$
+
+avec les fréquences théoriques $f_{i.}f_{.s}$  et les effectifs théoriques
+$\frac{n_{i.}n_{.s}}{n}$.
+
+- On définit une mesure locale de liaison entre une modalité $i$ de $X_1$ et une modalité $s$ de $X_2$ :
+
+  - si $f_{is}\simeq f_{i.}f_{.s}$, il y a indépendance entre $i$ et $s$ ;
+  - si $f_{is}>f_{i.}f_{.s}$, les modalités $i$ et $s$ s'attirent, car
+    $\tfrac{f_{is}}{f_{i.}}>f_{.s}$ et
+    $\tfrac{f_{is}}{f_{.s}}>f_{i.}$
+  - si $f_{is}<f_{i.}f_{.s}$, les modalités $i$ et $s$ se repoussent, car
+    $\tfrac{f_{is}}{f_{i.}}<f_{.s}$ et
+    $\tfrac{f_{is}}{f_{.s}}<f_{i.}$
+
+- On a la matrice des écarts à l'indépendance  (mesure avec le taux de liaison):
+$$
+Z = \left(\tfrac{f_{is}-f_{i.}f_{.s}}{f_{i.}f_{.s}}\right)_{is} = D_r^{-1} (F - rc^\top)D_c^{-1}
+$$
+
+
+### Exemple
+
+Matrice des taux de liaisons :
+```{r}
+Z <- (F-r%*%t(c))/(r%*%t(c))
+round(Z,digit=2)
+```
+
+Sur cet exemple :
+
+- La fréquence des bruns aux yeux marron est 78% au-dessus de ce qu’elle serait s’il y avait indépendance entre les deux variables couleurs des yeux et couleur des cheveux. De plus ces deux modalités s’attirent (le vérifier sur les tableaux de profils ligne et colonne).
+
+- La fréquence des blonds aux yeux marron est 87% au-dessous de ce qu’elle serait s’il y avait indépendance entre les deux variables. En plus ces deux modalités se repoussent (le vérifier sur les tableaux de profils ligne et colonne).
+
+:::
+
+## Inertie et liaison entre variables
+
+:::{.panel-tabset}
+
+### Inertie et liaison
+
+Une mesure globale de liaison entre $X_1$ et $X_2$ est
+$$
+\chi^2
+=\sum_{i=1}^{q}\sum_{s=1}^{m}
+\frac{\left(n_{is}-\tfrac{n_{i.}n_{.s}}{n}\right)^2}
+{\tfrac{n_{i.}n_{.s}}{n}} 
+=n\sum_{i=1}^{q}\sum_{s=1}^{m}
+\underbrace{\frac{\left(f_{is}-f_{i.}f_{.s}\right)^2}
+{f_{i.}f_{.s}}}_{=\Phi^2}
+$$
+  
+- En cas d'indépendance, on a $\chi^2=\Phi^2=0$.
+- En pondérant chaque taux de liaison $t_{is}$ par $f_{i.}f_{.s}$, on obtient $\bar{t}=\sum_i\sum_s f_{i.}f_{.s}t_{is}=0$, et $\operatorname{Var}(t)=\sum_{i,s}f_{i.}f_{.s}t_{is}^2 =\frac{\chi^2}{n}=\Phi^2$.
+
+
+::: {.callout-note}
+
+### Théorème
+
+On a
+$$
+\tfrac{1}{n}\chi^2=I(L)=I(C),
+$$
+où $I(L)$ est l'inertie du nuage des profils lignes et $I(C)$ l'inertie du nuage des profils colonnes, calculées avec la distance du $\chi^2$.
+:::
+
+### Exemple 
+
+```{r}
+# Statistique du chi2 calculée directement
+chisq.test(K)$statistic
+
+# Carre de la distance du chi2 entre un profil ligne et le profil moyen
+distsq <- function(x, mean=c) {
+  sum((x - mean)^2 / mean)
+}
+
+# Carres des distances de tous les profils lignes au profil moyen
+dists.row <- apply(L, 1, distsq, mean = c)
+dists.row
+
+# Inertie du nuage des profils lignes : moyenne ponderee des distances
+iner.row <- sum(dists.row * r)
+iner.row * sum(K)
+
+# Carres des distances de tous les profils colonnes au profil moyen
+dists.col <- apply(C, 2, distsq, mean = r)
+dists.col
+
+# Inertie du nuage des profils colonnes : moyenne ponderee des distances
+iner.col <- sum(dists.col * c)
+iner.col * sum(K)
+
+
+```
+
+:::
+
+# Analyse Factorielle des Correspondences
+
+## Analyse Factorielle des Correspondences (AFC)
+
+Décrire simultanément les deux nuages pondérés suivants :
+
+1. les $q$ profils lignes (lignes de $L$) pondérés par $D_r$ et avec la métrique $D_c^{-1}$ ;
+2. les $m$ profils colonnes, (colonnes de $C$) pondérés par $D_c$ et avec la métrique $D_r^{-1}$.
+
+Elle revient de manière équivalente à effectuer
+
+- deux ACP pondérées successives sur les $q$ profils lignes, puis sur les $m$ profils colonnes
+
+- ou une ACP pondérée du tableau des écarts à l'indépendance $Z=D_r^{-1}(F-rc^\top)D_c^{-1}$ avec les pondérations $D_r$ pour les lignes et $D_c$ pour les colonnes.
+
+
+## ACP de la matrice des profils-lignes centrés
+
+On cherche à représenter au mieux les $q$ modalités de $X_1$ dans un sous-espace de $\mathbb{R}^m$ de dimension $k \le \min(q-1,m-1)$^[On perd un degré de liberté à cause de la normalisation]. 
+
+- Les axes sont engendrés par les vecteurs propres ordonnés $v_1,\dots,v_k$ de $L^\top D_r L D_c^{-1} \in \mathbb{R}^{m\times m}$ associés aux valeurs propres $\lambda_1 \ge \dots \ge \lambda_k$
+- À chaque étape, on ajoute une nouvelle direction qui maximise la variance (pondérée par $D_r$) des projections des profils-lignes centrés, sous la métrique $D_c^{-1}$
+- Les vecteurs directeurs $v_\alpha$ sont $D_c^{-1}$-orthonormés :
+
+$$
+v_\alpha^\top D_c^{-1}v_\beta = 
+\begin{cases}
+1, & \text{si } \alpha = \beta,\\
+0, & \text{si } \alpha \ne \beta,
+\end{cases} \qquad \alpha,\beta = 1,\dots,k
+$$
+
+- La matrice $q \times k$ des coordonnées des profils-lignes projetés sur $\text{Vect}(v_1, \dots, v_k)$ est notée : 
+
+$$
+X = L D^{-1}_c V_k
+$$
+
+- $X_{:\alpha}$ est la $\alpha$-ième composante principale des profils-lignes, de moyenne nulle ($\overline{X}_{:\alpha} = 0$) et de variance $\operatorname{Var}(X_{:\alpha}) = \lambda_\alpha$.
+
+
+## ACP de la matrice des profils-colonnes centrés
+
+De façon duale, on représente les $m$ modalités de $X_2$ dans un sous-espace de $\mathbb{R}^q$ de dimension $k \le \min(q-1,m-1)$^[On perd un degré de liberté à cause de la normalisation]. 
+
+- Les axes sont engendrés par les vecteurs propres ordonnés $u_1,\dots,u_k$ de $C D_c C^\top D_r^{-1}  \in \mathbb{R}^{q\times q}$ associés aux valeurs propres $\lambda_1 \ge \dots \ge \lambda_k$
+- À chaque étape, on ajoute une nouvelle direction qui maximise la variance (pondérée par $D_c$) des projections des profils-colonnes centrés, sous la métrique $D_r^{-1}$
+- Les vecteurs directeurs $u_\alpha$ sont $D_r^{-1}$-orthonormés :
+
+$$
+u_\alpha^\top D_r^{-1}u_\beta = 
+\begin{cases}
+1, & \text{si } \alpha = \beta,\\
+0, & \text{si } \alpha \ne \beta,
+\end{cases} \qquad \alpha,\beta = 1,\dots,k
+$$
+
+- La matrice $m \times k$ des coordonnées des profils-colonnes projetés sur $\text{Vect}(u_1, \dots, u_k)$ est  
+
+$$
+Y = L^\top D^{-1}_r U_k
+$$
+
+- $Y_{:\alpha}$ est la $\alpha$-ième composante principale des profils-colonnes, de moyenne nulle ($\overline{Y}_{:\alpha} = 0$) et de variance $\operatorname{Var}(Y_{:\alpha}) = \lambda_\alpha$.
+
+
+
+
+
+## SVD généralisée
+
+L'AFC peut se calculer par une décomposition en valeurs singulières (pondérée) de la matrice $Z \in \mathbb{R}^{q\times m}$ (matrice des écarts à l'indépendance ou des profils centrés) avec les métriques
+
+$$
+N = D_r^{-1} \in \mathbb{R}^{q\times q}
+\qquad\text{et}\qquad
+M = D_c^{-1} \in \mathbb{R}^{m\times m}.
+$$
+
+On écrit alors
+
+$$
+Z=U\Lambda V^\top,
+$$
+
+où, en posant $r=\operatorname{rang}(Z)$ :
+
+- $\Lambda=\operatorname{diag}(\sqrt{\lambda_1},\ldots,\sqrt{\lambda_r})$
+  est la matrice des valeurs singulières ordonnées ; les $\lambda_\alpha$ sont les valeurs
+  propres non nulles de $ZMZ^\top N$ et de $Z^\top NZM$ ;
+- $U\in\mathbb{R}^{q\times r}$ contient en colonnes les vecteurs propres de $ZMZ^\top N$,
+  orthonormés pour la métrique $N$ : $U^\top NU=I_r$ ;
+- $V\in\mathbb{R}^{m\times r}$ contient en colonnes les vecteurs propres de $Z^\top NZM$,
+  orthonormés pour la métrique $M$ : $V^\top MV=I_r$.
+
+- **Coordonnées factorielles: ** profils-lignes $X$ et profils-colonnes $Y$)
+  $$
+  \begin{cases}
+  X = Z M V_k = U_k \Lambda_k \\
+  Y = Z^\top N U_k = V_k \Lambda_k
+  \end{cases}
+  $$
+
+
+## Calcul pratique à partir de la SVD standard
+
+- **Calcul pratique (SVD standard) :**
+  Plutôt que d'utiliser les routines de SVD généralisée, on peut effectuer la SVD classique de $\tilde{Z} = N^{1/2} Z M^{1/2} = \tilde{U} \tilde{\Lambda} \tilde{V}^\top$ (sous métriques identités $I_q, I_m$). On remonte ensuite aux facteurs par :
+  $$
+  U = N^{-1/2} \tilde{U}, \qquad V = M^{-1/2} \tilde{V}, \qquad \Lambda = \tilde{\Lambda}
+  $$
+
+
+```{python}
+#| echo: false
+
+
+import numpy as np
+from scipy.linalg import eigh, svd
+
+# 1. Données : Tableau de contingence (Hair/Eye - Female)
+# Alignement : Hair (Rows: Black, Brown, Red, Blonde) x Eye (Cols: Brown, Blue, Hazel, Green)
+K = np.array(
+    [
+        [52, 9, 5, 5],  # Black
+        [66, 34, 29, 14],  # Brown
+        [14, 7, 7, 7],  # Red
+        [16, 64, 5, 8],  # Blonde
+    ],
+    dtype=float,
+)
+
+
+
+# Matrice des fréquences et marges
+F = K / K.sum()
+r = F.sum(axis=1)  # Marges lignes
+c = F.sum(axis=0)  # Marges colonnes
+
+# Matrice des écarts à l'indépendance Z
+Z = F - np.outer(r, c)
+```
+
+
+::: {.panel-tabset}
+
+### SVD Standard sur $\tilde Z$
+
+```{python}
+
+
+# Métriques N = Dr^-1/2 et M = Dc^-1/2
+N_sqrt = np.diag(1.0 / np.sqrt(r))
+M_sqrt = np.diag(1.0 / np.sqrt(c))
+
+# Transformation
+Z_tilde = N_sqrt @ Z @ M_sqrt
+
+# SVD classique : Z_tilde = U_tilde @ diag(s) @ V_tilde^T
+U_tilde, s, Vt_tilde = svd(Z_tilde)
+
+# Reconstitution des facteurs SVD généralisée
+U_std = N_sqrt @ U_tilde
+C_std = U_std @ np.diag(s)  # Coordonnées des profils-lignes
+
+print(np.round(C_std[:, :2], 3))
+```
+
+### SVD Généralisée via eigh
+
+
+```{python}
+
+# On résout le problème généralisé : (Z M Z^T) u = lambda N^-1 u
+# avec M = Dc^-1 et N^-1 = Dr
+M = np.diag(1.0 / c)
+N_inv = np.diag(r)
+
+A = Z @ M @ Z.T  # Opérateur d'inertie
+B = N_inv  # Métrique duale (Dr)
+
+# eigh résout A u = lambda B u pour des matrices symétriques
+vals, U_gen = eigh(A, B)
+
+# Tri par valeurs propres décroissantes
+idx = np.argsort(vals)[::-1]
+vals = vals[idx]
+U_gen = U_gen[:, idx]
+
+# Coordonnées C_gen = U @ sqrt(Lambda)
+s_gen = np.sqrt(np.maximum(0, vals))
+C_gen = U_gen @ np.diag(s_gen)
+
+print(np.round(np.abs(C_gen[:, :2]), 3))  # abs() car le signe est arbitraire
+```
+
+:::
+
+## Exemple
+
+```{r}
+#| echo: true
+
+library(FactoMineR)
+
+# Exécution de l'AFC (CA = Correspondence Analysis)
+res.ca <- CA(K, graph = TRUE)
+```
+
+
+- Axe 1 (Inertie principale) : Oppose nettement les profils extrêmes sur la première dimension.
+
+    - Côté lignes : opposition très marquée entre les cheveux Blond (à gauche) et Black / Brown (à droite).
+    - Côté colonnes : opposition symétrique entre les yeux Blue (à gauche) et Brown (à droite).
+
+- Axe 2 : Isole la modalité intermédiaire Red (lignes) et Hazel / Green (colonnes).
+
+## Composante principale standardisée 
+
+Une composante principale standardisée est une composante divisée par son écart-type ($\sqrt{\lambda_\alpha}$). 
+
+- La matrice $\Lambda_k$ étant la matrice diagonale des valeurs singulières, les matrices $X^*$ et $Y^*$ des coordonnées factorielles standardisées s'écrivent :
+
+$$
+\begin{cases}
+X^* = X \Lambda^{-1}_k \\
+Y^* = Y \Lambda^{-1}_k
+\end{cases}
+\qquad \implies \qquad
+\begin{cases}
+X^* = U_k \\
+Y^* = V_k
+\end{cases}
+$$
+
+- On a les relations de transition suivantes :
+
+$$
+\begin{cases}
+X = D_r^{-1} (F - r c^\top) Y^* \\
+Y = D_c^{-1} (F - r c^\top)^\top X^*
+\end{cases}
+$$
+
+La coordonée factorielle d’une modalité d’une variable est une combinaison linéaire des coordonnées factorielles
+(standardisées) des modalités de l’autre variable
+
+$$
+\begin{cases}
+X_{i\alpha} =  \displaystyle\sum_{s=1}^m \frac{f_{is}}{f_{i\cdot}} Y^*_{s\alpha} \\
+Y_{s\alpha} = \displaystyle\sum_{i=1}^q \frac{f_{is}}{f_{\cdot s}} X^*_{i\alpha}
+\end{cases}
+$$
+
+
+## Propriétés barycentriques
+
+On en déduit immédiatement que 
+$$
+X_{i\alpha} = \tfrac{1}{\sqrt{\lambda_\alpha}} \displaystyle\sum_{s=1}^m \frac{f_{is}}{f_{i\cdot}} Y_{s\alpha} \qquad \text{ et } \qquad
+Y_{s\alpha} = \tfrac{1}{\sqrt{\lambda_\alpha}} \displaystyle\sum_{i=1}^q \frac{f_{is}}{f_{\cdot s}} X_{i\alpha}
+$$
+
+
+::: {.callout-tip}
+
+### Interprétation géométrique et statistique
+
+- **Principe du barycentre :** La coordonnée de la modalité $i$ est la moyenne des coordonnées (standardisées) des modalités $s$ de l'autre variable, pondérée par les fréquences conditionnelles $f_{is} / f_{i\cdot}$ (profil-ligne).
+- **Dilatation :** Au coefficient de dilatation $1/\sqrt{\lambda_\alpha}$ près (puisque $\sqrt{\lambda_\alpha} < 1$), les coordonnées factorielles d'un nuage de points sont, sur chaque axe, les barycentres des coordonnées factorielles de l'autre nuage.
+:::
+
+- **Représentation simultanée :** Ces relations justifient le tracé des profils-lignes et des profils-colonnes sur le même graphique (biplot). Mais  **Attention :** La distance entre un profil-ligne et un profil-colonne ne s'interprète pas directement en termes de distance géométrique, mais en termes d'attraction/liaison (un profil-ligne se rapproche des profils-colonnes pour lesquels sa fréquence conditionnelle est élevée).
+
+
+## Exemple
+
+
+Vérification des relations barycentriques sur le 1er axe
+```{r}
+# 1. Extraction FactoMineR
+x1 <- res.ca$row$coord[, 1]              # Coordonnée x_1
+y1 <- res.ca$col$coord[, 1]              # Coordonnée y_1
+sqrt_lambda1 <- sqrt(res.ca$eig[1, 1])   # Valeur singulière sqrt(lambda_1)
+
+
+# --- Formule : x_i = (1 / sqrt(lambda_1)) * sum( (f_is / f_i.) * y_s )
+x_black_formule1 <- sum(L['Black',] * y1) / sqrt_lambda1
+
+
+cat("FactoMineR (x1)                          :", x1["Black"],
+    "\nFormule avec y  (1/sqrt(lambda) * sum)   :", x_black_formule1, "\n")
+```
+
+```{r}
+#| echo: false
+
+library(factoextra)
+# 4. Biplot simultané (Lignes et Colonnes)
+fviz_ca_biplot(res.ca, 
+               repel = TRUE,
+               ggtheme = theme_minimal(),
+               title = "AFC - Biplot simultané (HairEyeColor)")
+```
+
+
+# Interpétation et critères de qualité
+
+## Interprétation : Inertie et test d'indépendance
+
+- En ACP normée, l'inertie totale du nuage des points-individus est égale à $p$, le nombre de variables. **En AFC**, l'inertie totale des profils-lignes et des profils-colonnes est égale au $\phi^2$ (le $\chi^2$ d'indépendance divisé par l'effectif total $n$) :
+  $$
+  I(L) = I(C) = \frac{\chi^2(X_1, X_2)}{n}
+  $$
+  La **dispersion des nuages de points est donc une mesure de liaison** entre les deux variables qualitatives, appelée aussi mesure d'écart à l'indépendance.
+
+- **Nombre d'axes et inertie :** En AFC, il y a au plus $r = \min(q - 1, m - 1)$ valeurs propres non nulles. L'inertie totale s'écrit $\sum_{\alpha=1}^r \lambda_\alpha$. Chaque axe principal explique une part de cette inertie :
+  $$
+  \frac{\lambda_\alpha}{\lambda_1 + \dots + \lambda_r} \times 100
+  $$
+  qui s'interprète comme :
+  - Le pourcentage d'inertie (ou de variance) expliqué par l'axe $\alpha$,
+  - La part de la liaison entre $X_1$ et $X_2$ captée par cet axe.
+
+---
+
+## L'AFC en pratique
+
+
+1. **Test préalable du $\chi^2$**
+   - L'inertie totale vaut $I = \frac{\chi^2}{n}$.
+   - AFC pertinente **uniquement** si $H_0$ est rejetée ($p < 0{,}05$).
+   - Évite d'interpréter le bruit d'échantillonnage.
+
+2. **Choix du nombre d'axes**
+   - Rang maximal : $r = \min(q - 1,\, m - 1)$.
+   - Critère du coude sur l'éboulis des valeurs propres.
+   - **Seuil de Benzécri :** conserver les axes où $\lambda_\alpha > \frac{1}{r}$.
+
+3. **Interprétation des modalités**
+   - **$\operatorname{CTR}_{i\alpha}$ (Contributions) :** quelles modalités *créent* l'axe.
+   - **$\cos^2_{i\alpha}$ (Qualité) :** si l'axe *explique* bien la modalité.
+
+
+## Contributions absolues ($\text{CTR}$)
+
+Pour un axe factoriel $\alpha$, la contribution d'une modalité mesure sa part dans l'inertie de cet axe ($\lambda_\alpha$) 
+
+$$
+\begin{cases}
+\operatorname{CTR}_\alpha(i) = \tfrac{f_{i\cdot} \, x_{i\alpha}^2}{\lambda_\alpha} & \text{(Profils-lignes)} \\[10pt]
+\operatorname{CTR}_\alpha(s) = \tfrac{f_{\cdot s} \, y_{s\alpha}^2}{\lambda_\alpha} & \text{(Profils-colonnes)}
+\end{cases}
+\quad \text{avec} \quad \sum_i \operatorname{CTR}_\alpha(i) = \sum_s \operatorname{CTR}_\alpha(s) = 1
+$$
+
+### Propriétés et interprétation
+
+- **Rôle :** Identifie les modalités **responsables de la construction** de l'axe $\alpha$ (donne son sens à l'axe).
+- **Règle de décision :** Une modalité est contributive si sa contribution excède le poids moyen : en lignes, si on a $\operatorname{CTR}_\alpha(i) > \tfrac{1}{q}$; en colonnes, si on a $\operatorname{CTR}_\alpha(s) > \tfrac{1}{m}$
+
+::: {.callout-warning}
+### Attention au piège de l'excentrement
+En AFC, un point très éloigné de l'origine n'est pas forcément un contributeur majeur : la contribution dépend du **produit** entre l'éloignement ($X_{i\alpha}^2$) et la masse de la modalité ($f_{i\cdot}$). Une modalité rare très excentrée peut avoir une contribution faible.
+:::
+
+
+## Qualité de représentation ($\cos^2$)
+
+Le $\cos^2$ mesure la qualité de projection d'une modalité sur l'axe factoriel $\alpha$ :
+
+$$
+\begin{cases}
+\cos^2_\alpha(i) = \tfrac{x_{i\alpha}^2}{d^2(l_i, c)} & \text{(Profils-lignes)} \\[12pt]
+\cos^2_\alpha(s) = \tfrac{y_{s\alpha}^2}{d^2(c_s, r)} & \text{(Profils-colonnes)}
+\end{cases}
+\quad \text{avec} \quad \sum_{\alpha=1}^r \cos^2_\alpha(\cdot) = 1
+$$
+
+où $d^2(l_i, c)$ est la distance du $\chi^2$ entre le profil-ligne $l_i$ et le profil moyen $c$.
+
+### Règles d'interprétation
+
+- **Axe bien représenté :** On n'interprète la position d'un point sur un axe que si son $\cos^2_\alpha$ est élevé (proximité réelle, non un artefact de projection).
+- **Proximité Intra-variable :** Deux modalités d'une **même variable** proches et bien représentées ont des profils similaires.
+- **Proximité Inter-variables :** La proximité entre une modalité ligne et une colonne s'interprète uniquement via les **relations barycentriques** (attraction / liaison positive).
+
+## Références
+
+[@Saporta]
+[Polycopié de cours de Marie Chavent](https://marie-chavent.perso.math.cnrs.fr/teaching/)

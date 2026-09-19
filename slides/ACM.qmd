@@ -1,0 +1,337 @@
+---
+title: "Analyse des Correspondances Multiples"
+subtitle: "ACM"
+author: "Benjamin Charlier, Adrien Mazoyer"
+date: ""
+format:
+  revealjs:
+    theme: metropolis.scss
+    css: table.css
+    width: 1024
+    height: 768
+    slide-level: 2
+    slide-number: true
+    progress: true
+    history: false
+    toc: true
+    toc-depth: 1
+    code-line-numbers: false
+    eval: true
+    echo: true
+
+bibliography: ../reference.bib
+
+knitr:
+  opts_chunk:
+    prompt: true
+---
+
+```{r}
+#| label: setup
+#| include: false
+source("../R/functions.R")
+```
+
+
+## Objectifs
+
+
+## Description des données: tableau condensé
+
+On travaille sur des tableaux de données où
+
+- les [**lignes**]{.blue} correspondent aux [**individus**]{.blue}
+- les [**colonnes**]{.orange} correspondent aux [**variables qualitatives**]{.orange} étudiées (i.e. des modalités discrètes)
+
+::: {.data-table}
+|              | Variable 1 | $\cdots$ | Variable p |
+|:------------:|:----------:|:--------:|:----------:|
+| Individu $1$ | $x_{1,1}$  | $\cdots$ | $x_{1,p}$  |
+| $\vdots$     | $\vdots$   |          | $\vdots$   |
+| Individu $n$ | $x_{n,1}$  | $\cdots$ | $x_{n,p}$  |
+:::
+
+$x_{i,j}$ : mesure de la variable $k$ pour l’individu $i$.
+
+Un tel tableau sera nommé tableau **condensé**, et est de taille $n \times p$.
+
+## Description des données: tableau disjonctif complet
+
+Le tableau précédent est transformé avec un codage binaire (*one-hot encoding*)
+
+::: {.data-table}
+<table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th colspan="3">Variable 1</th>
+      <th style="min-width: 3em;">$\cdots$</th>
+      <th colspan="3">Variable $p$</th>
+    </tr>
+    <tr>
+      <th> </th>
+      <th>mod. $1$</th>
+      <th>$\cdots$</th>
+      <th>mod. $J_1$</th>
+      <th>$\cdots$</th>
+      <th>mod. $1$</th>
+      <th>$\cdots$</th>
+      <th>mod. $J_p$</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Individu $1$</td>
+      <td>$t_{1,(1,1)}$</td>
+      <td>$\cdots$</td>
+      <td>$t_{1,(1,J_1)}$</td>
+      <td>$\cdots$</td>
+      <td>$t_{1,(p,1)}$</td>
+      <td>$\cdots$</td>
+      <td>$t_{1,(p,J_p)}$</td>
+    </tr>
+    <tr>
+      <td>$\vdots$</td>
+      <td>$\vdots$</td>
+      <td>$\vdots$</td>
+      <td>$\vdots$</td>
+      <td>$\vdots$</td>
+      <td>$\vdots$</td>
+      <td>$\vdots$</td>
+      <td>$\vdots$</td>
+    </tr>
+    <tr>
+      <td>Individu $n$</td>
+      <td>$t_{n,(1,1)}$</td>
+      <td>$\cdots$</td>
+      <td>$t_{n,(1,J_1)}$</td>
+      <td>$\cdots$</td>
+      <td>$t_{n,(p,1)}$</td>
+      <td>$\cdots$</td>
+      <td>$t_{n,(p,J_p)}$</td>
+    </tr>
+  </tbody>
+</table>
+:::
+
+Pour chaque variable $k$ ayant $J_k$ modalités, on crée une colonne par modalité $(k,j)$.
+
+$$
+t_{i,(k,j)} = \begin{cases}
+1 & \text{si l’individu $i$ possède la modalité $j$ de la variable $k$,} \\
+0 & \text{sinon.}
+\end{cases}
+$$
+
+Ce tableau est nommé **tableau disjonctif complet** (TDC), et est de taille $n \times J$, avec $J = \sum_{k=1}^p J_k$.
+
+
+## Exemple 1 {#exemple-acm-1}
+
+
+
+::: {.panel-tabset}
+
+## Tableaux
+
+Tableau condensé des groupes sanguins
+
+::: {.data-table}
+|          | Groupe sanguin | Rhésus |
+|:--------:|:--------------:|:------:|
+| Ind. 1   | A              | +      |
+| Ind. 2   | O              | -      |
+| Ind. 3   | A              | +      |
+| Ind. 4   | A              | -      |
+| Ind. 5   | B              | -      |
+
+:::
+
+
+Tableau disjonctif complet associé
+
+::: {.data-table}
+<table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th colspan="3">Groupe sanguin</th>
+      <th colspan="2">Rhésus</th>
+    </tr>
+    <tr>
+      <th> </th>
+      <th>A</th>
+      <th>B</th>
+      <th>O</th>
+      <th>+</th>
+      <th>-</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Ind. 1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Ind. 2</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>Ind. 3</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Ind. 4</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>Ind. 5</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+:::
+
+## En R
+
+Tableau condensé des groupes sanguins
+```{r}
+#| echo: true
+
+donnees <- data.frame(
+  Groupe = c("A", "O", "A", "A", "B"),
+  Rhesus = c("+", "-", "+", "-", "-"),
+  row.names = c("Ind. 1", "Ind. 2", "Ind. 3", "Ind. 4", "Ind. 5")
+)
+
+donnees[] <- lapply(donnees, as.factor)
+
+print_table(donnees)
+```
+
+Tableau Disjonctif Complet
+```{r}
+#| echo: true
+
+library(ade4)
+tab_disjonctif <- acm.disjonctif(donnees)
+print_table(tab_disjonctif)
+
+```
+
+:::
+
+
+
+
+## Objectifs de l'ACM {#objectifs-acm}
+
+- Décrire les liaisons entre $p$ variables qualitatives qui sont simultanément observées sur $n$ individus.
+
+- Données individus $\times$ variables → objectifs similaires à ceux de l’ACP.
+
+
+::: {.callout-tip}
+
+### Étude des individus
+
+- Identifier des profils d’individus en étudiant les modalités en commun
+- Étudier la variabilité des profils
+- Extraire les principales dimensions
+:::
+
+:::{.callout-tip}
+### Étude des variables
+
+- Identifier les liaisons entre variables
+- Visualisation d’ensemble d’association entre modalités
+- Construction de variable synthétique
+:::
+
+
+
+## Pondération du TDC
+
+Soit $T = (t_{ij})$ la matrice du TDC, de taille $n \times J$, où
+
+$$
+t_{ij} = \begin{cases}
+1 & \text{si l’individu $i$ possède la modalité $j$,} \\
+0 & \text{sinon.}
+\end{cases}
+$$
+
+Pour chaque modalité $j$, on calcule sa fréquence
+
+$$
+f_j = \frac{1}{n}\sum_{i=1}^n t_{ij}.
+$$
+
+- Si $f_j$ est petit, la modalité $j$ est rare et doit être davantage mise en valeur.
+- On remplace donc $t_{ij}$ par le rapport $t_{ij}/f_j$.
+- On centre ensuite chaque colonne pour enlever la moyenne :
+
+$$
+x_{ij} = \frac{t_{ij}}{f_j} - 1.
+$$
+
+La matrice $X = (x_{ij})$ est alors le tableau pondéré et centré sur lequel on effectue l’ACM.
+
+La ligne $i$ représente le profil de l’individu $i$ dans l’espace des modalités, avec un poids $1/n$ pour chaque individu.
+
+
+
+## Exemple (suite) {#exemple-acm-2}
+
+Pour le groupe sanguin, on a
+
+::: {.data-table}
+| Modalité | A | B | O | + | - |
+|:--------:|:--:|:--:|:--:|:--:|:--:|
+| Fréquence $f_j$ | $\frac{3}{5}$ | $\frac{1}{5}$ | $\frac{1}{5}$ |$\frac{2}{5}$ |$\frac{3}{5}$ |
+:::
+
+Les individus de groupes $B$ ou $O$ auront une contribution plus forte, ce qui met en évidence les profils spécifiques.
+
+
+Le tableau transformé $X = (x_{ij})$ est alors
+
+::: {.data-table}
+| Individu | A | B | O | + | - |
+|:--------:|:--:|:--:|:--:|:--:|:--:|
+| Ind. 1 | $\frac{2}{3}$ | $-1$ | $-1$ | $\frac{3}{2}$ | $-1$ |
+| Ind. 2 | $-1$ | $-1$ | $4$ | $-1$ | $\frac{2}{3}$ |
+| Ind. 3 | $\frac{2}{3}$ | $-1$ | $-1$ | $\frac{3}{2}$ | $-1$ |
+| Ind. 4 | $\frac{2}{3}$ | $-1$ | $-1$ | $-1$ | $\frac{2}{3}$ |
+| Ind. 5 | $-1$ | $4$ | $-1$ | $-1$ | $\frac{2}{3}$ |
+:::
+
+Ainsi, pour l’individu 1 qui est de groupe $A$,
+
+$$
+x_{1,A} = \frac{1}{3/5} - 1 = \frac{5}{3} - 1 = \frac{2}{3}.
+$$
+
+
+On procède de même pour chaque modalité de toutes les variables, puis on applique l’ACP au tableau $X$ obtenu.
+

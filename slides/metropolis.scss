@@ -160,13 +160,35 @@ $presentation-block-margin: 12px;
 /*             CALLOUT BLOCK          */
 /*------------------------------------*/
 // Style block callouts.
-.callout-block {
+.reveal .callout,
+.reveal .callout-body,
+.reveal .callout-content,
+.reveal .callout-title,
+.reveal .callout p,
+.reveal .callout li,
+.reveal .callout ul,
+.reveal .callout ol,
+.reveal .callout > * {
   color: var(--metro-ink);
+  font-size: $presentation-font-size-root;
+  line-height: $presentation-line-height;
+  font-family: inherit;
+}
+
+.reveal .callout {
   margin: 1em 0;
   padding: 0.75em 1em;
   border-left: 3px solid var(--metro-muted);
 }
 
+.reveal .callout h3,
+.reveal .callout h4,
+.reveal .callout h5,
+.reveal .callout h6 {
+  font-size: $presentation-h2-font-size;
+  line-height: 1.2;
+  margin: 0 0 0.5em;
+}
 
 /*------------------------------------*/
 /*             COLUMNS                */

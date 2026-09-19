@@ -1,12 +1,12 @@
 ---
-title: "Chapitre 1 -- Analyse en composantes principales"
+title: "Analyse en composantes principales"
 subtitle: "ACP"
 author: "Benjamin Charlier, Adrien Mazoyer"
 date: ""
 format:
   revealjs:
     theme: metropolis.scss
-    css: ../table.css
+    css: table.css
     width: 1024
     height: 768
     slide-level: 2
