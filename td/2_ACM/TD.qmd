@@ -8,22 +8,33 @@ title: "TD 2 -- Analyse Factorielle des Correspondences et Analyse des Correspon
 source("../../R/functions.R")
 ```
 
-# Exercice 1.
+# Exercice 1. AFC et SVD généralisée
 
 Il s'agit d'un tableau de contingence croisant 5 catégories de salariés (en lignes) et 4 catégories de fumeurs (en colonnes) au sein d'une entreprise :
 
 - Lignes (Salariés) : `SM` : Senior Managers; `JM` : Junior Managers; `SE` : Senior Employees; `JE` : Junior Employees; `SC` : Secretaries.
 
 ```{r}
-#| echo: false
-
+#| echo: true
 
 library(ca)
 data(smoke)
 print_table(smoke)
 ```
 
-1. AFC et SVD généralisée
+
+0. On effectue un test préalable d'indépendance du $\chi^2$
+```{r}
+chisq.test(smoke, simulate.p.value=TRUE)
+```
+
+Que conclut-on quant à la significativité statistique de l'association ? Quel garde-fou méthodologique faut-il garder en tête lors des questions suivantes ?
+
+<!-- Ce qu'il faut expliciter : Les proximités et alignements observés sur le biplot (ex. l'axe 1 opposant Heavy et None) ne constituent pas une preuve scientifique ou statistique.La formulation type : « Ces oppositions sont présentées à titre purement exploratoire et qualitatif. Étant donné le test du $\chi^2$ non significatif ($p = 0{,}165$), ces structures géométriques peuvent provenir d'un simple bruit d'échantillonnage. » -->
+
+
+
+1. Préparation des données
 
   a) Donner le code R ou Python pour construire la matrice $F$ des fréquences, les vecteurs $r$ et $c$ des distributions marginales et la matrice $Z$ des écarts à l'indépendance.
 
@@ -41,7 +52,8 @@ c <- colSums(F)
 Z <- (F - r %*% t(c)) / (r %*% t(c))
 ```
 
-  b) Compléter les entrées qui manquent :
+  b) Compléter les entrées manquantes `??` dans les sorties ci-dessous :
+
 ```{r}
 #| echo: false
 
@@ -53,17 +65,182 @@ c_str <- as.character(round(c, 2))
 c_str[3] <- " ??"
 
 Z_str <- apply(round(Z, 2), 2, as.character)
+dimnames(Z_str) <- dimnames(Z)
 Z_str[3, 1] <- " ??"
-
-cat("r (masses lignes) :\n")
-print(r_str, quote = FALSE)
-
-cat("\nc (masses colonnes) :\n")
-print(c_str, quote = FALSE)
-
-cat("\nZ (écarts à l'indépendance) :\n")
-print(Z_str, quote = FALSE)
 ```
+
+Le vecteur $r$ des masses des lignes
+```{r}
+#| echo: false
+
+print(r_str, quote = FALSE)
+```
+
+Le vecteur $c$ des masses des colonnes
+```{r}
+#| echo: false
+
+print(c_str, quote = FALSE)
+```
+
+La matrice $Z$ des écarts à l'indépendance
+```{r}
+#| echo: false
+
+print_table(Z_str)
+```
+
+---
+
+2. Représentation des données sur les axes factoriels
+
+  a) La fonction `gsvd` ci-dessous réalise la décomposition en valeurs singulières généralisée d’une matrice réelle $Z$ de dimension $n \times p$ avec les métriques diagonales $N = \operatorname{Diag}(r)$ sur $\mathbb{R}^n$ et $M = \operatorname{Diag}(c)$ sur $\mathbb{R}^p$.
+
+```{r}
+#| echo: true
+#| code-fold: true
+
+# Fonction SVD généralisée avec métriques diagonales
+gsvd <- function(Z, r, c) {
+  #-----entree---------------
+  # Z matrice numerique de dimension (n,p) et de rang k
+  # r poids de la metrique des lignes N=diag(r)
+  # c poids de la metrique des colonnes M=diag(c)
+  #-----sortie---------------
+  # d vecteur de taille k contenant les valeurs singulieres (racines carres des valeurs propres)
+  # U matrice de dimension (n,k) des vecteurs propres de de ZMZ'N
+  # V matrice de dimension (p,k) des vecteurs propres de de Z'NZM
+  #----------------------------
+
+  k <- qr(Z)$rank
+  colnames_Z <- colnames(Z)
+  rownames_Z <- rownames(Z)
+  Z <- as.matrix(Z)
+  
+  Ztilde <- diag(sqrt(r)) %*% Z %*% diag(sqrt(c))
+  e <- svd(Ztilde)
+  
+  U <- diag(1 / sqrt(r)) %*% e$u[, 1:k]
+  V <- diag(1 / sqrt(c)) %*% e$v[, 1:k]
+  d <- e$d[1:k]
+  
+  rownames(U) <- rownames_Z
+  rownames(V) <- colnames_Z
+  if (length(d) > 1) {
+    colnames(U) <- colnames(V) <- paste0("dim", 1:k)
+  }
+  return(list(U = U, V = V, d = d))
+}
+```
+
+  Donner le code qui calcule, avec la fonction `gsvd` les quantités suivantes. Le vecteur $\Lambda$ des valeurs singulières
+
+```{r}
+#| echo: false
+
+res_gsvd <- gsvd(Z, r, c)
+U <- res_gsvd$U
+V <- res_gsvd$V
+Lambda <- res_gsvd$d
+
+X <- sweep(U, 2, STATS = Lambda, FUN = "*")
+Y <- sweep(V, 2, STATS = Lambda, FUN = "*")
+```
+
+```{r}
+print_table(Lambda)
+```
+
+et les matrices $X$ et $Y$ des coordonnées factorielles des profils-lignes et profils-colonnes de l’AFC
+
+::: {.columns}
+
+::: {.column}
+
+```{r}
+print_table(X)
+```
+
+:::
+
+::: {.column}
+
+```{r}
+print_table(Y)
+```
+
+:::
+
+:::
+
+  b) Calculer les inerties associées à chaque axe ainsi que le pourcentage d'inertie expliquée par le premier plan factoriel.
+
+  c) Représenter à la main (ou sous R) les profils-lignes et les profils-colonnes sur le premier plan factoriel de l’AFC.
+
+3. Exploitation des sorties `FactoMineR` suivantes :
+
+```{r}
+#| echo: true
+
+library(FactoMineR)
+
+res <- CA(smoke, graph = FALSE)
+
+stopifnot(isTRUE(all.equal(abs(unname(res$row$coord)), abs(unname(X)), tolerance = 1e-8)))
+stopifnot(isTRUE(all.equal(abs(unname(res$col$coord)), abs(unname(Y)), tolerance = 1e-8)))
+```
+
+
+
+  a) Expliquer le code R ci-dessus. 
+  
+  b) On donne:
+  
+::: {.columns}
+  
+::: {.column}
+  
+```{r}
+print_table(res$row$contrib)
+```
+  
+:::
+  
+::: {.column}
+  
+```{r}
+print_table(res$col$contrib)
+```
+  
+:::
+  
+:::
+  
+  Pourquoi ne prend on pas la peine d'afficher `res$row$cos2` et `res$col$cos2` ?
+  
+  b) Interpréter les axes factoriels et le graphique réalisé à la question 2.c.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
