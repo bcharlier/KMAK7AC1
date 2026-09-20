@@ -36,8 +36,10 @@ jobs:
             any::rmarkdown
             any::plotly
             any::FactoMineR
+            any::factoextra
             any::ggplot2
             any::PASWR
+            any::ca
 
       - name: Set up Python
         uses: actions/setup-python@v5

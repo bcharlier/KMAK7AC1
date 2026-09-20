@@ -1,0 +1,302 @@
+---
+title: "TD 2 -- Analyse Factorielle des Correspondences et Analyse des Correspondances Multiples"
+---
+
+```{r}
+#| label: setup
+#| include: false
+source("../../R/functions.R")
+```
+
+# Exercice 1.
+
+Il s'agit d'un tableau de contingence croisant 5 catégories de salariés (en lignes) et 4 catégories de fumeurs (en colonnes) au sein d'une entreprise :
+
+- Lignes (Salariés) : `SM` : Senior Managers; `JM` : Junior Managers; `SE` : Senior Employees; `JE` : Junior Employees; `SC` : Secretaries.
+
+```{r}
+#| echo: false
+
+
+library(ca)
+data(smoke)
+print_table(smoke)
+```
+
+1. AFC et SVD généralisée
+
+  a) Donner le code R ou Python pour construire la matrice $F$ des fréquences, les vecteurs $r$ et $c$ des distributions marginales et la matrice $Z$ des écarts à l'indépendance.
+
+```{r}
+#| echo: false
+  
+# Matrice des fréquences
+F <- smoke / sum(smoke)
+
+# Distributions marginales (masses des lignes et colonnes)
+r <- rowSums(F)
+c <- colSums(F)
+
+# Matrice Z des écarts à l'indépendance
+Z <- (F - r %*% t(c)) / (r %*% t(c))
+```
+
+  b) Compléter les entrées qui manquent :
+```{r}
+#| echo: false
+
+# Formatage pour affichage et masquage des valeurs
+r_str <- as.character(round(r, 2))
+r_str[2] <- " ??"
+
+c_str <- as.character(round(c, 2))
+c_str[3] <- " ??"
+
+Z_str <- apply(round(Z, 2), 2, as.character)
+Z_str[3, 1] <- " ??"
+
+cat("r (masses lignes) :\n")
+print(r_str, quote = FALSE)
+
+cat("\nc (masses colonnes) :\n")
+print(c_str, quote = FALSE)
+
+cat("\nZ (écarts à l'indépendance) :\n")
+print(Z_str, quote = FALSE)
+```
+
+
+
+# Exercice 2. 
+
+On considère un jeu de données référençant $1\,044$ passagers du *Titanic*, décrivant les variables suivantes :
+
+- **`Survived` :** Survie du passager ($0 = \text{Non}$, $1 = \text{Oui}$)
+- **`Pclass` :** Classe du billet ($1^{\text{ère}}$, $2^{\text{ème}}$ ou $3^{\text{ème}}$)
+- **`Sex` :** Sexe du passager
+- **`Age` :** Tranche d'âge ($\left[0\,; 10\right]$, $\left[11\,; 18\right]$, $\left[19\,; 29\right]$, $\left[30\,; 49\right]$, $\ge 50$)
+- **`Fare` :** Prix du ticket (variable quantitative)
+- **`Embarked` :** Port d'embarquement ($\text{C} = \text{Cherbourg}$, $\text{Q} = \text{Queenstown}$, $\text{S} = \text{Southampton}$)
+
+```{r}
+#| echo: false
+
+
+library(FactoMineR)
+library(PASWR)
+
+data("titanic3")
+df <- titanic3[, c("survived", "pclass", "sex", "age", "fare", "embarked")]
+
+# -------------------------- #
+#    Clean up data           #
+# -------------------------- #
+
+# Suppression des lignes ayant un NA sur la variable 'age'
+df_clean <- df[!is.na(df$age), ]
+
+# 2. Recodage de embarked pour ne garder que la première lettre ("C", "Q", "S")
+df_clean$embarked <- factor(substr(df_clean$embarked, 1, 1))
+
+# 2bis. Nettoyage des niveaux vides éventuels et vérification
+df_clean <- df_clean[df_clean$embarked %in% c("C", "Q", "S"), ]
+df_clean$embarked <- droplevels(df_clean$embarked)
+
+# -------------------------- #
+#    Convert variables       #
+# -------------------------- #
+
+# 3. Mise en forme des variables qualitatives
+df_clean$Survived <- factor(df_clean$survived)
+# table(df_clean$Survived)
+df_clean$Pclass   <- factor(df_clean$pclass)
+# table(df_clean$Pclass)
+df_clean$Sex      <- factor(df_clean$sex)
+# table(df_clean$Sex)
+df_clean$Embarked <- factor(df_clean$embarked)
+# table(df_clean$embarked)
+df_clean$Fare <- df_clean$fare
+
+
+# 2. Découpage de l'Age en tranches
+df_clean$Age_cat <- cut(
+  df_clean$age,
+  breaks = c(0, 10, 18, 29, 49, Inf),
+  labels = c("[0;10]", "[11;18]", "[19;29]", "[30;49]", ">=50"),
+  include.lowest = TRUE
+)
+
+# 3. Sélection des variables (Fare est placée en dernière position)
+df_titanic <- df_clean[, c("Survived", "Pclass", "Sex", "Age_cat", "Embarked", "Fare")]
+#summary(df_titanic)
+```
+
+```{r}
+#| echo: false
+
+
+titanic.mca <- MCA(df_titanic, quanti.sup = 6, graph = FALSE)
+```
+
+1. On affiche d’abord les résultats suivants
+
+
+::: {.columns}
+
+::: {.column}
+```{r}
+#| echo: false
+
+print_table(titanic.mca$eig[,1:2])
+```
+
+
+:::
+
+::: {.column}
+
+```{r}
+#| echo: false
+
+
+plot(titanic.mca$eig[,1])
+```
+
+:::
+
+:::
+
+  (a) Justifier le fait qu’il y ait 10 lignes dans ce tableau
+  (b) À partir de ces affichages, combien de directions principales aurait-on envie de conserver ?
+
+2. On trace les représentations ci-dessous
+
+
+::: {.columns}
+
+::: {.column}
+
+```{r}
+#| echo: false
+#| fig-width: 8
+#| fig-height: 8
+
+plot(
+  titanic.mca,
+  axes = c(1, 2),
+  choix = "ind",
+  invisible = "quanti.sup",
+  col.ind = "lightgrey",
+  col.var = "red",
+  col.quanti.sup = "blue",
+  label = "var",
+)
+
+```
+
+
+:::
+
+::: {.column}
+```{r}
+#| echo: false
+#| fig-width: 8
+#| fig-height: 8
+
+
+plot(
+  titanic.mca,
+    axes = c(1, 2),
+  choix = "var",               # Affiche les catégories (modalités)
+  col.var = "red",             # Modalités en rouge
+  col.quanti.sup = "darkblue", # Variable Fare en bleu foncé
+)
+```
+
+:::
+
+:::
+
+
+
+::: {.columns}
+
+::: {.column}
+```{r}
+#| echo: false
+#| fig-width: 8
+#| fig-height: 8
+
+plot(
+  titanic.mca,
+  axes = c(2, 3),
+  choix = "ind",
+  invisible = "none",
+  col.ind = "lightgrey",
+  col.var = "red",
+  col.quanti.sup = "blue",
+  label = "var",
+  title = "ACM Titanic - Plan factoriel"
+)
+
+```
+
+
+:::
+
+::: {.column}
+
+
+
+```{r}
+#| echo: false
+#| fig-width: 8
+#| fig-height: 8
+
+plot(
+  titanic.mca,
+  axes = c(2, 3),              # Axes 2 et 3
+  choix = "var",               # Affiche les catégories (modalités)
+  col.var = "red",             # Modalités en rouge
+  col.quanti.sup = "darkblue", # Variable Fare en bleu foncé
+)
+```
+
+:::
+
+:::
+
+  a) Commenter la représentation des individus dans ces plans.
+  b) Rappeler comment sont calculées les positions des modalités sur ce graphe.
+  c) Commenter la représentation des variables dans ces 2 plans.
+  d) Interprétez les positions des différentes modalités par rapport à celles de la variable Survived.
+
+3. On affiche à présent les sorties suivantes
+
+
+::: {.columns}
+
+::: {.column}
+
+```{r}
+print_table(
+    titanic.mca$var$contrib[,1:3]
+)
+```
+
+:::
+
+::: {.column}
+
+```{r}
+print_table(
+    titanic.mca$var$cos2[,1:3]
+)
+```
+
+:::
+
+:::
+Quelle tendance semble se dégager ?
+
+4. Synthétiser votre analyse en quelques lignes.

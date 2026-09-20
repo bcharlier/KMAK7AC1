@@ -6,7 +6,7 @@ date: ""
 format:
   revealjs:
     theme: metropolis.scss
-    css: table.css
+    css: ../table.css
     slide-level: 2
     toc: false
     email-obfuscation: javascript

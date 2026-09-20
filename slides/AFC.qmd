@@ -6,7 +6,7 @@ date: ""
 format:
   revealjs:
     theme: metropolis.scss
-    css: table.css
+    css: ../table.css
     width: 1024
     height: 768
     slide-level: 2
@@ -652,12 +652,28 @@ cat("FactoMineR (x1)                          :", x1["Black"],
 ```{r}
 #| echo: false
 
-library(factoextra)
-# 4. Biplot simultané (Lignes et Colonnes)
-fviz_ca_biplot(res.ca, 
-               repel = TRUE,
-               ggtheme = theme_minimal(),
-               title = "AFC - Biplot simultané (HairEyeColor)")
+# 1. Extraction des masses
+masses_cols <- res.ca$call$marge.col  # Masses des lignes
+masses_rows <- res.ca$call$marge.row  # Masses des colonnes
+
+
+# 2. Normalisation des alphas entre 0.2 (très transparent) et 1.0 (opaque)
+alpha_rows <- 0.2 + 0.8 * (masses_rows / max(masses_rows))
+alpha_cols <- 0.2 + 0.8 * (masses_cols / max(masses_cols))
+
+
+# 3. Création des vecteurs de couleurs avec alpha individuel
+cols_rows <- sapply(seq_along(masses_rows), function(i) adjustcolor("blue", alpha.f = alpha_rows[i]))
+cols_cols <- sapply(seq_along(masses_cols), function(i) adjustcolor("red", alpha.f = alpha_cols[i]))
+
+
+# 4. Tracé du graphique
+plot(
+  res.ca,
+  col.row = cols_rows,
+  col.col = cols_cols,
+  title = "AFC - Opacité (alpha) proportionnelle à la masse"
+)
 ```
 
 

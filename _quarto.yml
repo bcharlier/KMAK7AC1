@@ -17,8 +17,10 @@ project:
   - slides/SVD.qmd
   - slides/ACP.qmd
   - slides/AFC.qmd
+  - slides/ACM.qmd
   - slides/presentation.qmd
   - td/1_ACP/TD.qmd
+  - td/2_ACM/TD.qmd
   - tp/index.qmd
   - tp/markdown.qmd
   - tp/quarto.qmd
@@ -67,11 +69,13 @@ website:
         - slides/SVD.qmd
         - slides/ACP.qmd
         - slides/AFC.qmd
+        - slides/ACM.qmd
 
     - id: TD
       collapse-level: 3
       contents:
         - td/1_ACP/TD.qmd
+        - td/2_ACM/TD.qmd
     
     - id: TP
       collapse-level: 3
