@@ -33,6 +33,7 @@ jobs:
           packages: |
             any::knitr
             any::reticulate
+            any::ade4
             any::rmarkdown
             any::plotly
             any::FactoMineR
