@@ -33,7 +33,7 @@ source("../R/functions.R")
 ```
 
 
-## Objectifs
+# Objectifs
 
 
 ## Description des données: tableau condensé
@@ -46,12 +46,12 @@ On travaille sur des tableaux de données où
 ::: {.data-table}
 |              | Variable 1 | $\cdots$ | Variable p |
 |:------------:|:----------:|:--------:|:----------:|
-| Individu $1$ | $x_{1,1}$  | $\cdots$ | $x_{1,p}$  |
+| Individu $1$ | $x_{11}$  | $\cdots$ | $x_{1p}$  |
 | $\vdots$     | $\vdots$   |          | $\vdots$   |
-| Individu $n$ | $x_{n,1}$  | $\cdots$ | $x_{n,p}$  |
+| Individu $n$ | $x_{n1}$  | $\cdots$ | $x_{np}$  |
 :::
 
-$x_{i,j}$ : mesure de la variable $k$ pour l’individu $i$.
+$x_{ik}$ : mesure de la variable $k$ pour l'individu $i$.
 
 Un tel tableau sera nommé tableau **condensé**, et est de taille $n \times p$.
 
@@ -118,12 +118,16 @@ Pour chaque variable $k$ ayant $J_k$ modalités, on crée une colonne par modali
 
 $$
 t_{i,(k,j)} = \begin{cases}
-1 & \text{si l’individu $i$ possède la modalité $j$ de la variable $k$,} \\
+1 & \text{si l'individu $i$ possède la modalité $j$ de la variable $k$,} \\
 0 & \text{sinon.}
 \end{cases}
 $$
 
 Ce tableau est nommé **tableau disjonctif complet** (TDC), et est de taille $n \times J$, avec $J = \sum_{k=1}^p J_k$.
+
+**Propriété:** on a pour tout $i=1,\dots,n$
+$$\sum_{k,j} t_{i,(k,j)} =p$$
+car chaque individu possède exactement une modalité par variable qualitative.
 
 
 ## Exemple 1 {#exemple-acm-1}
@@ -246,58 +250,55 @@ print_table(tab_disjonctif)
 
 ## Objectifs de l'ACM {#objectifs-acm}
 
-- Décrire les liaisons entre $p$ variables qualitatives qui sont simultanément observées sur $n$ individus.
+Décrire les liaisons entre $p$ variables qualitatives qui sont simultanément observées sur $n$ individus.
 
-- Données individus $\times$ variables → objectifs similaires à ceux de l’ACP.
 
+- Étude des individus
+
+  - Identifier des profils d'individus en étudiant les modalités en commun
+  - Étudier la variabilité des profils
+  - Extraire les principales dimensions
+
+
+- Étude des variables
+
+  - Identifier les liaisons entre variables
+  - Visualisation d'ensemble d'association entre modalités
+  - Construction de variable synthétique
 
 ::: {.callout-tip}
-
-### Étude des individus
-
-- Identifier des profils d’individus en étudiant les modalités en commun
-- Étudier la variabilité des profils
-- Extraire les principales dimensions
-:::
-
-:::{.callout-tip}
-### Étude des variables
-
-- Identifier les liaisons entre variables
-- Visualisation d’ensemble d’association entre modalités
-- Construction de variable synthétique
+Effectuer une ACM consiste à appliquer l'AFC au TDC c'est à dire à effectuer une ACP pondérée des nuages des point-individus et des point-modalités (centrés). On reprendra donc largement les résultats du cours d'AFC.
 :::
 
 
+# Étude du nuage des individus
 
 ## Pondération du TDC
 
-Soit $T = (t_{ij})$ la matrice du TDC, de taille $n \times J$, où
-
+ Soit $T = (t_{ij})$ la matrice du TDC, de taille $n \times J$, où
 $$
 t_{ij} = \begin{cases}
-1 & \text{si l’individu $i$ possède la modalité $j$,} \\
+1 & \text{si l'individu $i$ possède la modalité $j$,} \\
 0 & \text{sinon.}
 \end{cases}
+$$ 
+
+
+En ACM, on traite le TDC comme un tableau de contingence :
+
+La fréquence de la modalité $j$ vaut $f_j = \frac{1}{n}\sum_{i=1}^n t_{ij}$.
+
+- **Construction de la matrice $X$**
+  - *Valorisation de la rareté :* on divise $t_{ij}$ par $f_j$ pour donner plus de poids aux modalités rares. 
+  - *Centrage :* on soustrait $1$ pour obtenir des colonnes de moyenne nulle :
+
+$$
+x_{ij} = \frac{t_{ij}}{f_j} - 1
 $$
 
-Pour chaque modalité $j$, on calcule sa fréquence
-
-$$
-f_j = \frac{1}{n}\sum_{i=1}^n t_{ij}.
-$$
-
-- Si $f_j$ est petit, la modalité $j$ est rare et doit être davantage mise en valeur.
-- On remplace donc $t_{ij}$ par le rapport $t_{ij}/f_j$.
-- On centre ensuite chaque colonne pour enlever la moyenne :
-
-$$
-x_{ij} = \frac{t_{ij}}{f_j} - 1.
-$$
-
-La matrice $X = (x_{ij})$ est alors le tableau pondéré et centré sur lequel on effectue l’ACM.
-
-La ligne $i$ représente le profil de l’individu $i$ dans l’espace des modalités, avec un poids $1/n$ pour chaque individu.
+- **Interprétation**
+  - **Matrice $X = (x_{ij})$ :** c'est le tableau centré-réduit (au sens du $\chi^2$) sur lequel on applique une ACP^[Comme en AFC cela revient a utiliser la métrique du $\chi^2$ avec poids $D^{-1}_c \in \mathbb{R}^J$].
+  - **Profils individus :** la ligne $i$ représente la position de l'individu $i$ (chacun avec un poids $1/n$).
 
 
 
@@ -326,12 +327,194 @@ Le tableau transformé $X = (x_{ij})$ est alors
 | Ind. 5 | $-1$ | $4$ | $-1$ | $-1$ | $\frac{2}{3}$ |
 :::
 
-Ainsi, pour l’individu 1 qui est de groupe $A$,
+Ainsi, pour l'individu 1 qui est de groupe $A$,
 
 $$
 x_{1,A} = \frac{1}{3/5} - 1 = \frac{5}{3} - 1 = \frac{2}{3}.
 $$
 
 
-On procède de même pour chaque modalité de toutes les variables, puis on applique l’ACP au tableau $X$ obtenu.
+On procède de même pour chaque modalité de toutes les variables, puis on applique l'ACP au tableau $X$ obtenu.
+
+
+## Une première ACP sur les profils lignes
+
+On considère un nuage d'individus (ou de profils-lignes) vivant dans $\mathbb{R}^J$.
+
+- **Objectif :** Chercher un sous-espace représenté par des axes factoriels tels que la **forme** du nuage de points soit la moins altérée possible après projection orthogonalisée.
+- **Inertie et Distance :** La « forme » du nuage est caractérisée par son **inertie**, dont le calcul nécessite une métrique (notion de distance) appropriée entre deux individus $i$ et $i'$.
+
+::: {.callout-note appearance="simple"}
+### Métriques usuelles
+- **ACP normée :** Métrique euclidienne usuelle $M = I_J$ (les variables sont réduites, la distance s'écrit $d(i, i')^2 = \sum_j (x_{ij} - x_{i'j})^2$).
+- **AFC / ACM :** Métrique du $\chi^2$ avec $M = \text{diag}(1/f_j)$ (pondération par l'inverse de la fréquence pour sur-pondérer les modalités rares).
+:::
+
+## Distance du $\chi^2$ entre deux lignes 
+
+Pour tout $i,i' = 1, \dots, n$ on pose:
+$$
+d(i, i')^2 =  \sum_{j=1}^J \frac{f_j}{p} (x_{ij} - x_{i'j})^2  = \frac{1}{p} \sum_{j=1}^J \frac{1}{f_{j}} (t_{ij} - t_{i'j})^2 
+$$
+
+
+La distance entre les individus
+
+- $d(i,i') =0$  si $i$ et $i'$ prennent les mêmes modalités ;
+- $d(i,i')$ est faible si $i$ et $i'$ ont en commun beaucoup de modalités ;
+- $d(i,i')$ augmente avec le nombre de modalités différentes entre $i$ et $i'$ ;
+- $d(i,i')$ est d'autant plus grande si $i$ ou (exclusif) $i'$ possède une modalité rare.
+
+
+## Inertie du nuage de points
+
+
+- Distance d'un individu au barycentre $G$
+Comme le tableau est centré, la distance au centre de gravité $G$ s'écrit :
+
+$$
+d(i, G)^2 = \sum_{j=1}^J \frac{f_{j}}{p} x_{ij}^2 = \frac{1}{p} \sum_{j=1}^J f_{j}\left( \frac{t_{ij}}{f_{j}} - 1\right)^2 = \frac{1}{p} \sum_{j=1}^J \frac{t_{ij}}{f_{j}} - 1
+$$
+
+- Inertie totale du nuage d'individus
+
+$$
+\text{Inertie} = \frac{1}{n} \sum_{i=1}^n d(i, G)^2 = \frac{1}{np} \sum_{i=1}^n \sum_{j=1}^J \frac{t_{ij}}{f_j} - 1 = \frac{J}{p} - 1
+$$
+
+Remarque:
+
+- En AFC : L'inertie totale des nuages (profils-lignes ou colonnes) s'interprète directement comme la valeur du $\frac{\chi^2}{n}$, qui mesure l'écart à l'indépendance entre les deux variables qualitatives.
+- En ACM : Ce n'est plus le cas. L'inertie dépend uniquement de $\frac{J}{p} - 1$, c'est-à-dire du nombre moyen de modalités par variable moins 1.
+
+
+
+## Illusration
+
+On considère le jeu de données `hobbies` avec 
+
+
+
+::: {.panel-tabset}
+
+## Description
+
+- 8403 individus.
+- 17 variables qualitatives actives indiquant la pratique ou non du loisir proposé, et une 18ème pour le nombre moyen d’heures journalières à regarer la TV.
+- 4 variables qualitatives supplémentaires (sexe, âge, profession, statut matrimonial).
+- 1 variable quantitative supplémentaire (nombre d’activités).
+
+
+## En R
+
+```{r}
+#| echo: false
+
+
+library(FactoMineR)
+data(hobbies)
+
+# 1. Sélection uniquement des colonnes utiles pour l'analyse (1 à 23)
+df <- hobbies[, 1:23]
+
+# 2. Conversion des qualitatives en factor (actives + quali.sup)
+quali_vars <- c(1:18, 23)
+df[quali_vars] <- lapply(df[quali_vars], as.factor)
+
+# 3. S'assurer que quanti.sup sont bien numériques
+quanti_vars <- 19:22
+df[quanti_vars] <- lapply(df[quanti_vars], as.numeric)
+
+# 4. Supprimer TOUTES les lignes contenant au moins un NA sur ces colonnes
+df_clean <- df[complete.cases(df), ]
+```
+
+```{r}
+hobbies.mca <- MCA(df_clean, quanti.sup = 19:22, quali.sup = c(18,23), graph = FALSE)
+
+```
+
+:::
+
+## Représentation graphique
+
+Représentation du nuage des individus sur le 1er plan principal
+
+
+::: {.columns}
+
+::: {.column}
+
+```{r}
+#| echo: false
+#| fig-width: 8
+#| fig-height: 6
+
+library(ggplot2)
+
+# Extraction des coordonnées des barycentres
+bary <- hobbies.mca$var$coord |> 
+  as.data.frame() |> 
+  subset(grepl("^Cinema", rownames(hobbies.mca$var$coord)))
+
+# Plot de base + ajouts ggplot2
+plot(hobbies.mca,
+     choix = "ind",
+     invisible = c("var", "quanti.sup", "quali.sup"),
+     habillage = "Cinema",
+     label = "none") +
+  geom_point(data = bary, aes(x = `Dim 1`, y = `Dim 2`), color = "green", shape = 17, size = 4) +
+  geom_text(data = bary, aes(x = `Dim 1`, y = `Dim 2`, label = rownames(bary)), vjust = -1, fontface = "bold", color = "green")
+```
+
+:::
+
+::: {.column}
+
+
+
+:::
+
+:::
+
+
+## Représentation graphique
+
+
+::: {.columns}
+
+::: {.column}
+```{r}
+#| echo: false
+#| fig-width: 8
+#| fig-height: 6
+library(ggplot2)
+
+# 1. Extraction des noms de toutes les modalités actives
+nom_modalites <- rownames(hobbies.mca$var$coord)
+
+# 2. Attribution d'un vecteur de couleurs : rouge si termine par _1 ou _y, noir pour _0 ou _n
+couleurs_var <- ifelse(grepl("(_1|_y)$", nom_modalites), "red", "black")
+
+# 3. Génération du graphique
+plot(hobbies.mca,
+     choix = "ind",
+     invisible = c("quanti.sup", "quali.sup"),
+     label = "var",
+     col.ind = "lightgrey",   # Individus en gris clair
+     col.var = couleurs_var,  # Rouge pour _1/_y, Noir pour _0/_n
+     title = "ACM : Barycentres des modalités (_1 en rouge, _0 en noir)") +
+  theme_minimal()
+  
+```
+
+:::
+
+::: {.column}
+
+
+
+:::
+
+:::
 

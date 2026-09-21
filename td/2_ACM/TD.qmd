@@ -226,24 +226,6 @@ print_table(res$col$contrib)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # Exercice 2. 
 
 On considère un jeu de données référençant $1\,044$ passagers du *Titanic*, décrivant les variables suivantes :

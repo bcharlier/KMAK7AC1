@@ -236,26 +236,26 @@ L’**analyse en composantes principales (ACP)** est une méthode de statistique
 
 ## Les méthodes linéaires
 
-Remarque pour $p = 3$
+Pour $p = 3$, on ne représente pas réellement le nuage en 3 dimensions:
 
-- On ne représente pas réellement le nuage en 3 dimensions
 - On l’observe selon différents points de vue (**projection**)
 
 - Certains points de vue sont meilleurs que d’autres : ce sont ceux où la forme du nuage est la moins altérée
 
 ::: {layout-ncol=2}
-![Kumi Yamashita](data/projection.jpg){height=200}
+![Kumi Yamashita](data/projection.jpg){height=300}
 
-![https://kumiyamashita.com/light-shadow](data/projection2.jpg){height=200}
+![https://kumiyamashita.com/light-shadow](data/projection2.jpg){height=300}
 
 :::
 
-<br>
 
+
+:::{.callout-important}
 ### Objectif de l’ACP
 
 Trouver le plan de projection permettant de visualiser une approximation en 2 dimensions du nuage des individus qui vit dans $\mathbb{R}^p$.
-
+:::
 
 # Principe de l'ACP
 
@@ -1496,10 +1496,14 @@ plot(
   cex = 1.7,
   invisible = "quali",
   habillage = "Région",
-  legend = list(x = "topright", bty = "n"),
   cex.axis = 1.6,
   cex.lab = 1.6
-)
+) +
+  theme(
+    legend.position = c(0.98, 0.98),
+    legend.justification = c("right", "top"),
+    legend.background = element_blank() # optionnel : rend le fond de la légende transparent
+  )
 
 ```
 :::
@@ -1510,7 +1514,7 @@ plot(
 ::: {.column width="30%"}
 
 - ajout d'une variable supplémenaire qualitative (Région)
-- 
+
 :::
 
 :::
@@ -1580,12 +1584,9 @@ $$
 
 où $\Sigma_X = \operatorname{Diag}\left(\operatorname{Var}(X_{:,1}),\ldots, \operatorname{Var}(X_{:,p})\right) \in \mathbb R^{p \times p}$ est la matrice diagonale des variances des variables (Si les données sont centrées-réduites, alors $\Sigma_X=I_p$).
 
-**Interprétation des composantes principales :** On mesure la relation entre $C_k$ et la variable $X_{:,j}$ l’aide de la corrélation $r (C_k , X_{:,j})$. 
+- **Interprétation des composantes principales :** On mesure la relation entre $C_k$ et la variable $X_{:,j}$ l’aide de la corrélation $\operatorname{Cor}(C_k , X_{:,j})$. 
 
-
-::: {.callout-note}
-On peut représenter les variables dans le plan défini par les deux premiers axes en considérant les deux premières colonnes de $W$. Étant donnés $C_1$ et $C_2$, on trace le “cercle de corrélations” : la variable $j$ est représentée par un point de coordonnées $(r(C_1 , X_{:,j}), $r (C_2 , X_{:,j}))$ dans le disque. 
-:::
+- **Représentation** des variables dans le plan défini par les deux premiers axes en considérant les deux premières colonnes de $W$. Étant donnés $C_1$ et $C_2$, on trace le “cercle de corrélations” : la variable $j$ est représentée par un point de coordonnées $(\operatorname{Cor}(C_1 , X_{:,j}), \operatorname{Cor} (C_2 , X_{:,j}))$ dans le disque. 
 
 
 ## Visualisation des variables
