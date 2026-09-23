@@ -252,10 +252,9 @@ round(L,digits=2)
 #| fig-height: 3.5
 
 library(ggplot2)
-library(reshape2)
 
-L_long <- melt(L, varnames = c("modalite_ligne", "modalite_colonne"),
-               value.name = "frequence_conditionnelle")
+L_long <- as.data.frame(as.table(L))
+names(L_long) <- c("modalite_ligne", "modalite_colonne", "frequence_conditionnelle")
 
 ggplot(L_long, aes(x = modalite_colonne,
                    y = frequence_conditionnelle,
@@ -343,10 +342,9 @@ round(C,digits=2)
 #| fig-height: 3.5
 
 library(ggplot2)
-library(reshape2)
 
-C_long <- melt(C, varnames = c("modalite_ligne", "modalite_colonne"),
-               value.name = "frequence_conditionnelle")
+C_long <- as.data.frame(as.table(C))
+names(C_long) <- c("modalite_ligne", "modalite_colonne", "frequence_conditionnelle")
 
 ggplot(C_long, aes(x = modalite_ligne,
                    y = frequence_conditionnelle,
@@ -421,11 +419,9 @@ Z <- (F-r%*%t(c))/(r%*%t(c))
 #| fig-height: 8
 
 library(ggplot2)
-library(reshape2)
 
-Z_long <- melt(Z,
-               varnames = c("modalite_ligne", "modalite_colonne"),
-               value.name = "taux_liaison")
+Z_long <- as.data.frame(as.table(Z))
+names(Z_long) <- c("modalite_ligne", "modalite_colonne", "taux_liaison")
 
 ggplot(Z_long, aes(x = modalite_colonne,
                    y = modalite_ligne,
