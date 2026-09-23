@@ -42,22 +42,22 @@ Un tableau de contingence est une matrice $K \in \mathbb{R}^{q \times m}$ obtenu
 
 ### Tableau
 
-::: {.data-table style="font-size: .55em;"}
-|     | $1$ | $\cdots$ | $s$ | $\cdots$ | $m$ | Total |
+::: {.data-table style="font-size: .75em;"}
+|     | $1$ | $\cdots$ | $s$ | $\cdots$ | $m$ | [Total]{.orange} |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| $1$ | $n_{11}$ | $\cdots$ | $n_{1s}$ | $\cdots$ | $n_{1m}$ | $n_{1.}$ |
+| $1$ | $n_{11}$ | $\cdots$ | $n_{1s}$ | $\cdots$ | $n_{1m}$ | [$n_{1.}$]{.orange} |
 | $\vdots$ | $\vdots$ |  | $\vdots$ |  | $\vdots$ | $\vdots$ |
-| $i$ | $n_{i1}$ | $\cdots$ | $n_{is}$ | $\cdots$ | $n_{im}$ | $n_{i.}$ |
+| $i$ | $n_{i1}$ | $\cdots$ | $n_{is}$ | $\cdots$ | $n_{im}$ | [$n_{i\cdot}$]{.orange} |
 | $\vdots$ | $\vdots$ |  | $\vdots$ |  | $\vdots$ | $\vdots$ |
-| $q$ | $n_{q1}$ | $\cdots$ | $n_{qs}$ | $\cdots$ | $n_{qm}$ | $n_{q.}$ |
-| Total | $n_{.1}$ | $\cdots$ | $n_{.s}$ | $\cdots$ | $n_{.m}$ | $n_{..}=n$ |
+| $q$ | $n_{q1}$ | $\cdots$ | $n_{qs}$ | $\cdots$ | $n_{qm}$ | [$n_{q.}$]{.orange} |
+| [Total]{.blue} | [$n_{.1}$]{.blue} | $\cdots$ | [$n_{\cdot s}$]{.blue} | $\cdots$ | [$n_{.m}$]{.blue} | $n_{..}=n$ |
 :::
 
 On note :
 
 - $n_{is}$ le nombre d'individus possédant les modalités $i$ et $s$ ;
-- $n_{i.}=\sum_{s=1}^{m} n_{is}$ le nombre d'individus possédant la modalité $i$ ;
-- $n_{.s}=\sum_{i=1}^{q} n_{is}$ le nombre d'individus possédant la modalité $s$ ;
+- [$n_{i\cdot}=\sum_{s=1}^{m} n_{is}$ le nombre d'individus possédant la modalité $i$]{.orange} ;
+- [$n_{\cdot s}=\sum_{i=1}^{q} n_{is}$ le nombre d'individus possédant la modalité $s$]{.blue} ;
 - $n_{..}=\sum_{i=1}^{q}\sum_{s=1}^{m} n_{is}=n$ le nombre total d'individus.
 
 ### Exemple 
@@ -82,25 +82,25 @@ $F=(f_{is})_{1\leq i\leq q,\,1\leq s\leq m}$:
 
 ### Tableau
 
-::: {.data-table style="font-size: .55em;"}
-|     | $1$ | $\cdots$ | $s$ | $\cdots$ | $m$ | Total |
+::: {.data-table style="font-size: .75em;"}
+|     | $1$ | $\cdots$ | $s$ | $\cdots$ | $m$ | [Total]{.orange} |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| $1$ | $f_{11}$ | $\cdots$ | $f_{1s}$ | $\cdots$ | $f_{1m}$ | $f_{1.}$ |
+| $1$ | $f_{11}$ | $\cdots$ | $f_{1s}$ | $\cdots$ | $f_{1m}$ | [$f_{1\cdot}$]{.orange} |
 | $\vdots$ | $\vdots$ |  | $\vdots$ |  | $\vdots$ | $\vdots$ |
-| $i$ | $f_{i1}$ | $\cdots$ | $f_{is}$ | $\cdots$ | $f_{im}$ | $f_{i.}$ |
+| $i$ | $f_{i1}$ | $\cdots$ | $f_{is}$ | $\cdots$ | $f_{im}$ | [$f_{i\cdot}$]{.orange} |
 | $\vdots$ | $\vdots$ |  | $\vdots$ |  | $\vdots$ | $\vdots$ |
-| $q$ | $f_{q1}$ | $\cdots$ | $f_{qs}$ | $\cdots$ | $f_{qm}$ | $f_{q.}$ |
-| Total | $f_{.1}$ | $\cdots$ | $f_{.s}$ | $\cdots$ | $f_{.m}$ | $f_{..}=1$ |
+| $q$ | $f_{q1}$ | $\cdots$ | $f_{qs}$ | $\cdots$ | $f_{qm}$ | [$f_{q\cdot}$]{.orange} |
+| [Total]{.blue} | [$f_{\cdot 1}$]{.blue} | $\cdots$ | [$f_{\cdot s}$]{.blue} | $\cdots$ | [$f_{.m}$]{.blue} | $f_{..}=1$ |
 :::
 
-- Les fréquences et leurs marginales sont $f_{is}=\frac{n_{is}}{n}$, $f_{i.}=\sum_{s=1}^{m}f_{is}=\frac{n_{i.}}{n}$, $f_{.s}=\sum_{i=1}^{q}f_{is}=\frac{n_{.s}}{n}$.
+- Les fréquences et leurs marginales sont $f_{is}=\frac{n_{is}}{n}$, [$f_{i\cdot}=\sum_{s=1}^{m}f_{is}=\frac{n_{i\cdot}}{n}$]{.orange}, [$f_{\cdot s}=\sum_{i=1}^{q}f_{is}=\frac{n_{\cdot s}}{n}$]{.blue}.
 
 - On note ensuite les vecteurs des poids des lignes et des colonnes :
 
 $$
-r=(f_{1.},\ldots,f_{i.},\ldots,f_{q.})^\mathsf{T},
+r=\color{orange}{(f_{1\cdot},\ldots,f_{i\cdot},\ldots,f_{q\cdot})^\mathsf{T}},
 \qquad
-c=(f_{.1},\ldots,f_{.s},\ldots,f_{.m})^\mathsf{T}.
+c=\color{blue}{(f_{\cdot 1},\ldots,f_{\cdot s},\ldots,f_{\cdot m})^\mathsf{T}}.
 $$
 
 Les matrices diagonales associées sont
@@ -110,6 +110,10 @@ $D_r=\operatorname{diag}(r)\in\mathbb{R}^{q\times q}$ et $D_c=\operatorname{diag
 
 ```{r}
 F <- K/sum(K)
+```
+```{r}
+#| echo: false
+
 round(F*100,digit=2)
 ```
 
@@ -120,8 +124,28 @@ round(F*100,digit=2)
 
 ```{r}
 r <- rowSums(F)
+```
+```{r}
+#| echo: false
+
 round(r,digit=2)
-barplot(r)
+```
+```{r}
+#| echo: false
+library(ggplot2)
+ggplot(data.frame(modalite = names(r), marge = as.numeric(r)),
+       aes(x = modalite, y = marge, fill = modalite)) +
+  geom_col() +
+  scale_fill_manual(values = c(
+    Black = "black",
+    Brown = "#8B4513",
+    Red = "#C0392B",
+    Blond = "#D4A72C"
+  )) +
+  scale_y_continuous(limits = c(0, 0.5)) +
+  labs(x = "Modalités des lignes", y = "Marge") +
+  theme_minimal(base_size = 22) +
+  theme(legend.position = "none")
 ```
 
 
@@ -132,8 +156,28 @@ barplot(r)
 
 ```{r}
 c <- colSums(F)
+```
+```{r}
+#| echo: false
+
 round(c,digit=2)
-barplot(c)
+```
+```{r}
+#| echo: false
+
+ggplot(data.frame(modalite = names(c), marge = as.numeric(c)),
+       aes(x = modalite, y = marge, fill = modalite)) +
+  geom_col() +
+  scale_fill_manual(values = c(
+    Brown = "#8B4513",
+    Blue = "#245D91",
+    Hazel = "#8E6B3A",
+    Green = "#4F8A5B"
+  )) +
+  scale_y_continuous(limits = c(0, 0.5)) +
+  labs(x = "Modalités des colonnes", y = "Marge") +
+  theme_minimal(base_size = 22) +
+  theme(legend.position = "none")
 ```
 
 :::
@@ -144,41 +188,53 @@ barplot(c)
 
 ## Tableau des profils lignes (conditionnelle en ligne)
 
-Le tableau des profils lignes $L$ est obtenu en divisant chaque ligne $i$ de $F$ par son poids $f_{i.}$.
+Le tableau des profils lignes $L$ est obtenu en divisant chaque ligne $i$ de $F$ par son poids $f_{i\cdot}$.
 
 :::{.panel-tabset}
 
 ### Tableau
+
+::: {.columns}
+
+::: {.column}
 
 ::: {.data-table style="font-size: .55em;"}
 |     | $1$ | $\cdots$ | $s$ | $\cdots$ | $m$ |
 |:---:|:---:|:---:|:---:|:---:|:---:|
 | $1$ | $f_{11}/f_{1.}$ | $\cdots$ | $f_{1s}/f_{1.}$ | $\cdots$ | $f_{1m}/f_{1.}$ |
 | $\vdots$ | $\vdots$ |  | $\vdots$ |  | $\vdots$ |
-| $i$ | $f_{i1}/f_{i.}$ | $\cdots$ | $f_{is}/f_{i.}$ | $\cdots$ | $f_{im}/f_{i.}$ |
+| $i$ | $f_{i1}/f_{i\cdot}$ | $\cdots$ | $f_{is}/f_{i\cdot}$ | $\cdots$ | $f_{im}/f_{i\cdot}$ |
 | $\vdots$ | $\vdots$ |  | $\vdots$ |  | $\vdots$ |
 | $q$ | $f_{q1}/f_{q.}$ | $\cdots$ | $f_{qs}/f_{q.}$ | $\cdots$ | $f_{qm}/f_{q.}$ |
 :::
 
-On note $\ell_{is}=\tfrac{f_{is}}{f_{i.}}=\tfrac{n_{is}}{n_{i.}}$ le terme général de $L =D_r^{-1}F$.
 
-- **Métrique des poids :** les profils lignes forment un nuage de $q$ vecteurs de $\mathbb{R}^m$, pondérés par $D_r\in\mathbb{R}^{q\times q}$. Le profil ligne moyen (centre de gravité du nuage) est $c=\sum_{i=1}^{q} f_{i.} L_{i:} \in \mathbb{R}^m$ (poids des colonnes)
+:::
 
-  On peut alors centrer la matrice des profils lignes,
+::: {.column}
+
+On note $\ell_{is}=\tfrac{f_{is}}{f_{i\cdot}}=\tfrac{n_{is}}{n_{i\cdot}}$ le terme général de $L =D_r^{-1}F$.
+
+:::
+
+:::
+
+
+- **Métrique des poids :** les profils lignes forment un nuage de $q$ vecteurs de $\mathbb{R}^m$, pondérés par $D_r\in\mathbb{R}^{q\times q}$. Le profil ligne moyen (centre de gravité du nuage) est [$c=\sum_{i=1}^{q} f_{i\cdot}\, L_{i:} \in \mathbb{R}^m$]{.blue} (marges des colonnes). On peut alors centrer la matrice des profils lignes^[Centrer dans cette métrique $\sum_i f_{i\cdot}\, L^c_{i:} = 0_{\mathbb{R}^m}$ revient à mesurer l'écart à l'hypothèse d'indépendance stochastique ($f_{is} = f_{i\cdot}f_{\cdot s}$).],
 
   $$
-  L^c = \left(\tfrac{f_{is}}{f_{i.}}-f_{.s}\right)_{i,s}^{}
-      = \left(\tfrac{f_{is}-f_{i.}f_{.s}}{f_{i.}}\right)_{i,s}^{}
+  L^c = \left(\tfrac{f_{is}}{f_{i\cdot}}-c_{s}\right)_{i,s}^{}
+      = \left(\tfrac{f_{is}}{f_{i\cdot}}-f_{\cdot s}\right)_{i,s}^{}
+      = \left(\tfrac{f_{is}-f_{i\cdot}f_{\cdot s}}{f_{i\cdot}}\right)_{i,s}^{}
       = D_r^{-1}\left(F-r c^\top\right).
   $$
 
 - **Distance du $\chi^2$:** métrique euclidienne avec poids $D_c^{-1} \in \mathbb{R}^{m\times m}$
-
 $$
-d(L_{i:},L_{i':})
+d^2_{D_c^{-1}}(L_{i:},L_{i':})
 =(L_{i:}-L_{i':})^\mathsf{T}D_c^{-1}(L_{i:}-L_{i':})
-=\sum_{s=1}^{m}\frac{1}{f_{.s}}
-\left(\frac{f_{is}}{f_{i.}}-\frac{f_{i's}}{f_{i'.}}\right)^2.
+=\sum_{s=1}^{m}\tfrac{1}{f_{\cdot s}}
+\left(\tfrac{f_{is}}{f_{i\cdot}}-\tfrac{f_{i's}}{f_{i'.}}\right)^2.
 $$
 
 
@@ -191,43 +247,86 @@ L <- sweep(F,1,STATS=r,FUN="/")
 round(L,digits=2)
 ```
 
+```{r}
+#| echo: false
+#| fig-height: 3.5
+
+library(ggplot2)
+library(reshape2)
+
+L_long <- melt(L, varnames = c("modalite_ligne", "modalite_colonne"),
+               value.name = "frequence_conditionnelle")
+
+ggplot(L_long, aes(x = modalite_colonne,
+                   y = frequence_conditionnelle,
+                   fill = modalite_ligne)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    Black = "black",
+    Brown = "#8B4513",
+    Red = "#C0392B",
+    Blond = "#D4A72C"
+  )) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(
+    x = "Modalités des colonnes",
+    y = "Fréquence conditionnelle",
+    fill = "Modalités des lignes"
+  ) +
+    theme_minimal(base_size = 16)
+```
+
 :::
 
-## Tableau des profils colonnes
+## Tableau des profils colonnes (conditionnelle en colonnes)
 
-Le tableau des profils colonnes $C$ est obtenu en divisant chaque colonne $s$ de $F$ par son poids $f_{.s}$.
+Le tableau des profils colonnes $C$ est obtenu en divisant chaque colonne $s$ de $F$ par son poids $f_{\cdot s}$.
 
 :::{.panel-tabset}
 
 ### Tableau
 
+
+::: {.columns}
+
+::: {.column}
+
 ::: {.data-table style="font-size: .55em;"}
 |     | $1$ | $\cdots$ | $s$ | $\cdots$ | $m$ |
 |:---:|:---:|:---:|:---:|:---:|:---:|
-| $1$ | $f_{11}/f_{.1}$ | $\cdots$ | $f_{1s}/f_{.s}$ | $\cdots$ | $f_{1m}/f_{.m}$ |
+| $1$ | $f_{11}/f_{.1}$ | $\cdots$ | $f_{1s}/f_{\cdot s}$ | $\cdots$ | $f_{1m}/f_{.m}$ |
 | $\vdots$ | $\vdots$ |  | $\vdots$ |  | $\vdots$ |
-| $i$ | $f_{i1}/f_{.1}$ | $\cdots$ | $f_{is}/f_{.s}$ | $\cdots$ | $f_{im}/f_{.m}$ |
+| $i$ | $f_{i1}/f_{.1}$ | $\cdots$ | $f_{is}/f_{\cdot s}$ | $\cdots$ | $f_{im}/f_{.m}$ |
 | $\vdots$ | $\vdots$ |  | $\vdots$ |  | $\vdots$ |
-| $q$ | $f_{q1}/f_{.1}$ | $\cdots$ | $f_{qs}/f_{.s}$ | $\cdots$ | $f_{qm}/f_{.m}$ |
+| $q$ | $f_{q1}/f_{.1}$ | $\cdots$ | $f_{qs}/f_{\cdot s}$ | $\cdots$ | $f_{qm}/f_{.m}$ |
 :::
 
-On note $c_{is}=\tfrac{f_{is}}{f_{.s}}=\tfrac{n_{is}}{n_{.s}}$ le terme général de $C=FD_c^{-1}$.
 
-- **Métrique des poids :** les profils colonnes forment un nuage de $m$ vecteurs de $\mathbb{R}^q$, pondérés par les $D_c\in\mathbb{R}^{m\times m}$. Le profil colonne moyen est $r=\sum_{s=1}^{m} f_{.s}C_{:s} \in\mathbb{R}^q$ (poids des lignes)
+:::
 
-  On peut alors centrer la matrice des profils colonnes:
+::: {.column}
+
+On note $c_{is}=\tfrac{f_{is}}{f_{\cdot s}}=\tfrac{n_{is}}{n_{\cdot s}}$ le terme général de $C=FD_c^{-1}$.
+
+:::
+
+:::
+
+
+- **Métrique des poids :** les profils colonnes forment un nuage de $m$ vecteurs de $\mathbb{R}^q$, pondérés par $D_c\in\mathbb{R}^{m\times m}$. Le profil colonne moyen (centre de gravité du nuage) est [$r=\sum_{s=1}^{m} f_{\cdot s}\, C_{:s} \in\mathbb{R}^q$]{.orange} (marges des lignes). On peut alors centrer la matrice des profils colonnes^[Centrer dans cette métrique $\sum_s f_{\cdot s}\, C^c_{:s} = 0_{\mathbb{R}^q}$ revient à mesurer l'écart à l'hypothèse d'indépendance stochastique ($f_{is} = f_{i\cdot}f_{\cdot s}$).]:
   $$
-  C^c = \left(\frac{f_{is}}{f_{.s}}-f_{i.}\right)_{i,s}^{}
-      = \left(\frac{f_{is}-f_{i.}f_{.s}}{f_{.s}}\right)_{i,s}^{}
+  C^c  = \left(\tfrac{f_{is}}{f_{\cdot s}}-r_i \right)_{i,s}^{}
+      = \left(\tfrac{f_{is}}{f_{\cdot s}}-f_{i\cdot}\right)_{i,s}^{}
+      = \left(\tfrac{f_{is}-f_{i\cdot}f_{\cdot s}}{f_{\cdot s}}\right)_{i,s}^{}
       = \left(F-r c^\top\right)D_c^{-1}.
   $$
 
 - **Distance du $\chi^2$:** métrique euclidienne avec poids $D_r^{-1}\in \mathbb{R}^{q\times q}.$
 $$
-d(C_{:s},C_{:s'})
+d^2_{D_r^{-1}}(C_{:s},C_{:s'})
 =(C_{:s}-C_{:s'})^\mathsf{T}D_r^{-1}(C_{:s}-C_{:s'})
-=\sum_{i=1}^{q}\frac{1}{f_{i.}}
-\left(\frac{f_{is}}{f_{.s}}-\frac{f_{is'}}{f_{.s'}}\right)^2.
+=\sum_{i=1}^{q}\tfrac{1}{f_{i\cdot}}
+\left(\tfrac{f_{is}}{f_{\cdot s}}-\tfrac{f_{is'}}{f_{\cdot s'}}\right)^2.
 $$
 
 ### Exemple
@@ -239,49 +338,128 @@ C <- sweep(F,2,STATS=c,FUN="/")
 round(C,digits=2)
 ```
 
+```{r}
+#| echo: false
+#| fig-height: 3.5
+
+library(ggplot2)
+library(reshape2)
+
+C_long <- melt(C, varnames = c("modalite_ligne", "modalite_colonne"),
+               value.name = "frequence_conditionnelle")
+
+ggplot(C_long, aes(x = modalite_ligne,
+                   y = frequence_conditionnelle,
+                   fill = modalite_colonne)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c(
+    Brown = "#8B4513",
+    Blue = "#245D91",
+    Hazel = "#8E6B3A",
+    Green = "#4F8A5B"
+  )) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(
+    x = "Modalités des lignes",
+    y = "Fréquence conditionnelle",
+    fill = "Modalités des colonnes"
+  ) +
+  theme_minimal(base_size = 16)
+```
+
 :::
 
 
 ## Liaison entre lignes et colonnes
 
-En cas d'indépendance entre $X_1$ et $X_2$, on a :
-
 :::{.panel-tabset}
 
 ### Taux de liaison
 
+En cas d'indépendance entre $X_1$ et $X_2$, on a :
+
 $$
-f_{is}=f_{i.}f_{.s}
+f_{is}=f_{i\cdot}f_{\cdot s}
 \quad\Longleftrightarrow\quad
-n_{is}=\frac{n_{i.}n_{.s}}{n}.
+n_{is}=\frac{n_{i\cdot}n_{\cdot s}}{n}.
 $$
 
-avec les fréquences théoriques $f_{i.}f_{.s}$  et les effectifs théoriques
-$\frac{n_{i.}n_{.s}}{n}$.
+avec les fréquences théoriques $f_{i\cdot}f_{\cdot s}$  et les effectifs théoriques
+$\frac{n_{i\cdot}n_{\cdot s}}{n}$.
 
 - On définit une mesure locale de liaison entre une modalité $i$ de $X_1$ et une modalité $s$ de $X_2$ :
 
-  - si $f_{is}\simeq f_{i.}f_{.s}$, il y a indépendance entre $i$ et $s$ ;
-  - si $f_{is}>f_{i.}f_{.s}$, les modalités $i$ et $s$ s'attirent, car
-    $\tfrac{f_{is}}{f_{i.}}>f_{.s}$ et
-    $\tfrac{f_{is}}{f_{.s}}>f_{i.}$
-  - si $f_{is}<f_{i.}f_{.s}$, les modalités $i$ et $s$ se repoussent, car
-    $\tfrac{f_{is}}{f_{i.}}<f_{.s}$ et
-    $\tfrac{f_{is}}{f_{.s}}<f_{i.}$
+  - si $f_{is}\simeq f_{i\cdot}f_{\cdot s}$, il y a indépendance entre $i$ et $s$ ;
+  - si $f_{is}>f_{i\cdot}f_{\cdot s}$, les modalités $i$ et $s$ s'attirent, car
+    $\tfrac{f_{is}}{f_{i\cdot}}>f_{\cdot s}$ et
+    $\tfrac{f_{is}}{f_{\cdot s}}>f_{i\cdot}$
+  - si $f_{is}<f_{i\cdot}f_{\cdot s}$, les modalités $i$ et $s$ se repoussent, car
+    $\tfrac{f_{is}}{f_{i\cdot}}<f_{\cdot s}$ et
+    $\tfrac{f_{is}}{f_{\cdot s}}<f_{i\cdot}$
 
-- On a la matrice des écarts à l'indépendance  (mesure avec le taux de liaison):
+- On a la matrice des écarts à l'indépendance  (mesuré avec le taux de liaison):
 $$
-Z = \left(\tfrac{f_{is}-f_{i.}f_{.s}}{f_{i.}f_{.s}}\right)_{is} = D_r^{-1} (F - rc^\top)D_c^{-1}
+Z = \left(\frac{f_{is}-f_{i\cdot}f_{\cdot s}}{f_{i\cdot}f_{\cdot s}}\right)_{is} = D_r^{-1} (F - rc^\top)D_c^{-1}
 $$
 
 
 ### Exemple
 
+::: {.columns}
+
+::: {.column}
+
+
+
 Matrice des taux de liaisons :
 ```{r}
 Z <- (F-r%*%t(c))/(r%*%t(c))
-round(Z,digit=2)
 ```
+
+```{r}
+#| echo: false
+#| fig-height: 8
+
+library(ggplot2)
+library(reshape2)
+
+Z_long <- melt(Z,
+               varnames = c("modalite_ligne", "modalite_colonne"),
+               value.name = "taux_liaison")
+
+ggplot(Z_long, aes(x = modalite_colonne,
+                   y = modalite_ligne,
+                   fill = taux_liaison)) +
+  geom_tile(color = "white", linewidth = 0.8) +
+  geom_text(aes(label = sprintf("%.2f", taux_liaison)),
+            size = 5) +
+  scale_fill_gradient2(
+    low = "#245D91",
+    mid = "white",
+    high = "#C0392B",
+    midpoint = 0,
+    name = "Taux de liaison",
+    guide = guide_colorbar(direction = "horizontal")
+  ) +
+  scale_x_discrete(limits = colnames(Z), position = "top") +
+  scale_y_discrete(limits = rev(rownames(Z))) +
+  labs(
+    x = "Modalités des colonnes",
+    y = "Modalités des lignes"
+  ) +
+  theme_minimal(base_size = 22) +
+  theme(
+    panel.grid = element_blank(),
+    axis.title = element_text(size = 22),
+    axis.text = element_text(size = 20),
+    legend.position = "bottom",
+    legend.direction = "horizontal"
+  )
+```
+
+:::
+
+::: {.column}
 
 Sur cet exemple :
 
@@ -289,30 +467,34 @@ Sur cet exemple :
 
 - La fréquence des blonds aux yeux marron est 87% au-dessous de ce qu’elle serait s’il y avait indépendance entre les deux variables. En plus ces deux modalités se repoussent (le vérifier sur les tableaux de profils ligne et colonne).
 
+
+:::
+
+:::
+
+
+
 :::
 
 ## Inertie et liaison entre variables
 
-:::{.panel-tabset}
-
-### Inertie et liaison
+::: {style="font-size: .9em;"}
 
 Une mesure globale de liaison entre $X_1$ et $X_2$ est
 $$
 \chi^2
 =\sum_{i=1}^{q}\sum_{s=1}^{m}
-\frac{\left(n_{is}-\tfrac{n_{i.}n_{.s}}{n}\right)^2}
-{\tfrac{n_{i.}n_{.s}}{n}} 
-=n\sum_{i=1}^{q}\sum_{s=1}^{m}
-\underbrace{\frac{\left(f_{is}-f_{i.}f_{.s}\right)^2}
-{f_{i.}f_{.s}}}_{=\Phi^2}
+\frac{\left(n_{is}-\tfrac{n_{i\cdot}n_{\cdot s}}{n}\right)^2}
+{\tfrac{n_{i\cdot}n_{\cdot s}}{n}} 
+=n\underbrace{\sum_{i=1}^{q}\sum_{s=1}^{m}\frac{\left(f_{is}-f_{i\cdot}f_{\cdot s}\right)^2}
+{f_{i\cdot}f_{\cdot s}}}_{=\Phi^2}
 $$
-  
+
 - En cas d'indépendance, on a $\chi^2=\Phi^2=0$.
-- En pondérant chaque taux de liaison $t_{is}$ par $f_{i.}f_{.s}$, on obtient $\bar{t}=\sum_i\sum_s f_{i.}f_{.s}t_{is}=0$, et $\operatorname{Var}(t)=\sum_{i,s}f_{i.}f_{.s}t_{is}^2 =\frac{\chi^2}{n}=\Phi^2$.
+- En pondérant $z_{is}$ par $f_{i\cdot}f_{\cdot s}$, on obtient $\small\bar{z}=\sum_{i,s} f_{i\cdot}f_{\cdot s}z_{is}=0$, et $\small\operatorname{Var}(Z)=\sum_{i,s}f_{i\cdot}f_{\cdot s}z_{is}^2 =\frac{\chi^2}{n}=\Phi^2$.
 
 
-::: {.callout-note}
+::: {.callout-important style="font-size: .8em;"}
 
 ### Théorème
 
@@ -320,10 +502,12 @@ On a
 $$
 \tfrac{1}{n}\chi^2=I(L)=I(C),
 $$
-où $I(L)$ est l'inertie du nuage des profils lignes et $I(C)$ l'inertie du nuage des profils colonnes, calculées avec la distance du $\chi^2$.
+où $I(L)$ est l'inertie du nuage des profils lignes et $I(C)$ l'inertie du nuage des profils colonnes, calculées avec leur métrique et distance du $\chi^2$ respective^[On a donc $I(L) = \sum_s f_{i\cdot} d^2_{D_c^{-1}}(L_{i:}, c^\top)$ et $I(C) = \sum_i f_{\cdot s} d^2_{D_r^{-1}}(C_{:s}, c^\top)$].
 :::
 
-### Exemple 
+:::
+
+## Exemple 
 
 ```{r}
 # Statistique du chi2 calculée directement
@@ -353,7 +537,6 @@ iner.col * sum(K)
 
 ```
 
-:::
 
 # Analyse Factorielle des Correspondences
 
@@ -373,7 +556,7 @@ Elle revient de manière équivalente à effectuer
 
 ## ACP de la matrice des profils-lignes centrés
 
-On cherche à représenter au mieux les $q$ modalités de $X_1$ dans un sous-espace de $\mathbb{R}^m$ de dimension $k \le \min(q-1,m-1)$^[On perd un degré de liberté à cause de la normalisation]. 
+On cherche à représenter au mieux les $q$ modalités de $X_1$ dans un sous-espace de $\mathbb{R}^m$ de dimension $k \le \min(q-1,m-1)$^[On a au plus $q-1$ dimensions pour les lignes (du fait du centrage par les poids) et $m-1$ pour les colonnes (car la somme d'un profil vaut 1).]. 
 
 - Les axes sont engendrés par les vecteurs propres ordonnés $v_1,\dots,v_k$ de $L^\top D_r L D_c^{-1} \in \mathbb{R}^{m\times m}$ associés aux valeurs propres $\lambda_1 \ge \dots \ge \lambda_k$
 - À chaque étape, on ajoute une nouvelle direction qui maximise la variance (pondérée par $D_r$) des projections des profils-lignes centrés, sous la métrique $D_c^{-1}$
@@ -398,7 +581,7 @@ $$
 
 ## ACP de la matrice des profils-colonnes centrés
 
-De façon duale, on représente les $m$ modalités de $X_2$ dans un sous-espace de $\mathbb{R}^q$ de dimension $k \le \min(q-1,m-1)$^[On perd un degré de liberté à cause de la normalisation]. 
+De façon duale, on représente les $m$ modalités de $X_2$ dans un sous-espace de $\mathbb{R}^q$ de dimension $k \le \min(q-1,m-1)$^[On a au plus $q-1$ dimensions pour les lignes (du fait du centrage par les poids) et $m-1$ pour les colonnes (car la somme d'un profil vaut 1).].
 
 - Les axes sont engendrés par les vecteurs propres ordonnés $u_1,\dots,u_k$ de $C D_c C^\top D_r^{-1}  \in \mathbb{R}^{q\times q}$ associés aux valeurs propres $\lambda_1 \ge \dots \ge \lambda_k$
 - À chaque étape, on ajoute une nouvelle direction qui maximise la variance (pondérée par $D_c$) des projections des profils-colonnes centrés, sous la métrique $D_r^{-1}$
@@ -424,7 +607,7 @@ $$
 
 
 
-## SVD généralisée
+## SVD généralisée des taux de liaison
 
 L'AFC peut se calculer par une décomposition en valeurs singulières (pondérée) de la matrice $Z \in \mathbb{R}^{q\times m}$ (matrice des écarts à l'indépendance ou des profils centrés) avec les métriques
 
@@ -636,13 +819,13 @@ $$
 Vérification des relations barycentriques sur le 1er axe
 ```{r}
 # 1. Extraction FactoMineR
-x1 <- res.ca$row$coord[, 1]              # Coordonnée x_1
-y1 <- res.ca$col$coord[, 1]              # Coordonnée y_1
-sqrt_lambda1 <- sqrt(res.ca$eig[1, 1])   # Valeur singulière sqrt(lambda_1)
-
+x1 <- res.ca$row$coord[, 1]                 # Coordonnée x_1
+y1 <- res.ca$col$coord[, 1]                 # Coordonnée y_1
+rsqrt_lambda <- 1 / sqrt(res.ca$eig[, 1])   # Valeur singulière  sqrt(lambda_1)
+rsqrt_lambda                                # poids dans les relation barycentrique
 
 # --- Formule : x_i = (1 / sqrt(lambda_1)) * sum( (f_is / f_i.) * y_s )
-x_black_formule1 <- sum(L['Black',] * y1) / sqrt_lambda1
+x_black_formule1 <- sum(L['Black',] * y1) * rsqrt_lambda[1]
 
 
 cat("FactoMineR (x1)                          :", x1["Black"],
@@ -744,13 +927,13 @@ Le $\cos^2$ mesure la qualité de projection d'une modalité sur l'axe factoriel
 
 $$
 \begin{cases}
-\cos^2_\alpha(i) = \tfrac{x_{i\alpha}^2}{d^2(l_i, c)} & \text{(Profils-lignes)} \\[12pt]
+\cos^2_\alpha(i) = \tfrac{x_{i\alpha}^2}{d^2_{D_r^{-1}}(L_{i:}, c^\top)} & \text{(Profils-lignes)} \\[12pt]
 \cos^2_\alpha(s) = \tfrac{y_{s\alpha}^2}{d^2(c_s, r)} & \text{(Profils-colonnes)}
 \end{cases}
 \quad \text{avec} \quad \sum_{\alpha=1}^r \cos^2_\alpha(\cdot) = 1
 $$
 
-où $d^2(l_i, c)$ est la distance du $\chi^2$ entre le profil-ligne $l_i$ et le profil moyen $c$.
+où $d^2_{D_r^{-1}}(L_{i:}, c^\top)$ est la distance du $\chi^2$ entre le profil-ligne $L_{i:}$ et le profil moyen $c$.
 
 ### Règles d'interprétation
 

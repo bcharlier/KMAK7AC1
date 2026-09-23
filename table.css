@@ -1,11 +1,11 @@
 /* Shared table styling for HTML pages and RevealJS slides. */
 .table {
-  width: 100%;
+  width: auto;
   margin: auto;
   table-layout: auto;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 0.75em !important;
+  font-size: 0.68em !important;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
@@ -56,13 +56,14 @@
   max-width: 100%;
   border-collapse: collapse;
   text-align: center !important;
-  font-size: 0.85em;
+  font-size: 0.75em;
 }
 
 .data-table th,
 .data-table td {
   text-align: center !important;
-  padding: 0.25em 0.5em;
+  padding: 0.18em 0.5em;
+  line-height: 1.1;
   vertical-align: middle;
 }
 
