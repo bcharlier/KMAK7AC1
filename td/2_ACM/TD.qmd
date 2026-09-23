@@ -20,6 +20,7 @@ Il s'agit d'un tableau de contingence croisant 5 catégories de salariés (en li
 library(ca)
 data(smoke)
 print_table(smoke)
+sum(smoke)
 ```
 
 
@@ -218,7 +219,7 @@ print_table(res$col$contrib)
   
   Pourquoi ne prend on pas la peine d'afficher `res$row$cos2` et `res$col$cos2` ?
   
-  b) Interpréter les axes factoriels et le graphique réalisé à la question 2.c.
+  c) Interpréter les axes factoriels et le graphique réalisé à la question 2.c.
 
 
 
@@ -234,7 +235,7 @@ On considère un jeu de données référençant $1\,044$ passagers du *Titanic*,
 - **`Pclass` :** Classe du billet ($1^{\text{ère}}$, $2^{\text{ème}}$ ou $3^{\text{ème}}$)
 - **`Sex` :** Sexe du passager
 - **`Age` :** Tranche d'âge ($\left[0\,; 10\right]$, $\left[11\,; 18\right]$, $\left[19\,; 29\right]$, $\left[30\,; 49\right]$, $\ge 50$)
-- **`Fare` :** Prix du ticket (variable quantitative)
+- **`Fare` :** Prix du ticket (variable quantitative supplémentaire)
 - **`Embarked` :** Port d'embarquement ($\text{C} = \text{Cherbourg}$, $\text{Q} = \text{Queenstown}$, $\text{S} = \text{Southampton}$)
 
 ```{r}
@@ -242,7 +243,7 @@ On considère un jeu de données référençant $1\,044$ passagers du *Titanic*,
 
 
 library(FactoMineR)
-library(PASWR)
+suppressPackageStartupMessages(library(PASWR))
 
 data("titanic3")
 df <- titanic3[, c("survived", "pclass", "sex", "age", "fare", "embarked")]
@@ -294,7 +295,7 @@ df_titanic <- df_clean[, c("Survived", "Pclass", "Sex", "Age_cat", "Embarked", "
 #| echo: false
 
 
-titanic.mca <- MCA(df_titanic, quanti.sup = 6, graph = FALSE)
+titanic.mca <- MCA(df_titanic, quanti.sup = 6, ncp=10, graph = FALSE)
 ```
 
 1. On affiche d’abord les résultats suivants
@@ -302,23 +303,23 @@ titanic.mca <- MCA(df_titanic, quanti.sup = 6, graph = FALSE)
 
 ::: {.columns}
 
-::: {.column}
+::: {.column width="60%"}
 ```{r}
 #| echo: false
 
-print_table(titanic.mca$eig[,1:2])
+print_table(titanic.mca$eig[,1:3])
 ```
 
 
 :::
 
-::: {.column}
+::: {.column width="40%"}
 
 ```{r}
 #| echo: false
 
 
-plot(titanic.mca$eig[,1])
+plot(titanic.mca$eig[,1], cex = 1.3, cex.axis = 1.3, cex.lab = 1.3, cex.main = 1.3)
 ```
 
 :::
@@ -349,6 +350,10 @@ plot(
   col.var = "red",
   col.quanti.sup = "blue",
   label = "var",
+  cex = 1.3,
+  cex.axis = 1.3,
+  cex.lab = 1.3,
+  cex.main = 1.3,
 )
 
 ```
@@ -369,6 +374,10 @@ plot(
   choix = "var",               # Affiche les catégories (modalités)
   col.var = "red",             # Modalités en rouge
   col.quanti.sup = "darkblue", # Variable Fare en bleu foncé
+  cex = 1.3,
+  cex.axis = 1.3,
+  cex.lab = 1.3,
+  cex.main = 1.3,
 )
 ```
 
@@ -395,7 +404,11 @@ plot(
   col.var = "red",
   col.quanti.sup = "blue",
   label = "var",
-  title = "ACM Titanic - Plan factoriel"
+  title = "ACM Titanic - Plan factoriel",
+  cex = 1.3,
+  cex.axis = 1.3,
+  cex.lab = 1.3,
+  cex.main = 1.3,
 )
 
 ```
@@ -418,12 +431,17 @@ plot(
   choix = "var",               # Affiche les catégories (modalités)
   col.var = "red",             # Modalités en rouge
   col.quanti.sup = "darkblue", # Variable Fare en bleu foncé
+  cex = 1.3,
+  cex.axis = 1.3,
+  cex.lab = 1.3,
+  cex.main = 1.3,
 )
 ```
 
 :::
 
 :::
+
 
   a) Commenter la représentation des individus dans ces plans.
   b) Rappeler comment sont calculées les positions des modalités sur ce graphe.
