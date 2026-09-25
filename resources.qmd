@@ -2,26 +2,23 @@
 title: "Resources"
 ---
 
+## Courses
+
+- ACP, AFC, ACM, AFM: [François Husson](https://husson.github.io/MOOC_AnaDo/)
+- ACP, AFC, ACM: [Marie Chavent](https://marie-chavent.perso.math.cnrs.fr/teaching/)
+- ACP: [Peter Bloem](https://peterbloem.nl/publications/unraveling-pca)
+- ACP, AFC, AFM, Classification: [Vivien Roussez et Pascal Irz](https://mtes-mct.github.io/parcours_r_module_analyse_multi_dimensionnelles/)
+
+
 ## Software
 
 - [R](https://www.r-project.org/) for statistical computing.
 - [RStudio Desktop](https://posit.co/download/rstudio-desktop/) for writing and running R.
 - [Quarto](https://quarto.org/) for reproducible documents and this course site.
 
-## R packages
-
-Install the course packages from R with:
-
-```r
-install.packages(c("tidyverse", "tidymodels", "infer", "janitor"))
-```
 
 ## References
 
 - [R for Data Science](https://r4ds.hadley.nz/)
 - [OpenIntro Statistics](https://www.openintro.org/book/os/)
 - [Quarto documentation](https://quarto.org/docs/)
-
-## Getting help
-
-Bring questions to class or office hours. When asking for programming help, include the code you ran, the full error message, and a small sample of the data when possible.

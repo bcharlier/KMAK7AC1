@@ -939,5 +939,7 @@ où $d^2_{D_r^{-1}}(L_{i:}, c^\top)$ est la distance du $\chi^2$ entre le profil
 
 ## Références
 
-[@Saporta]
-[Polycopié de cours de Marie Chavent](https://marie-chavent.perso.math.cnrs.fr/teaching/)
+- [@Saporta]
+- [François Husson](https://husson.github.io/MOOC_AnaDo/)
+- [Marie Chavent](https://marie-chavent.perso.math.cnrs.fr/teaching/)
+- [Vivien Roussez et Pascal Irz](https://mtes-mct.github.io/parcours_r_module_analyse_multi_dimensionnelles/)

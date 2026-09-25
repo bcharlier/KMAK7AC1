@@ -1814,6 +1814,10 @@ fviz_mca_var(
 
 ## Qualité de représentation : $\cos^2$
 
+::: {.panel-tabset}
+
+### Description
+
 On utilise les mêmes formules de $\cos^2$ pour mesurer la qualité de projection des **individus** et des **modalités** sur les axes factoriels.
 
 En pratique, si deux points sont bien projetés ($\cos^2$ élevé), leur proximité sur le plan reflète une réelle proximité dans l'espace d'origine.
@@ -1829,6 +1833,18 @@ En pratique, si deux points sont bien projetés ($\cos^2$ élevé), leur proximi
 ### Proximité entre deux modalités (de variables différentes)
 - S'interprète en termes de **distance du $\chi^2$** : deux modalités se ressemblent si elles sont choisies par les mêmes individus.
 - C'est cohérent avec la relation barycentrique : une modalité se situe au centre de gravité des individus qui la possèdent.
+:::
+
+### En R
+On peut filtrer les modalités correctement représentées et qui contribuent fortement aux axes
+
+```{r}
+#| fig-width: 8
+#| fig-heigth: 6
+
+
+plot.MCA(hobbies.mca, cex=.7, selectMod = "cos2 10", select = "contrib 10", invisible = "ind")
+```
 :::
 
 ## Variables qualitatives supplémentaires
@@ -1890,3 +1906,10 @@ fviz_mca_var(
 ) +
   theme_minimal()
 ```
+
+## Références
+
+- [@Saporta]
+- [François Husson](https://husson.github.io/MOOC_AnaDo/)
+- [Marie Chavent](https://marie-chavent.perso.math.cnrs.fr/teaching/)
+- [Vivien Roussez et Pascal Irz](https://mtes-mct.github.io/parcours_r_module_analyse_multi_dimensionnelles/)
