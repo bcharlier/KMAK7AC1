@@ -231,7 +231,7 @@ L’**analyse en composantes principales (ACP)** est une méthode de statistique
 
 **Interprétation :** On ne sélectionne qu’une petite partie des facteurs et cela permet de réaliser des graphiques dans cet espace de faible dimension (dimension égale au nombre de facteurs retenus). Les graphiques peuvent éventuellement permettre de comprendre la structure des données analysées. Cette interprétation est guidée par des indicateurs numériques.
 
-**Référence:** en ligne [@besse_acp] un livre [@escofier_pages2016].
+**Référence:** en ligne [@bloem2024unraveling], [@besse_acp]. Des livres [@escofier_pages2016], [@Saporta].
 
 
 ## Les méthodes linéaires

@@ -423,7 +423,7 @@ Donc deux individus sont proches s'ils possèdent les mêmes modalités, sachant
 - $d(i,i')$ est d'autant plus grande si $i$ ou (exclusif) $i'$ possède une modalité rare.
 
 
-## Inertie du nuage de points
+## Inertie du nuage de points {#sec-inertie_ligne}
 
 
 - Distance d'un individu au barycentre $G$
@@ -446,173 +446,225 @@ Remarque:
 
 
 
-## Illusration
-
-On considère le jeu de données `hobbies` avec 
-
-
+## Illusration: jeu de données `hobbies`
 
 ::: {.panel-tabset}
 
 ## Description
 
-- 8403 individus.
+- 8403 individus (6905 après nettoyage)
 - 17 variables qualitatives actives indiquant la pratique ou non du loisir proposé, et une 18ème pour le nombre moyen d’heures journalières à regarer la TV.
 - 4 variables qualitatives supplémentaires (sexe, âge, profession, statut matrimonial).
 - 1 variable quantitative supplémentaire (nombre d’activités).
 
-
-## En R
-
-Chargement des données
 ```{r}
-#| echo: true
-
 library(FactoMineR)
 data(hobbies)
-
-df <- hobbies[, 1:23]
-dim(df)
 ```
 
-Nettoyage
-
 ```{r}
-quali_vars <- c(1:18, 23)
+#| echo: false
+
+print_table(head(hobbies))
+```
+
+
+### Nettoyage des données
+```{r}
+#| echo: true
+df <- hobbies[, 1:23]
+
+quali_vars <- c(1:22)
 df[quali_vars] <- lapply(df[quali_vars], as.factor)
 
-quanti_vars <- 19:22
+quanti_vars <- c(18,23)
 df[quanti_vars] <- lapply(df[quanti_vars], as.numeric)
 
 # Supprimer TOUTES les lignes contenant au moins un NA sur ces colonnes
 df_clean <- df[complete.cases(df), ]
 
-dim(df_clean)
+cat(dim(df), dim(df_clean))
 ```
 
-Calcul l'ACM
-```{r}
-hobbies.mca <- MCA(df_clean, quanti.sup = 19:22, quali.sup = c(18,23), graph = FALSE)
 
+## ACM
+```{r}
+hobbies.mca <- MCA(df_clean, quali.sup = 19:22, quanti.sup = c(18,23), graph = FALSE)
+```
+
+```{r}
+#| echo: false
+#| height: 3
+library(ggplot2)
+library(dplyr)
+
+# 1. Extraction et préparation des données
+marge_data <- data.frame(
+  Modalite = names(hobbies.mca$call$marge.col),
+  Marge    = as.numeric(hobbies.mca$call$marge.col),
+  stringsAsFactors = FALSE
+)
+
+# 2. Seuil des 5 plus faibles marges
+seuil_5_plus_petites <- sort(marge_data$Marge)[5]
+
+# 3. Création des règles de style et verrouillage de l'ordre des facteurs
+marge_data <- marge_data %>%
+  mutate(
+    # Bloque l'ordre d'origine pour éviter le tri alphabétique automatique de ggplot2
+    Modalite = factor(Modalite, levels = Modalite),
+    
+    # Repérage des modalités en _0 (ou _0 / _non / _FALSE)
+    est_zero = grepl("_0$|_non$|_FALSE$", Modalite, ignore.case = TRUE),
+    
+    # Repérage des 5 plus petites marges
+    est_dans_top5_bas = Marge <= seuil_5_plus_petites,
+    
+    # Style de texte : gras pour les 5 plus faibles
+    style_texte = ifelse(est_dans_top5_bas, "bold", "plain"),
+    
+    # Couleur du texte sous l'axe
+    couleur_texte = ifelse(est_dans_top5_bas, "#C0392B", "black")
+  )
+
+# 4. Barplot ggplot2
+ggplot(marge_data, aes(x = Modalite, y = Marge, fill = est_zero)) +
+  geom_col(show.legend = FALSE) +
+  # Définition des couleurs des barres : Orange pour les _0, Bleu pour les autres
+  scale_fill_manual(
+    values = c("FALSE" = "#2166AC", "TRUE" = "#E69F00"),
+    labels = c("FALSE" = "Pratique (_1)", "TRUE" = "Absence (_0)"),
+    name   = "Modalité"
+  ) +
+  labs(
+    title = "Marges colonnes (marge.col)",
+    x = NULL,
+    y = "Marge colonne"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(
+      angle = 45, 
+      hjust = 1, 
+      vjust = 1, 
+      size  = 9,
+      face  = marge_data$style_texte,
+      color = marge_data$couleur_texte
+    ),
+    panel.grid.major.x = element_blank()
+  )
 ```
 
 :::
 
-## Représentation graphique
+## Représentation graphique du nuage des individus {#sec-nuage_ind}
 
 Représentation du nuage des individus sur le 1er plan principal
 
 
 ::: {.columns}
 
-::: {.column width="66%"}
+::: {.column width="75%"}
 
-::: {.r-stack}
-
-::: {.fragment .fade-out fragment-index=1}
 ```{r}
 #| echo: false
-#| fig-width: 12
-#| fig-height: 12
+#| out-width: "100%"
+#| fig-height: 8
 
-library(ggplot2)
+library(plotly)
 
-# Plot de base : Nuage simple
-plot(hobbies.mca,
-     choix = "ind",
-     invisible = c("var", "quanti.sup", "quali.sup"),
-     col.ind = "lightgrey",                           # Individus en gris clair
-     label = "none") +
-  theme(
-    axis.title = element_text(size = 16),
-    axis.text = element_text(size = 14)
+coord_ind <- hobbies.mca$ind$coord[, c("Dim 1", "Dim 2")]
+activites <- names(df_clean)[1:17]
+activites_data <- df_clean[, activites, drop = FALSE]
+
+traces <- list(list(
+  x = coord_ind[, "Dim 1"],
+  y = coord_ind[, "Dim 2"],
+  type = "scatter",
+  mode = "markers",
+  visible = TRUE,
+  name = "Tous les individus",
+  marker = list(color = "lightgrey", size = 5),
+  hoverinfo = "none"
+))
+visibility <- list(Toutes = c(TRUE, rep(FALSE, length(activites))))
+
+for (activite in activites) {
+  pratique <- as.numeric(activites_data[[activite]]) == 2
+  couleurs <- ifelse(pratique, "#2e74b5", "#e67e22")
+  traces <- c(
+    traces,
+    list(
+      list(
+        x = coord_ind[, "Dim 1"],
+        y = coord_ind[, "Dim 2"],
+        type = "scatter",
+        mode = "markers",
+        visible = FALSE,
+        name = activite,
+        marker = list(color = couleurs, size = 5),
+        hovertext = paste(rownames(coord_ind), ifelse(pratique, "Oui", "Non"), sep = " - "),
+        hoverinfo = "text"
+      )
+    )
   )
-```
-:::
-
-::: {.fragment .fade-in-then-out fragment-index=1}
-```{r}
-#| echo: false
-#| fig-width: 12
-#| fig-height: 12
-
-# Habillage par la variable Cinema
-plot(hobbies.mca,
-     choix = "ind",
-     invisible = c("var", "quanti.sup", "quali.sup"),
-     habillage = "Cinema",
-     label = "none") +
-  scale_color_manual(
-    values = c("#2e74b5", "#e67e22"),
-    labels = c("Cinema_0", "Cinema_1")
-  )+
-  theme(
-    axis.title = element_text(size = 16),
-    axis.text = element_text(size = 14),
-    legend.text = element_text(size = 16),
-    legend.title = element_blank(),
-    legend.position = c(0.85, 0.85), # x=85%, y=85% du graphique
-    legend.background = element_rect(fill = alpha("white", 0.6), color = "gray80")
+  visibility[[activite]] <- c(
+    FALSE,
+    seq_along(activites) == match(activite, activites)
   )
-```
-:::
+}
 
-::: {.fragment .fade-in fragment-index=2}
-```{r}
-#| echo: false
-#| fig-width: 12
-#| fig-height: 12
-
-library(ggplot2)
-
-# 1.Extraction des barycentres bruts (modalités Cinema_0 and Cinema_1) et correction par les valeurs singulières
-bary <- hobbies.mca$var$coord[c("Cinema_0","Cinema_1"),1:2]
-
-bary[, 1] <- bary[, 1] * sqrt(hobbies.mca$eig[1, "eigenvalue"])
-bary[, 2] <- bary[, 2] * sqrt(hobbies.mca$eig[2, "eigenvalue"])
-
-# Habillage + barycentres
-plot(hobbies.mca,
-     choix = "ind",
-     invisible = c("var", "quanti.sup", "quali.sup"),
-     habillage = "Cinema",
-     label = "none") +
-   scale_color_manual(
-    values = c("#2e74b5", "#e67e22"),
-    labels = c("Cinema_0", "Cinema_1")
-  )+
-  geom_point(data = bary, aes(x = `Dim 1`, y = `Dim 2`), color = "green", shape = c(17,18), size = 9) +
-  geom_text(data = bary, aes(x = `Dim 1`, y = `Dim 2`, label = rownames(bary)), vjust = -1, fontface = "bold", color = "green", size = 9)  + 
-  theme(
-    axis.title = element_text(size = 16),
-    axis.text = element_text(size = 14),
-    legend.text = element_text(size = 16),
-    legend.title = element_blank(),
-    legend.position = c(0.85, 0.85), # x=85%, y=85% du graphique
-    legend.background = element_rect(fill = alpha("white", 0.6), color = "gray80")
+slider_steps <- lapply(names(visibility), function(activite) {
+  list(
+    method = "update",
+    label = activite,
+    args = list(
+      list(visible = unlist(visibility[[activite]])),
+      list(title = list(text = if (activite == "Toutes") {
+        "Nuage des individus"
+      } else {
+        paste("Nuage des individus -", activite)
+      }))
+    )
   )
+})
+
+plot_activites <- plotly_build(plot_ly())
+plot_activites$x$data <- traces
+plot_activites %>%
+  layout(
+    title = list(text = paste("Nuage des individus -", activites[1]), x = 0.5),
+    xaxis = list(title = "Dim 1", automargin = TRUE),
+    yaxis = list(title = "Dim 2", automargin = TRUE),
+    #margin = list(l = 75, r = 30, t = 70, b = 130),
+    legend = list(orientation = "h", x = 0.5, y = 1.02, xanchor = "center"),
+    sliders = list(list(
+      active = 0,
+      x = 0.12,
+      y = -0.18,
+      len = 0.76,
+      pad = list(t = 10),
+      currentvalue = list(prefix = "Activité : "),
+      steps = slider_steps
+    ))
+  )%>%
+  config(displayModeBar = FALSE)
 ```
-:::
 
 :::
 
-:::
 
-::: {.column width="33%"}
+::: {.column width="25%"}
 
-<ul>
-  <li>Pas d’allure particulière du nuage de points.</li>
-  <li class="fragment" data-fragment-index="1">On peut faire apparaître les modalités et les variables pour aider à l’interprétation (ici <code>Cinema</code> qui fait ressortir une structure).</li>
-  <li class="fragment" data-fragment-index="2">Séparation selon une des bissectrices. On peut également faire apparaître cette séparation avec les barycentres des deux modalités (<code>Cinema_0</code> / <code>Cinema_1</code>).</li>
-</ul>
-
+- Pas d’allure particulière du nuage de points
+- On peut faire apparaître les modalités et les variables pour aider à l’interprétation 
 :::
 
 :::
 
 
 
-## Représentation graphique
+## Représentation graphique des moyennes des activités
 
 ::: {.columns}
 
@@ -698,11 +750,11 @@ y_lim <- y_lim + diff(y_lim) * c(-0.1, 0.1)
 
 # 3. Génération du graphique
 plot(hobbies.mca,
-     choix = "ind",
-  invisible = c("var", "quanti.sup", "quali.sup"),
-  col.ind = NA,
-     label = "none",
-      title = "ACM : Barycentres de toutes les modalités (Zoom)") +
+    choix = "ind",
+    invisible = c("var", "quanti.sup", "quali.sup"),
+    col.ind = NA,
+    label = "none",
+    title = "ACM : Barycentres de toutes les modalités (Zoom)") +
     geom_point(data = bary, aes(x = `Dim 1`, y = `Dim 2`), color = couleurs_var, shape = formes_var, size = 4) +
   geom_text(data = bary, aes(x = `Dim 1`, y = `Dim 2`, label = rownames(bary)), vjust = -1, fontface = "bold", color = couleurs_var, size = 4)  + 
   coord_cartesian(
@@ -728,22 +780,37 @@ plot(hobbies.mca,
 
 ::: {.column width="33%"}
 
-::: {.r-stack}
 
-::: {.fragment .fade-out fragment-index=1}
-On peut finalement effectuer cette opération pour toutes les modalités :
-$$\bar{C}_r^{(ind)}(j) = \sum_{i=1}^n \frac{t_{ij}}{n_{j}} C_r^{(ind)}(i)$$
+On peut calculer le barycentre (euclidien) de chaque modalité :
+$$G^{(mod)}(j) = \sum_{i=1}^n \frac{t_{ij}}{n_{j}} C_r^{(ind)}(i)$$
 
-où $C_r^{(ind)}(i)$ désigne la coordonnée de l'individu $i$ sur le $r$-ième axe factoriel ($r$-ième composante principale), $t_{ij} \in \{0,1\}$ l'indicateur d'appartenance à la modalité $j$, et $n_{ j} = \sum_{i=1}^n t_{ij}$ l'effectif de cette modalité.
+où 
+
+- $C_r^{(ind)}(i)$ désigne la coordonnée de l'individu $i$ sur le $r$-ième axe factoriel
+- $t_{ij} \in \{0,1\}$ l'indicateur d'appartenance à la modalité $j$ 
+- $n_{ j} = \sum_{i=1}^n t_{ij}$ l'effectif de cette modalité.
 :::
 
-::: {.fragment .fade-in-then-out fragment-index=1}
 
-- **Séparation nette des modalités** « Oui » et « Non » le long de la première bissectrice.
-- **Validation empirique :** vérification en observant les individus situés aux extrémités de certains axes.
+:::
+
+## Validation empirique
+
+- On a vu  une **séparation nette des modalités** « Oui » et « Non » le long de la première bissectrice. 
+
+- On peut vérifier en observant les 1000 individus situés aux extrémités de certains axes.
+
+:::{.r-stack}
+
+::: {.fragment .fade-out fragment-index=1}
+::: {.columns}
+
+::: {.column}
+
 ```{r}
 #| echo: false
-
+#| fig-width: 8
+#| fig-height: 8
 
 library(dplyr)
 library(tidyr)
@@ -751,13 +818,62 @@ library(ggplot2)
 
 # 1. Calcul du score le long de la première bissectrice (Dim1 + Dim2)
 score_bissectrice <- hobbies.mca$ind$coord[,'Dim 1'] + hobbies.mca$ind$coord[,'Dim 2']
+ord <- order(score_bissectrice)
 
-# 1. Calcul des proportions (Sud-Ouest vs Nord-Est)
+# 2. Identification des groupes extrêmes
+idx_so <- head(ord, 1000)
+idx_ne <- tail(ord, 1000)
+
+# 3. Préparation du dataframe pour le nuage d'individus
+df_ind <- as.data.frame(hobbies.mca$ind$coord[, 1:2])
+colnames(df_ind) <- c("Dim1", "Dim2")
+df_ind$Groupe <- "Autres"
+df_ind$Groupe[idx_so] <- "Sud-Ouest"
+df_ind$Groupe[idx_ne] <- "Nord-Est"
+df_ind$Groupe <- factor(df_ind$Groupe, levels = c("Autres", "Sud-Ouest", "Nord-Est"))
+
+# 4. Graphe d'ACM avec mise en valeur des groupes extrêmes
+ggplot(df_ind, aes(x = Dim1, y = Dim2, color = Groupe)) +
+  geom_point(data = filter(df_ind, Groupe == "Autres"), alpha = 0.4, size = 1.2) +
+  geom_point(data = filter(df_ind, Groupe != "Autres"), alpha = 0.8, size = 1.8) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "gray40") +
+  scale_color_manual(
+    values = c("Autres" = "lightgray", "Sud-Ouest" = "#e74c3c", "Nord-Est" = "#2ecc71")
+  ) +
+  labs(
+    title = "Individus extrêmes (Dim 1-2)",
+    x = "Dimension 1",
+    y = "Dimension 2"
+  ) +
+  theme_minimal(base_size = 16) +
+  theme(
+    legend.position = c(0.02, 0.98),
+    legend.justification = c("left", "top"),
+    legend.background = element_rect(fill = alpha("white", 0.7), color = "gray80"),
+    legend.title = element_blank(),
+    plot.title = element_text(size = 18, face = "bold"),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14)
+  )
+```
+
+:::
+
+::: {.column}
+
+```{r}
+#| echo: false
+#| fig-width: 8
+#| fig-height: 8
+
+# 1. Extraction propre des 17 variables d'activités
 cols <- 1:17
-p_so <- sapply(head(df_clean[order(score_bissectrice), cols], 1000), function(x) mean(as.numeric(x) == 2))
-p_ne <- sapply(tail(df_clean[order(score_bissectrice), cols], 1000), function(x) mean(as.numeric(x) == 2))
 
-# 2. Mise en forme des données dans un dataframe 'long'
+# 2. Calcul des proportions (Sud-Ouest vs Nord-Est)
+p_so <- sapply(head(df_clean[ord, cols], 1000), function(x) mean(as.numeric(x) == 2))
+p_ne <- sapply(tail(df_clean[ord, cols], 1000), function(x) mean(as.numeric(x) == 2))
+
+# 3. Mise en forme des données dans un dataframe 'long'
 df_graph <- data.frame(
   Activite = names(p_so),
   Sud_Ouest = p_so,
@@ -770,53 +886,114 @@ df_graph <- data.frame(
   ) %>%
   mutate(
     Groupe = factor(Groupe, levels = c("Sud_Ouest", "Nord_Est"), labels = c("Sud-Ouest", "Nord-Est")),
-    # Tri des activités par proportion moyenne pour un rendu plus lisible
     Activite = reorder(Activite, Proportion, mean)
   )
 
-activite_order <- levels(df_graph$Activite)
+activite_order <- levels(df_graph$Activite) 
 
-# 3. Barplot comparatif avec ggplot2
+# 4. Barplot comparatif horizontalisé
 ggplot(df_graph, aes(x = Activite, y = Proportion, fill = Groupe)) +
   geom_col(position = position_dodge(width = 0.7), width = 0.6) +
+  coord_flip() +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = c(0, 1)) +
-  scale_fill_manual(values = c("Sud-Ouest" = "#e74c3c", "Nord-Est" = "#2ecc71")) +
+  scale_fill_manual(values = c("Nord-Est" = "#2ecc71", "Sud-Ouest" = "#e74c3c")) +
   labs(
-    title = "Comparaison des profils aux extrêmes de la 1ère bissectrice",
-    subtitle = "Taux de pratique des 1000 individus les plus excentrés",
     x = NULL,
     y = "Proportion de pratiquants",
-    fill = "Groupe"
+    fill = NULL
+  ) +
+  theme_minimal(base_size = 16) +
+  theme(
+    legend.position = "bottom",
+    panel.grid.major.y = element_blank(),
+    axis.title.x = element_text(size = 14),
+    axis.text = element_text(size = 14),
+    legend.text = element_text(size = 14)
+  )
+```
+
+:::
+
+:::
+
+:::
+
+::: {.fragment .fade-in-then-out fragment-index=1}
+::: {.columns}
+
+::: {.column}
+
+```{r}
+#| echo: false
+#| fig-width: 8
+#| fig-height: 8
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+# 1. Calcul du score le long de la seconde bissectrice (Dim2 - Dim1)
+score_bissectrice2 <- hobbies.mca$ind$coord[,'Dim 2'] - hobbies.mca$ind$coord[,'Dim 1']
+ord_b2 <- order(score_bissectrice2)
+
+# 2. Identification des groupes extrêmes (Nord-Ouest vs Sud-Est)
+idx_no <- tail(ord_b2, 1000)
+idx_se <- head(ord_b2, 1000)
+
+# 3. Préparation du dataframe pour le nuage d'individus
+df_ind_b2 <- as.data.frame(hobbies.mca$ind$coord[, 1:2])
+colnames(df_ind_b2) <- c("Dim1", "Dim2")
+df_ind_b2$Groupe <- "Autres"
+df_ind_b2$Groupe[idx_no] <- "Nord-Ouest"
+df_ind_b2$Groupe[idx_se] <- "Sud-Est"
+df_ind_b2$Groupe <- factor(df_ind_b2$Groupe, levels = c("Autres", "Nord-Ouest", "Sud-Est"))
+
+# 4. Graphe d'ACM avec mise en valeur des groupes extrêmes
+ggplot(df_ind_b2, aes(x = Dim1, y = Dim2, color = Groupe)) +
+  geom_point(data = filter(df_ind_b2, Groupe == "Autres"), alpha = 0.4, size = 1.2) +
+  geom_point(data = filter(df_ind_b2, Groupe != "Autres"), alpha = 0.8, size = 1.8) +
+  geom_abline(intercept = 0, slope = -1, linetype = "dashed", color = "gray40") +
+  scale_color_manual(
+    values = c("Autres" = "lightgray", "Nord-Ouest" = "#e74c3c" , "Sud-Est" =  "#2ecc71")
+  ) +
+  labs(
+    title = "Individus extrêmes (2e bissectrice)",
+    x = "Dimension 1",
+    y = "Dimension 2"
   ) +
   theme_minimal(base_size = 16) +
   theme(
     legend.position = c(0.02, 0.98),
     legend.justification = c("left", "top"),
     legend.background = element_rect(fill = alpha("white", 0.7), color = "gray80"),
-    panel.grid.major.x = element_blank(),
-    axis.title = element_text(size = 18),
-    axis.text = element_text(size = 16),
-    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 15),
-    plot.title = element_text(size = 20, face = "bold"),
-    plot.subtitle = element_text(size = 17),
-    legend.text = element_text(size = 16),
-    legend.title = element_blank()
+    legend.title = element_blank(),
+    plot.title = element_text(size = 18, face = "bold"),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14)
   )
 ```
 
+:::
+
+::: {.column}
+
 ```{r}
 #| echo: false
+#| fig-width: 8
+#| fig-height: 8
 
-# Score le long de la seconde bissectrice (Dim 1 - Dim 2)
-score_bissectrice <- hobbies.mca$ind$coord[, "Dim 1"] - hobbies.mca$ind$coord[, "Dim 2"]
+# 1. Extraction propre des 17 variables d'activités
+cols <- 1:17
 
-p_no <- sapply(head(df_clean[order(score_bissectrice), cols], 1000), function(x) mean(as.numeric(x) == 2))
-p_se <- sapply(tail(df_clean[order(score_bissectrice), cols], 1000), function(x) mean(as.numeric(x) == 2))
+# 2. Calcul des proportions (Nord-Ouest vs Sud-Est)
+p_no <- sapply(df_clean[idx_no, cols], function(x) mean(as.numeric(x) == 2))
+p_se <- sapply(df_clean[idx_se, cols], function(x) mean(as.numeric(x) == 2))
 
-df_graph <- data.frame(
+# 3. Mise en forme des données dans un dataframe 'long'
+df_graph_b2 <- data.frame(
   Activite = names(p_no),
-  Nord_Ouest = p_no,
-  Sud_Est = p_se
+  Sud_Est = p_se,
+  Nord_Ouest = p_no
 ) %>%
   pivot_longer(
     cols = c(Nord_Ouest, Sud_Est),
@@ -824,46 +1001,39 @@ df_graph <- data.frame(
     values_to = "Proportion"
   ) %>%
   mutate(
-    Groupe = factor(Groupe, levels = c("Nord_Ouest", "Sud_Est"), labels = c("Nord-Ouest (Min)", "Sud-Est (Max)")),
+    Groupe = factor(Groupe, levels = c("Nord_Ouest", "Sud_Est"), labels = c( "Nord-Ouest", "Sud-Est")),
     Activite = factor(Activite, levels = activite_order)
   )
 
-ggplot(df_graph, aes(x = Activite, y = Proportion, fill = Groupe)) +
+# 4. Barplot comparatif horizontalisé
+ggplot(df_graph_b2, aes(x = Activite, y = Proportion, fill = Groupe)) +
   geom_col(position = position_dodge(width = 0.7), width = 0.6) +
+  coord_flip() +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = c(0, 1)) +
-  scale_fill_manual(values = c("Nord-Ouest (Min)" = "#e74c3c", "Sud-Est (Max)" = "#2ecc71")) +
+  scale_fill_manual(values = c("Nord-Ouest"= "#e74c3c", "Sud-Est" = "#2ecc71")) +
   labs(
-    title = "Comparaison des profils aux extrêmes de la 2ème bissectrice",
-    subtitle = "Taux de pratique des 1000 individus les plus excentrés",
     x = NULL,
     y = "Proportion de pratiquants",
-    fill = "Groupe"
+    fill = NULL
   ) +
   theme_minimal(base_size = 16) +
   theme(
-    legend.position = c(0.02, 0.98),
-    legend.justification = c("left", "top"),
-    legend.background = element_rect(fill = alpha("white", 0.7), color = "gray80"),
-    panel.grid.major.x = element_blank(),
-    axis.title = element_text(size = 18),
-    axis.text = element_text(size = 16),
-    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 15),
-    plot.title = element_text(size = 20, face = "bold"),
-    plot.subtitle = element_text(size = 17),
-    legend.text = element_text(size = 16),
-    legend.title = element_blank()
+    legend.position = "bottom",
+    panel.grid.major.y = element_blank(),
+    axis.title.x = element_text(size = 14),
+    axis.text = element_text(size = 14),
+    legend.text = element_text(size = 14)
   )
 ```
 
-
-:::
-
-:::
 :::
 
 :::
 
-## Rapport de corrélation
+:::
+:::
+
+## Rapport de corrélation {#sec-eta2}
 
 
 :::{.panel-tabset}
@@ -878,14 +1048,12 @@ avec $\text{Inertie}_{\text{inter}, r, k}$ l'inertie inter-classe de la $k$-ièm
 $$\text{Inertie}_{\text{inter}, r, k} = \sum_{j=1}^{J_k} \frac{f_j}{n} \left( \frac{1}{f_j} \sum_{i=1}^n t_{ij} C_r^{(\text{ind})}(i) \right)^2$$
 
 
-Plus $\eta_{r,k}^2$ est proche de 1:
+- Plus $\eta_{r,k}^2$ est proche de 1:
 
-- plus la liaison est forte entre la composante $r$ et la variable $k$
-- plus on observe une séparation des modalités de la variable $k$ sur l’axe $r$
+  - plus la liaison est forte entre la composante $r$ et la variable $k$
+  - plus on observe une séparation des modalités de la variable $k$ sur l’axe $r$
 
-Si $\eta_{r,k}^2$ est petit:
-
-- les barycentres des modalités de la variable $k$ sont tous confondus à l'origine.
+- Si $\eta_{r,k}^2$ est petit: les barycentres des modalités de la variable $k$ sont tous confondus à l'origine.
 
 
 ### $\eta^2$
@@ -927,85 +1095,7 @@ plot(hobbies.mca,
 
 :::
 
-
-### Répartition
-
-
-
-```{r}
-#| echo: false
-#| fig-width: 12
-#| fig-height: 8
-#| out-width: 100%
-
-
-library(plotly)
-
-coord_ind <- hobbies.mca$ind$coord[, c("Dim 1", "Dim 2")]
-activites <- names(df_clean)[1:17]
-activites_data <- df_clean[, activites, drop = FALSE]
-
-traces <- list()
-visibility <- list()
-
-for (activite in activites) {
-  pratique <- as.numeric(activites_data[[activite]]) == 2
-  couleurs <- ifelse(pratique, "#2e74b5", "#e67e22")
-  traces <- c(
-    traces,
-    list(
-      list(
-        x = coord_ind[, "Dim 1"],
-        y = coord_ind[, "Dim 2"],
-        type = "scatter",
-        mode = "markers",
-        visible = activite == activites[1],
-        name = activite,
-        marker = list(color = couleurs, size = 5),
-        hovertext = paste(rownames(coord_ind), ifelse(pratique, "Oui", "Non"), sep = " - "),
-        hoverinfo = "text"
-      )
-    )
-  )
-  visibility[[activite]] <- seq_along(activites) == match(activite, activites)
-}
-
-slider_steps <- lapply(seq_along(activites), function(i) {
-  list(
-    method = "update",
-    label = activites[i],
-    args = list(
-      list(visible = unlist(visibility[[activites[i]]])),
-      list(title = list(text = paste("Nuage des individus -", activites[i])))
-    )
-  )
-})
-
-plot_activites <- plotly_build(plot_ly())
-plot_activites$x$data <- traces
-plot_activites %>%
-  layout(
-    width = 760,
-    height = 520,
-    autosize = FALSE,
-    title = list(text = paste("Nuage des individus -", activites[1]), x = 0.5),
-    xaxis = list(title = "Dim 1", automargin = TRUE),
-    yaxis = list(title = "Dim 2", automargin = TRUE),
-    margin = list(l = 75, r = 30, t = 70, b = 130),
-    legend = list(orientation = "h", x = 0.5, y = 1.02, xanchor = "center"),
-    sliders = list(list(
-      active = 0,
-      x = 0.12,
-      y = -0.18,
-      len = 0.76,
-      pad = list(t = 10),
-      currentvalue = list(prefix = "Activité : "),
-      steps = slider_steps
-    ))
-  )
-```
-
-
+Voir le [nuage des individus](#sec-nuage_ind)
 
 :::
 
@@ -1042,47 +1132,648 @@ $$\text{Inertie}_{\text{mod}}(j) = \frac{f_j}{p} \, d^2(j, O) = \frac{f_j}{p} \l
 
 Malgré la baisse de son poids, plus une modalité est rare, **plus son inertie propre est grande** (car $1 - f_j$ tend vers 1).
 
-
+**Pré-traitement:** On évite en pratique de conserver dans l’analyse des modalités trop rare
 
 ## Inertie du nuage des variables
 
 
 - L'**inertie d'une variable** $k$ possédant $J_k$ modalités est la somme des inerties de ses modalités :
-
-$$\text{Inertie}_{\text{var}}(k) = \sum_{j=1}^{J_k} \text{Inertie}_{\text{mod}}(j) = \sum_{j=1}^{J_k} \frac{1 - f_j}{p} = \frac{J_k - 1}{p}$$
+  $$\text{Inertie}_{\text{var}}(k) = \sum_{j=1}^{J_k} \text{Inertie}_{\text{mod}}(j) = \sum_{j=1}^{J_k} \frac{1 - f_j}{p} = \frac{J_k - 1}{p}$$
 
   Propriété fondamentale
 
-  - L'inertie totale d'une variable ne dépend que de son **nombre de modalités $J_k$** et du **nombre total de variables $p$**. 
+  -  la part de l’inertie totale, due à une variable $k$ est d’autant plus grande que le nombre de modalités $J_k$ de cette variable est grand.
 
   - Si toutes les variables sont binaires ($J_k = 2$), chaque variable apporte exactement la même inertie au nuage : $\frac{2 - 1}{p} = \frac{1}{p}$.
+  
+  - **Pré-traitement:** On évite en pratique de conserver dans l'analyse des variables ayant des nombre de modalités trop différent
 
 - **Inertie totale** est la somme des $p$ inerties de chaque variable
 $$
 I(C) = \text{Inertie}_{\text{tot}} = \sum_{k=1}^{p} \text{Inertie}_{\text{var}}(k) = \frac{J}{p} - 1.
 $$
-On retrouve l'inertie des profils lignes $I(L)$
+On retrouve [l'inertie des profils lignes $I(L)$](#sec-inertie_ligne).
 
 ## Représentation des modalités
 
 
 
+::: {.columns}
+
+::: {.column width="66%"}
+
+
+```{r}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 12
+
+
+library(ggplot2)
+nom_modalites <- rownames(hobbies.mca$var$coord)
+
+x_lim <- c(-1.1, 1.5)
+y_lim <- c(-1.1, 1.5)
+
+
+bary_ind <- hobbies.mca$ind$coord[, c("Dim 1", "Dim 2")]
+bary_ind <- sweep(
+  bary_ind,
+  MARGIN = 2,
+  STATS = sqrt(hobbies.mca$eig[1:2, "eigenvalue"]),
+  FUN = "*"
+)
+
+# 2. Attribution des couleurs et des formes aux modalités
+couleurs_var <- ifelse(grepl("(_1|_y)$", nom_modalites), "#2e74b5", "#e67e22")
+formes_var <- ifelse(grepl("(_1|_y)$", nom_modalites), 17, 8)
+
+plot(hobbies.mca,
+     choix = "ind",
+     invisible = c("quanti.sup", "quali.sup", "ind"),
+     col.ind = "lightgrey",   # Individus en gris clair
+     col.var= couleurs_var,
+     label = "var",
+     shape.var = formes_var
+     ) +
+  geom_point(data = bary_ind,
+   aes(x = `Dim 1`, y = `Dim 2`),
+    color = "lightgrey")  + 
+       coord_cartesian(
+    xlim = x_lim,
+    ylim = y_lim
+  ) +
+  theme(
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+    legend.text = element_text(size = 14),
+    legend.title = element_blank(),
+    legend.position = c(0.85, 0.85), # x=85%, y=85% du graphique
+    legend.background = element_rect(fill = alpha("white", 0.6), color = "gray80")
+  )
+
+```
+:::
+
+::: {.column width="33%"}
+
+On peut tracer le nuage des point des indivus comme le barycentre des modalités qu’il possède
+$$
+G_r^{(ind)} (i) = \sum_{j=1}^J \frac{t_{ij}}{p} C_r^{(mod)} (j)
+$$
+:::
+
+
+:::
+
+
+## Relation de transition
+
+
+:::{.r-stack}
+
+::: {.fragment .fade-out fragment-index=1}
+::: {.columns}
+::: {.column width="50%"}
+$$G_r^{(mod)} (j) = \phantom{\frac{1}{\sqrt{\lambda_r}}} \sum_{i=1}^n \frac{t_{ij}}{n_j} C_r^{(ind)} (i)$$
+
+```{r}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 12
+
+
+library(ggplot2)
+nom_modalites <- rownames(hobbies.mca$var$coord)
+
+x_lim <- c(-1.1, 1.5)
+y_lim <- c(-1.1, 1.5)
+
+# 1. Extraction des noms de toutes les modalités actives
+
+bary_var <- hobbies.mca$var$coord[, c("Dim 1", "Dim 2")]
+bary_var <- sweep(
+  bary_var,
+  MARGIN = 2,
+  STATS = sqrt(hobbies.mca$eig[1:2, "eigenvalue"]),
+  FUN = "*"
+)
+
+# 2. Attribution des couleurs et des formes aux modalités
+couleurs_var <- ifelse(grepl("(_1|_y)$", nom_modalites), "#2e74b5", "#e67e22")
+formes_var <- ifelse(grepl("(_1|_y)$", nom_modalites), 17, 8)
+
+plot(hobbies.mca,
+    choix = "ind",
+    invisible = c("var", "quanti.sup", "quali.sup"),
+    col.ind = "lightgrey",
+    label = "none",
+) +
+  geom_point(data = bary_var,
+   aes(x = `Dim 1`, y = `Dim 2`),
+    color = couleurs_var,
+    shape = formes_var, size = 4) +
+  geom_text(data = bary_var, aes(x = `Dim 1`, y = `Dim 2`, label = rownames(bary_var)), vjust = -1, color = couleurs_var, size = 4)  + 
+  coord_cartesian(
+    xlim = x_lim,
+    ylim = y_lim
+  ) +
+  theme(
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+    legend.text = element_text(size = 14),
+    legend.title = element_blank(),
+    legend.position = c(0.85, 0.85), # x=85%, y=85% du graphique
+    legend.background = element_rect(fill = alpha("white", 0.6), color = "gray80")
+  )
+
+```
+
+:::
+
+::: {.column width="50%"}
+
+$$G_r^{(ind)} (i) = \phantom{\frac{1}{\sqrt{\lambda_r}}} \sum_{j=1}^J \frac{t_{ij}}{p} C_r^{(mod)} (j)$$
+
+```{r}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 12
+
+
+library(ggplot2)
+nom_modalites <- rownames(hobbies.mca$var$coord)
+
+x_lim <- c(-1.1, 1.5)
+y_lim <- c(-1.1, 1.5)
+
+
+bary_ind <- hobbies.mca$ind$coord[, c("Dim 1", "Dim 2")]
+bary_ind <- sweep(
+  bary_ind,
+  MARGIN = 2,
+  STATS = sqrt(hobbies.mca$eig[1:2, "eigenvalue"]),
+  FUN = "*"
+)
+
+# 2. Attribution des couleurs et des formes aux modalités
+couleurs_var <- ifelse(grepl("(_1|_y)$", nom_modalites), "#2e74b5", "#e67e22")
+formes_var <- ifelse(grepl("(_1|_y)$", nom_modalites), 17, 8)
+
+plot(hobbies.mca,
+     choix = "ind",
+     invisible = c("quanti.sup", "quali.sup", "ind"),
+     col.ind = "lightgrey",   # Individus en gris clair
+     col.var= couleurs_var,
+     label = "var",
+     shape.var = formes_var
+     ) +
+  geom_point(data = bary_ind,
+   aes(x = `Dim 1`, y = `Dim 2`),
+    color = "lightgrey")  + 
+       coord_cartesian(
+    xlim = x_lim,
+    ylim = y_lim
+  ) +
+  theme(
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+    legend.text = element_text(size = 14),
+    legend.title = element_blank(),
+    legend.position = c(0.85, 0.85), # x=85%, y=85% du graphique
+    legend.background = element_rect(fill = alpha("white", 0.6), color = "gray80")
+  )
+
+```
+
+:::
+
+:::
+
+
+
+:::
+
+
+::: {.fragment .fade-in-then-out fragment-index=1}
+
+
+::: {.columns}
+::: {.column width="50%"}
+$$G_r^{(mod)} (j) = {\frac{1}{\sqrt{\lambda_r}}} \sum_{i=1}^n \frac{t_{ij}}{n_j} C_r^{(ind)} (i)$$
+
+```{r}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 12
+
+
+library(ggplot2)
+nom_modalites <- rownames(hobbies.mca$var$coord)
+
+x_lim <- c(-1.1, 1.5)
+y_lim <- c(-1.1, 1.5)
+
+
+# 2. Attribution des couleurs et des formes aux modalités
+couleurs_var <- ifelse(grepl("(_1|_y)$", nom_modalites), "#2e74b5", "#e67e22")
+formes_var <- ifelse(grepl("(_1|_y)$", nom_modalites), 17, 8)
+
+plot(hobbies.mca,
+    choix = "ind",
+    invisible = c("quanti.sup", "quali.sup"),
+    col.ind = "lightgrey",
+    label = "var",
+    col.var =couleurs_var,
+) +
+  coord_cartesian(
+    xlim = x_lim,
+    ylim = y_lim
+  ) +
+  theme(
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+    legend.text = element_text(size = 14),
+    legend.title = element_blank(),
+    legend.position = c(0.85, 0.85), # x=85%, y=85% du graphique
+    legend.background = element_rect(fill = alpha("white", 0.6), color = "gray80")
+  )
+
+```
+
+:::
+
+::: {.column width="50%"}
+
+$$G_r^{(ind)} (i) = {\frac{1}{\sqrt{\lambda_r}}} \sum_{j=1}^J \frac{t_{ij}}{p} C_r^{(mod)} (j)$$
+
+```{r}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 12
+
+
+library(ggplot2)
+nom_modalites <- rownames(hobbies.mca$var$coord)
+
+x_lim <- c(-1.1, 1.5)
+y_lim <- c(-1.1, 1.5)
+
+# 2. Attribution des couleurs et des formes aux modalités
+couleurs_var <- ifelse(grepl("(_1|_y)$", nom_modalites), "#2e74b5", "#e67e22")
+formes_var <- ifelse(grepl("(_1|_y)$", nom_modalites), 17, 8)
+
+plot(hobbies.mca,
+     choix = "ind",
+     invisible = c("quanti.sup", "quali.sup"),
+     col.ind = "lightgrey",   # Individus en gris clair
+     col.var= couleurs_var,
+     label = "var",
+     shape.var = formes_var
+     )   + 
+       coord_cartesian(
+    xlim = x_lim,
+    ylim = y_lim
+  ) +
+  theme(
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+    legend.text = element_text(size = 14),
+    legend.title = element_blank(),
+    legend.position = c(0.85, 0.85), # x=85%, y=85% du graphique
+    legend.background = element_rect(fill = alpha("white", 0.6), color = "gray80")
+  )
+
+```
+
+:::
+
+:::
+
+:::
+
+
+:::
+
+
 # Aides à l’interprétation
 
-## Inertie et valeurs propres
+## Inertie et valeurs propres dans l'ACM
 
-### Valeurs propres dans l'ACM
-
-- Il y a (au plus) $J - p$ valeurs propres non nulles^[Chaque individu $i$, la somme des modalités choisies vaut exactement $p$].
+- Il y a (au plus) $\min(n-1, J - p)$ valeurs propres non nulles^[Chaque individu $i$, la somme des modalités choisies vaut exactement $p$].
 
 - La valeur propre $\lambda_r$ associée à l'axe de rang $r$ s'écrit :
-  $$\lambda_r = \frac{1}{p} \sum_{k=1}^p \eta_{r, k}^2$$
-  *(voir diapo 16)*
-- $\Rightarrow \lambda_r \in [0, 1]$.
+  $$\lambda_r = \frac{1}{p} \sum_{k=1}^p \eta_{r, k}^2 \in [0, 1]$$
 
-Les inerties sont beaucoup plus faibles qu'en ACP/AFC ($J - p$ est très grand !).
+avec $\eta_{r, k}^2$ les [rapports de corrélation](#sec-eta2).
 
-Mais la moyenne des valeurs propres vaut :
+- Les inerties sont beaucoup plus faibles qu'en ACP/AFC ($J - p$ est très grand).  Mais la moyenne des valeurs propres vaut :
 $$\bar{\lambda} = \frac{1}{J - p} \sum_{r=1}^{J-p} \lambda_r = \frac{1}{p}$$
 
 $\Rightarrow$ On interprétera en priorité les directions associées à une inertie $\lambda_r \ge \frac{1}{p}$.
+
+
+## Contribution des individus
+
+
+
+::: {.panel-tabset}
+
+### Définition
+- **Contribution de l'individu $i$ à l'axe de rang $r$ :**
+
+$$\operatorname{CTR}_r^{(\text{ind})}(i) = \frac{\left(C_r^{(\text{ind})}(i)\right)^2}{n \, \lambda_r}$$
+
+où $C_r^{(\text{ind})}(i)$ est la coordonnée de l'individu $i$ sur l'axe $r$, $n$ le nombre total d'individus et $\lambda_r$ la valeur propre de l'axe $r$.
+
+
+::: {.columns}
+
+::: {.column width="70%"}
+
+```{r}
+#| echo: false
+#| fig-width: 8
+#| fig-height: 6
+#| out-width: 60%
+
+library(factoextra)
+library(ggplot2)
+
+# Représentation des individus colorés par leur contribution au Plan 1-2
+fviz_mca_ind(
+  hobbies.mca,
+  axes = c(1, 2),
+  col.ind = "contrib",            # Colorer selon la contribution
+  gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), # Gradient : Faible -> Fort
+  geom = "point",                 # Afficher uniquement les points (pas de texte)
+  pointsize = 1.5,                # Taille réduite pour clarifier la lecture
+  alpha.ind = 0.6,                # Transparence pour gérer les superpositions
+  repel = TRUE,
+  title = "ACM - Nuage des individus (colorés par contribution)"
+) +
+  theme_minimal()
+```
+
+:::
+
+::: {.column width="30%"}
+
+
+**Interprétation :** Les individus les plus excentrés sur les axes factoriels sont ceux qui contribuent le plus.
+
+:::
+
+:::
+
+
+
+
+
+### En R
+```{r}
+# Extraction des contributions des individus pour l'ACM hobbies
+contrib_ind <- hobbies.mca$ind$contrib
+
+# Affichage des premières lignes pour les 3 premiers axes
+head(round(contrib_ind[, 1:3], 2), 10)
+```
+
+:::
+
+
+
+## Contribution des modalités
+
+::: {.panel-tabset}
+
+## Définition
+
+
+- **Contribution de la modalité $j$ à l'axe de rang $r$ :**
+
+$$\operatorname{CTR}_r^{(\text{mod})}(j) = \frac{f_j \left(C_r^{(\text{mod})}(j)\right)^2}{p \, \lambda_r}$$
+
+où $f_j = \frac{n_j}{n}$ est la fréquence relative de la modalité $j$, $C_r^{(\text{mod})}(j)$ sa coordonnée sur l'axe $r$ et $p$ le nombre de variables actives.
+
+
+::: {.columns}
+
+::: {.column width="70%"}
+
+```{r}
+#| echo: false
+#| fig-width: 8
+#| fig-height: 6
+#| out-width: 60%
+
+
+library(factoextra)
+library(ggplot2)
+
+# Représentation des modalités colorées par leur contribution au Plan 1-2
+fviz_mca_var(
+  hobbies.mca,
+  axes = c(1, 2),
+  col.var = "contrib",            # Colorer selon la contribution
+  invisible= 'quali.sup',
+  gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), # Gradient : Bleu (Faible) -> Rouge (Fort)
+  repel = TRUE,                   # Éviter le chevauchement du texte
+  title = "ACM - Carte des modalités (colorées par contribution)"
+) +
+  theme_minimal()
+```
+
+:::
+
+::: {.column width="30%"}
+
+
+**Attention :** Comme en AFC, la position sur le graphe seul ne suffit pas pour interpréter le rôle d'une modalité. Les modalités les plus excentrées ne sont pas nécessairement celles qui contribuent le plus, car leur contribution dépend aussi de leur fréquence $f_j$.
+
+
+:::
+
+:::
+
+
+
+
+
+## En R
+
+
+::: {.columns}
+
+::: {.column}
+
+
+Les contributions
+```{r}
+#| eval: false
+hobbies.mca$var$contrib[, 1:3]
+```
+```{r}
+#| echo: false
+print_table(hobbies.mca$var$contrib[, 1:3], scroll=20)
+
+```
+
+
+:::
+
+::: {.column}
+
+Les fréquences marginales
+
+```{r}
+#| eval: false
+hobbies.mca$call$marge.col
+```
+```{r}
+#| echo: false
+print_table(as.data.frame(hobbies.mca$call$marge.col), scroll=20)
+```
+
+
+:::
+
+:::
+
+:::
+
+
+## Contribution des variables
+
+::: {.panel-tabset}
+
+### Définition
+
+- **Contribution de la variable $k$ à l'axe de rang $r$ :**
+
+$$\operatorname{CTR}_r^{(\text{var})}(k) = \sum_{j \in J_k} \operatorname{CTR}_r^{(\text{mod})}(j) = \frac{\eta^2(k, F_r)}{p \, \lambda_r}$$
+
+où $J_k$ désigne l'ensemble des modalités de la variable $k$, et $\eta^2(k, F_r)$ est le rapport de corrélation entre la variable qualitative $k$ et la composante factorielle $F_r$.
+
+::: {.columns}
+
+::: {.column width="70%"}
+
+```{r}
+#| echo: false
+#| fig-width: 8
+#| fig-height: 6
+#| out-width: 60%
+
+
+library(factoextra)
+library(ggplot2)
+
+# Représentation des variables par leur rapport de corrélation (eta2)
+fviz_mca_var(
+  hobbies.mca,
+  choice = "mca.cor",
+  axes = c(1, 2),
+  col.var = "#FC4E07",               # Colorer selon le cos2 / la qualité
+  #gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+  col.quali.sup = "#000000",
+  col.quanti.sup = "#00AFBB",
+  repel = TRUE,
+  title = "ACM - Carré des liaisons (rapports de corrélation eta²)"
+) +
+  theme_minimal()
+```
+:::
+::: {.column width="30%"}
+
+**Interprétation :** La contribution d'une variable correspond à la somme des contributions de ses modalités. Sur le carré des liaisons, les variables proches du coin supérieur droit ($1, 1$) sont celles qui contribuent le plus à la construction des deux premiers axes.
+
+:::
+
+:::
+
+### En R
+
+
+
+:::
+
+
+## Qualité de représentation : $\cos^2$
+
+On utilise les mêmes formules de $\cos^2$ pour mesurer la qualité de projection des **individus** et des **modalités** sur les axes factoriels.
+
+En pratique, si deux points sont bien projetés ($\cos^2$ élevé), leur proximité sur le plan reflète une réelle proximité dans l'espace d'origine.
+
+:::{.callout-note}
+### Proximité entre deux individus
+- S'interprète en termes de **distance du $\chi^2$** : deux individus se ressemblent s'ils ont choisi les mêmes modalités.
+- C'est cohérent avec la relation barycentrique : un individu se situe au centre de gravité des modalités qu'il possède.
+:::
+
+
+:::{.callout-note}
+### Proximité entre deux modalités (de variables différentes)
+- S'interprète en termes de **distance du $\chi^2$** : deux modalités se ressemblent si elles sont choisies par les mêmes individus.
+- C'est cohérent avec la relation barycentrique : une modalité se situe au centre de gravité des individus qui la possèdent.
+:::
+
+## Variables qualitatives supplémentaires
+
+Comme pour l’AFC : on se sert des relations de transitions pour calculer les coordonnées des variables 
+
+```{r}
+#| echo: false
+#| fig-width: 8
+#| fig-height: 6
+#| out-width: 60%
+ 
+library(RColorBrewer)
+library(factoextra)
+
+# 1. Nombre de modalités par variable dans df_clean[, 19:22]
+nb_modalites <- sapply(df_clean[, 19:22], function(x) nlevels(as.factor(x)))
+# ex: Sex = 2, Age = 8, Marital status = 5, Profession = 7
+
+# 2. Palette jolie et harmonieuse (Set2 ou Dark2 sont plus doux que Set1)
+base_cols <- brewer.pal(length(nb_modalites), "Dark2")
+
+# 3. Une couleur par variable, répétée selon son nombre de modalités
+col.quali.sup <- rep(base_cols, times = nb_modalites)
+
+# 4. Tracé
+fviz_mca_var(
+  hobbies.mca,
+  choice = "var.cat",
+  axes = c(1, 2),
+  #invisible = "var",
+  col.var = "lightgrey",
+  col.quali.sup = col.quali.sup,
+  repel = TRUE,
+  title = "ACM - Modalités supplémentaires colorées par variable"
+) +
+  theme_minimal()
+
+```
+
+
+## Variables quantitatives supplémentaires
+Comme pour l’ACP : cercle de corrélation
+
+```{r}
+#| echo: false
+#| fig-width: 8
+#| fig-height: 6
+library(factoextra)
+library(ggplot2)
+
+# Uniquement la carte des variables/modalités supplémentaires
+fviz_mca_var(
+  hobbies.mca,
+  axes = c(1, 2),
+  choice = "quanti.sup",         # Cibler uniquement les quali.sup
+  col.sup = "#D95F02",           # Couleur distincte
+  repel = TRUE,                  # Évite les chevauchements de texte
+) +
+  theme_minimal()
+```

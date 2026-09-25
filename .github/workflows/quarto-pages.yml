@@ -41,6 +41,7 @@ jobs:
             any::ggplot2
             any::PASWR
             any::ca
+            any::RColorBrewer
 
       - name: Set up Python
         uses: actions/setup-python@v5

@@ -27,8 +27,8 @@ Compétences acquises
 
 ## Organisation générale
 
-- 12 séances de Cours/TD
-- 3 séances de TP sur R et Python en groupe
+- 2h * 12 séances de Cours/TD
+- 2h * 3 séances de TP sur R et/ou Python en demi groupe
 - Supports de cours en ligne et Moodle
 - Évaluation
     - 1 Contrôle continu: évaluation sur table 1h
@@ -43,10 +43,10 @@ Compétences acquises
 | 07/09 | CM/TD | ACP |
 | 09/09 | CM/TD | ACP |
 | 10/09 | CM/TD | ACP |
-| 21/09 | CM/TD | ACP/ACM |
-| 23/09 | CM/TD | ACM |
+| 21/09 | CM/TD | ACP/AFC |
+| 23/09 | CM/TD | AFC |
+| 25/09 | CM/TD | AFC/ACM |
 | 28/09 | CM/TD | ACM |
-| ??/09 | CM/TD | AFM |
 | 30/09 | CM/TD | AFM |
 | 05/10 | CM/TD | Apprentissage non supervisé |
 | 07/10 | CM/TD | Apprentissage non supervisé |
