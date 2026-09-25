@@ -664,7 +664,7 @@ plot_activites %>%
 
 
 
-## Représentation graphique des moyennes des activités
+## Représentation graphique des moyennes des profils lignes stratifiés par activités
 
 ::: {.columns}
 
@@ -1455,6 +1455,119 @@ plot(hobbies.mca,
 
 :::
 
+
+## Relation de transition en R
+
+::: {.panel-tabset}
+
+### 1. Individus $\rightarrow$ Modalités (Barycentre des Individus)
+
+On calcule la position d'une modalité comme le centre de gravité des individus qui la possèdent.
+
+::: {.columns}
+::: {.column width="50%"}
+#### Approche 1 : Propriété de transition
+Utilisation des coordonnées de l'ACM (`FactoMineR`)
+
+```{r}
+# Coordonnées des modalités (normalisées)
+bary1_mod <- hobbies.mca$var$coord[, c("Dim 1", "Dim 2")]
+
+# Reprojection barycentrique (multiplication par √λ)
+bary1_mod <- sweep(
+  bary1_mod,
+  MARGIN = 2,
+  STATS = sqrt(hobbies.mca$eig[1:2, "eigenvalue"]),
+  FUN = "*"
+)
+print_table(bary1_mod, scroll = 5)
+```
+
+- **Formule :** $G_{js} \cdot \sqrt{\lambda_s} = \frac{1}{n_j} \sum_{i \in I_j} F_{is}$
+- Multiplication par $\sqrt{\lambda_s}$ pour annuler la sur-dilatation des modalités et retrouver le centre de gravité exact du nuage d'individus $F_{is}$.
+:::
+
+::: {.column width="50%"}
+#### Approche 2 : Moyenne empirique directe
+Calcul explicite sur les individus du tableau nettoyé
+
+```{r}
+# Coordonnées des individus sur les axes 1 et 2
+coords_ind <- hobbies.mca$ind$coord[, 1:2]
+
+# Calcul manuel du barycentre pour chaque modalité
+bary2_mod <- t(sapply(rownames(hobbies.mca$var$coord), function(mod) {
+  parts <- unlist(strsplit(mod, "_"))
+  var_name <- parts[1]
+  mod_val <- paste(parts[-1], collapse = "_")
+  
+  idx <- which(as.character(df_clean[[var_name]]) == mod_val)
+  colMeans(coords_ind[idx, , drop = FALSE])
+}))
+
+print_table(bary2_mod, scroll = 5)
+```
+
+- Applique directement la définition statistique du barycentre (moyenne arithmétique des coordonnées des individus $i \in I_j$).
+:::
+:::
+
+
+### 2. Modalités $\rightarrow$ Individus (Barycentre des Modalités)
+
+Réciproquement, la coordonnée d'un individu $i$ est le centre de gravité des $p$ modalités qu'il possède.
+
+::: {.columns}
+::: {.column width="50%"}
+#### Approche 1 : Propriété de transition
+Utilisation des coordonnées des individus (`FactoMineR`)
+
+```{r}
+# Coordonnées des individus (normalisées)
+bary1_ind <- hobbies.mca$ind$coord[, c("Dim 1", "Dim 2")]
+
+# Reprojection barycentrique (multiplication par √λ)
+bary1_ind <- sweep(
+  bary1_ind,
+  MARGIN = 2,
+  STATS = sqrt(hobbies.mca$eig[1:2, "eigenvalue"]),
+  FUN = "*"
+)
+print_table(bary1_ind, scroll = 5)
+```
+
+- **Formule :** $F_{is} \cdot \sqrt{\lambda_s} = \frac{1}{p} \sum_{j \in J_i} G_{js}$
+- Multiplication par $\sqrt{\lambda_s}$ pour exprimer la position de l'individu comme la moyenne stricte des positions $G_{js}$ de ses $p$ modalités.
+:::
+
+::: {.column width="50%"}
+#### Approche 2 : Moyenne empirique directe
+Calcul explicite sur les modalités actives de chaque individu
+
+```{r}
+# 1. Coordonnées des modalités sur les axes 1 et 2
+coords_mod <- hobbies.mca$var$coord[, 1:2]
+
+# 2. Tableau condensé nettoyé par FactoMineR (17 variables actives)
+tdc <- hobbies.mca$call$X[, 1:17]
+
+# 3. Calcul du barycentre des p = 17 modalités pour chaque individu
+bary2_ind <- t(sapply(1:nrow(tdc), function(i) {
+  # Noms des 17 modalités actives pour l'individu i (vecteur des 17 cellules)
+  mods_i <- as.character(unlist(tdc[i, ]))
+  
+  # Moyenne arithmétique des coordonnées de ces 17 modalités
+  colMeans(coords_mod[mods_i, , drop = FALSE])
+}))
+
+print_table(bary2_ind, scroll = 5)
+```
+
+- Applique la moyenne arithmétique des $p$ modalités associées au profil de réponses de l'individu $i$.
+:::
+:::
+
+:::
 
 # Aides à l’interprétation
 
