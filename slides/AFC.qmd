@@ -1,7 +1,7 @@
 ---
-title: "Analyse Factorielle des Correspondences"
+title: "Analyse Factorielle des Correspondances"
 subtitle: "AFC"
-author: "Benjamin Charlier,"
+author: "Benjamin Charlier"
 date: ""
 format:
   revealjs:
@@ -509,24 +509,24 @@ où $I(L)$ est l'inertie du nuage des profils lignes et $I(C)$ l'inertie du nuag
 # Statistique du chi2 calculée directement
 chisq.test(K)$statistic
 
-# Carre de la distance du chi2 entre un profil ligne et le profil moyen
+# Carré de la distance du chi2 entre un profil ligne et le profil moyen
 distsq <- function(x, mean=c) {
   sum((x - mean)^2 / mean)
 }
 
-# Carres des distances de tous les profils lignes au profil moyen
+# Carrés des distances de tous les profils lignes au profil moyen
 dists.row <- apply(L, 1, distsq, mean = c)
 dists.row
 
-# Inertie du nuage des profils lignes : moyenne ponderee des distances
+# Inertie du nuage des profils lignes : moyenne ponderée des distances
 iner.row <- sum(dists.row * r)
 iner.row * sum(K)
 
-# Carres des distances de tous les profils colonnes au profil moyen
+# Carrés des distances de tous les profils colonnes au profil moyen
 dists.col <- apply(C, 2, distsq, mean = r)
 dists.col
 
-# Inertie du nuage des profils colonnes : moyenne ponderee des distances
+# Inertie du nuage des profils colonnes : moyenne ponderée des distances
 iner.col <- sum(dists.col * c)
 iner.col * sum(K)
 
@@ -534,16 +534,16 @@ iner.col * sum(K)
 ```
 
 
-# Analyse Factorielle des Correspondences
+# Analyse Factorielle des Correspondances
 
-## Analyse Factorielle des Correspondences (AFC)
+## Analyse Factorielle des Correspondances (AFC)
 
 Décrire simultanément les deux nuages pondérés suivants :
 
 1. les $q$ profils lignes (lignes de $L$) pondérés par $D_r$ et avec la métrique $D_c^{-1}$ ;
 2. les $m$ profils colonnes, (colonnes de $C$) pondérés par $D_c$ et avec la métrique $D_r^{-1}$.
 
-Elle revient de manière équivalente à effectuer
+Elle revient de manière équivalente à effectuer : 
 
 - deux ACP pondérées successives sur les $q$ profils lignes, puis sur les $m$ profils colonnes
 
@@ -556,7 +556,7 @@ On cherche à représenter au mieux les $q$ modalités de $X_1$ dans un sous-esp
 
 - Les axes sont engendrés par les vecteurs propres ordonnés $v_1,\dots,v_k$ de $L^\top D_r L D_c^{-1} \in \mathbb{R}^{m\times m}$ associés aux valeurs propres $\lambda_1 \ge \dots \ge \lambda_k$
 - À chaque étape, on ajoute une nouvelle direction qui maximise la variance (pondérée par $D_r$) des projections des profils-lignes centrés, sous la métrique $D_c^{-1}$
-- Les vecteurs directeurs $v_\alpha$ sont $D_c^{-1}$-orthonormés :
+- Les vecteurs directeurs $v_\alpha$ sont $D_c^{-1}$ orthonormés :
 
 $$
 v_\alpha^\top D_c^{-1}v_\beta = 
@@ -744,7 +744,7 @@ res.ca <- CA(K, graph = TRUE)
 ```
 
 
-- Axe 1 (Inertie principale) : Oppose nettement les profils extrêmes sur la première dimension.
+- Axe 1 (inertie principale) : Oppose nettement les profils extrêmes sur la première dimension.
 
     - Côté lignes : opposition très marquée entre les cheveux Blond (à gauche) et Black / Brown (à droite).
     - Côté colonnes : opposition symétrique entre les yeux Blue (à gauche) et Brown (à droite).
@@ -778,7 +778,7 @@ Y = D_c^{-1} (F - r c^\top)^\top X^*
 \end{cases}
 $$
 
-La coordonée factorielle d’une modalité d’une variable est une combinaison linéaire des coordonnées factorielles
+La coordonnée factorielle d’une modalité d’une variable est une combinaison linéaire des coordonnées factorielles
 (standardisées) des modalités de l’autre variable
 
 $$
@@ -806,7 +806,7 @@ $$
 - **Dilatation :** Au coefficient de dilatation $1/\sqrt{\lambda_\alpha}$ près (puisque $\sqrt{\lambda_\alpha} < 1$), les coordonnées factorielles d'un nuage de points sont, sur chaque axe, les barycentres des coordonnées factorielles de l'autre nuage.
 :::
 
-- **Représentation simultanée :** Ces relations justifient le tracé des profils-lignes et des profils-colonnes sur le même graphique (biplot). Mais  **Attention :** La distance entre un profil-ligne et un profil-colonne ne s'interprète pas directement en termes de distance géométrique, mais en termes d'attraction/liaison (un profil-ligne se rapproche des profils-colonnes pour lesquels sa fréquence conditionnelle est élevée).
+- **Représentation simultanée :** Ces relations justifient le tracé des profils-lignes et des profils-colonnes sur le même graphique (biplot). Mais  **Attention :** la distance entre un profil-ligne et un profil-colonne ne s'interprète pas directement en termes de distance géométrique, mais en termes d'attraction/liaison (un profil-ligne se rapproche des profils-colonnes pour lesquels sa fréquence conditionnelle est élevée).
 
 
 ## Exemple
@@ -856,7 +856,7 @@ plot(
 ```
 
 
-# Interpétation et critères de qualité
+# Interprétation et critères de qualité
 
 ## Interprétation : Inertie et test d'indépendance
 
