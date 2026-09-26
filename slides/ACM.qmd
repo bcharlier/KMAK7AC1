@@ -36,7 +36,7 @@ source("../R/functions.R")
 # Objectifs
 
 
-## Description des données: tableau condensé
+## Description des données : tableau condensé
 
 On travaille sur des tableaux de données où
 
@@ -55,7 +55,7 @@ $x_{ik}$ : mesure de la variable $k$ pour l'individu $i$.
 
 Un tel tableau sera nommé tableau **condensé**, et est de taille $n \times p$.
 
-## Description des données: tableau disjonctif complet
+## Description des données : tableau disjonctif complet
 
 Le tableau précédent est transformé avec un codage binaire (*one-hot encoding*)
 
@@ -315,19 +315,19 @@ Décrire les liaisons entre $p$ variables qualitatives qui sont simultanément o
 
 - Étude des individus
 
-  - Identifier des profils d'individus en étudiant les modalités en commun
-  - Étudier la variabilité des profils
-  - Extraire les principales dimensions
+  - Identifier des profils d'individus en étudiant les modalités en commun.
+  - Étudier la variabilité des profils.
+  - Extraire les principales dimensions.
 
 
 - Étude des variables
 
-  - Identifier les liaisons entre variables
-  - Visualisation d'ensemble d'association entre modalités
-  - Construction de variable synthétique
+  - Identifier les liaisons entre variables.
+  - Visualisation d'ensemble d'association entre modalités.
+  - Construction de variable synthétique.
 
 ::: {.callout-tip}
-Effectuer une ACM consiste à appliquer l'AFC au TDC c'est à dire à effectuer une ACP pondérée des nuages des point-individus et des point-modalités (centrés). On reprendra donc largement les résultats du cours d'AFC.
+Effectuer une ACM consiste à appliquer l'AFC au TDC c'est à dire à effectuer une ACP pondérée des nuages des points-individus et des points-modalités (centrés). On reprendra donc largement les résultats du cours d'AFC.
 :::
 
 
@@ -344,7 +344,7 @@ t_{ij} = \begin{cases}
 $$ 
 
 
-En ACM, on traite le TDC comme un tableau de contingence : La fréquence de la modalité $j$ vaut $f_j = \frac{1}{n}\sum_{i=1}^n t_{ij}$.
+En ACM, on traite le TDC comme un tableau de contingence : la fréquence de la modalité $j$ vaut $f_j = \frac{1}{n}\sum_{i=1}^n t_{ij}$.
 
 - **Construction de la matrice $X$**
   - *Valorisation de la rareté :* on divise $t_{ij}$ par $f_j$ pour donner plus de poids aux modalités rares. 
@@ -446,14 +446,14 @@ Remarque:
 
 
 
-## Illusration: jeu de données `hobbies`
+## Illustration : jeu de données `hobbies`
 
 ::: {.panel-tabset}
 
 ## Description
 
 - 8403 individus (6905 après nettoyage)
-- 17 variables qualitatives actives indiquant la pratique ou non du loisir proposé, et une 18ème pour le nombre moyen d’heures journalières à regarer la TV.
+- 17 variables qualitatives actives indiquant la pratique ou non du loisir proposé, et une 18ème pour le nombre moyen d’heures journalières à regarder la TV.
 - 4 variables qualitatives supplémentaires (sexe, âge, profession, statut matrimonial).
 - 1 variable quantitative supplémentaire (nombre d’activités).
 
@@ -656,8 +656,8 @@ plot_activites %>%
 
 ::: {.column width="25%"}
 
-- Pas d’allure particulière du nuage de points
-- On peut faire apparaître les modalités et les variables pour aider à l’interprétation 
+- Pas d’allure particulière du nuage de points.
+- On peut faire apparaître les modalités et les variables pour aider à l’interprétation. 
 :::
 
 :::
@@ -786,8 +786,8 @@ $$G^{(mod)}(j) = \sum_{i=1}^n \frac{t_{ij}}{n_{j}} C_r^{(ind)}(i)$$
 
 où 
 
-- $C_r^{(ind)}(i)$ désigne la coordonnée de l'individu $i$ sur le $r$-ième axe factoriel
-- $t_{ij} \in \{0,1\}$ l'indicateur d'appartenance à la modalité $j$ 
+- $C_r^{(ind)}(i)$ désigne la coordonnée de l'individu $i$ sur le $r$-ième axe factoriel ;
+- $t_{ij} \in \{0,1\}$ l'indicateur d'appartenance à la modalité $j$ ; 
 - $n_{ j} = \sum_{i=1}^n t_{ij}$ l'effectif de cette modalité.
 :::
 
@@ -1053,7 +1053,7 @@ $$\text{Inertie}_{\text{inter}, r, k} = \sum_{j=1}^{J_k} \frac{f_j}{n} \left( \f
   - plus la liaison est forte entre la composante $r$ et la variable $k$
   - plus on observe une séparation des modalités de la variable $k$ sur l’axe $r$
 
-- Si $\eta_{r,k}^2$ est petit: les barycentres des modalités de la variable $k$ sont tous confondus à l'origine.
+- Si $\eta_{r,k}^2$ est petit : les barycentres des modalités de la variable $k$ sont tous confondus à l'origine.
 
 
 ### $\eta^2$
@@ -1132,7 +1132,7 @@ $$\text{Inertie}_{\text{mod}}(j) = \frac{f_j}{p} \, d^2(j, O) = \frac{f_j}{p} \l
 
 Malgré la baisse de son poids, plus une modalité est rare, **plus son inertie propre est grande** (car $1 - f_j$ tend vers 1).
 
-**Pré-traitement:** On évite en pratique de conserver dans l’analyse des modalités trop rare
+**Pré-traitement :** On évite en pratique de conserver dans l’analyse des modalités trop rare
 
 ## Inertie du nuage des variables
 
@@ -1142,11 +1142,11 @@ Malgré la baisse de son poids, plus une modalité est rare, **plus son inertie 
 
   Propriété fondamentale
 
-  -  la part de l’inertie totale, due à une variable $k$ est d’autant plus grande que le nombre de modalités $J_k$ de cette variable est grand.
+  -  La part de l’inertie totale, due à une variable $k$ est d’autant plus grande que le nombre de modalités $J_k$ de cette variable est grand.
 
   - Si toutes les variables sont binaires ($J_k = 2$), chaque variable apporte exactement la même inertie au nuage : $\frac{2 - 1}{p} = \frac{1}{p}$.
   
-  - **Pré-traitement:** On évite en pratique de conserver dans l'analyse des variables ayant des nombre de modalités trop différent
+  - **Pré-traitement :** On évite en pratique de conserver dans l'analyse des variables ayant des nombres de modalités trop différent.
 
 - **Inertie totale** est la somme des $p$ inerties de chaque variable
 $$
@@ -1217,7 +1217,7 @@ plot(hobbies.mca,
 
 ::: {.column width="33%"}
 
-On peut tracer le nuage des point des indivus comme le barycentre des modalités qu’il possède
+On peut tracer le nuage des points des individus comme le barycentre des modalités qu’il possède
 $$
 G_r^{(ind)} (i) = \sum_{j=1}^J \frac{t_{ij}}{p} C_r^{(mod)} (j)
 $$
