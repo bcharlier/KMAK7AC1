@@ -114,7 +114,7 @@ F <- K/sum(K)
 ```{r}
 #| echo: false
 
-round(F*100,digit=2)
+round(F,digit=2)
 ```
 
 
