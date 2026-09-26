@@ -79,7 +79,7 @@ print(wine.frame.head().to_string(max_cols=8))
 ```
 :::
 
-**Objectif:** trouver une représentation, dans un espace de dimension réduite, permettant de mettre en évidence d’éventuelles structures au sein des données.
+**Objectif :** trouver une représentation, dans un espace de dimension réduite, permettant de mettre en évidence d’éventuelles structures au sein des données.
 
 ## Représentation graphique
 
@@ -144,7 +144,7 @@ plot_ly(
 
 ## Le tableau de données
 
-Le tableau ([individus]{.blue},[variables]{.orange}) est représenté sous la forme d’une matrice $X$ de taille $n\times p$: 
+Le tableau ([individus]{.blue}, [variables]{.orange}) est représenté sous la forme d’une matrice $X$ de taille $n\times p$: 
 $$
 X = \begin{pmatrix}X_{:,1} & \cdots & X_{:,p} \end{pmatrix}=  \begin{pmatrix} X_{1,:}\\ \vdots \\ X_{n,:} \end{pmatrix}= \begin{pmatrix}
 x_{1,1} & \cdots & x_{1,p} \\
@@ -221,13 +221,13 @@ X[:, j]  # variable j
 
 L’**analyse en composantes principales (ACP)** est une méthode de statistique exploratoire permettant de décrire un grand tableau de données quantitatives de type individus variables.
 
-**Question:** Lorsqu’on étudie simultanément un nombre important de variables, comment en faire une représentation globale ? On recherche de plus à:
+**Question :** Lorsqu’on étudie simultanément un nombre important de variables, comment en faire une représentation globale ? On recherche de plus à :
 
-- [Individus]{.blue}: identifier des profils similaires ou différents, étudier leur variabilité et représenter graphiquement dans un espace de faible dimension
+- [Individus]{.blue} : identifier des profils similaires ou différents, étudier leur variabilité et les représenter graphiquement dans un espace de faible dimension.
 
-- [variables]{.orange}: étudier leur structure de dépendance (corrélations), identifier d’éventuels groupes de variables liées et de les représenter graphiquement.
+- [Variables]{.orange}: étudier leur structure de dépendance (corrélations), identifier d’éventuels groupes de variables liées et de les représenter graphiquement.
 
-**Idée:** L’ACP est un simple changement de base : passer d’une représentation dans la base canonique des variables initiales à une représentation dans la base des *facteurs*. Les facteurs sont des combinaisons linéaires des variables (vecteurs propres de la matrice des corrélations). 
+**Idée :** L’ACP est un simple changement de base : passer d’une représentation dans la base canonique des variables initiales à une représentation dans la base des *facteurs*. Les facteurs sont des combinaisons linéaires des variables (vecteurs propres de la matrice des corrélations). 
 
 **Interprétation :** On ne sélectionne qu’une petite partie des facteurs et cela permet de réaliser des graphiques dans cet espace de faible dimension (dimension égale au nombre de facteurs retenus). Les graphiques peuvent éventuellement permettre de comprendre la structure des données analysées. Cette interprétation est guidée par des indicateurs numériques.
 
@@ -238,9 +238,9 @@ L’**analyse en composantes principales (ACP)** est une méthode de statistique
 
 Pour $p = 3$, on ne représente pas réellement le nuage en 3 dimensions:
 
-- On l’observe selon différents points de vue (**projection**)
+- On l’observe selon différents points de vue (**projection**).
 
-- Certains points de vue sont meilleurs que d’autres : ce sont ceux où la forme du nuage est la moins altérée
+- Certains points de vue sont meilleurs que d’autres : ce sont ceux où la forme du nuage est la moins altérée.
 
 ::: {layout-ncol=2}
 ![Kumi Yamashita](data/projection.jpg){height=300}
@@ -335,7 +335,7 @@ A_1-G\\
 A_n-G
 \end{pmatrix} \in \mathbb R^{p \times p}.
 $$
-Pour les données centrée, le centre de gravité du nuage des individus est l’origine. 
+Pour les données centrées, le centre de gravité du nuage des individus est l’origine. 
 
 
 - L'**inertie** du nuage autour de son centre de gravité est la moyenne des distances **au carré** des points $A_i$ à $G$ :
@@ -361,7 +361,7 @@ $$
 \frac{1}{n}\| Y_{:,j} \| \propto \text{écart type} \quad \text{ et } \quad \langle Y_{:,j} , Y_{:,k} \rangle_F \propto \text{covariance}
 $$
 
-- La **matrice de variance :** c’est la matrice $p\times p$ notée $V$ dont l'entrée $j,k$ contient $\operatorname{cov} (X_{:,j} , X_{:,k}) = \frac{1}{n}\sum_{i=1}^{n}(X_{i,j}-\bar{X}_{:,j}) (X_{i,k}-\bar{X}_{:,k})$. On a, dans le cas de données centrée $Y$,
+- La **matrice de variance :** c’est la matrice $p\times p$ notée $V$ dont l'entrée $j,k$ contient $\operatorname{cov} (X_{:,j} , X_{:,k}) = \frac{1}{n}\sum_{i=1}^{n}(X_{i,j}-\bar{X}_{:,j}) (X_{i,k}-\bar{X}_{:,k})$. On a, dans le cas de données centrées $Y$,
 $$
 V =  \frac{1}{n} Y^\top Y 
 $$
@@ -373,7 +373,7 @@ $$
 S = \left (\operatorname{cor}(X_{:,j},X_{:,k}) \right)_{j,k=1^p} = \left (\frac{\operatorname{cov}(X_{:,j},X_{:,k})}{s_{X_{:,j}} s_{X_{:,k}}} \right)_{j,k=1}^p.
 $$
 
-La matrice d’inertie (et de variance) des donnée centrée-réduite $Z$ est la matrice de corrélation des données initiales $X$ et son inertie totale est égale à $p$ (dimension de l’espace des individus).
+La matrice d’inertie (et de variance) des données centrées-réduites $Z$ est la matrice de corrélation des données initiales $X$, et son inertie totale est égale à $p$ (dimension de l’espace des individus).
 
 
 ## Droite d'inertie maximale
@@ -890,7 +890,7 @@ fig %>%
 ```
 
 - La premiere direction principale est celle sur laquelle l'inertie des projections est maximale. 
-- Les directions suivantes maximisent la meme quantite sous la contrainte d'etre orthogonales aux directions deja retenues.
+- Les directions suivantes maximisent la même quantité sous la contrainte d'être orthogonales aux directions déjà retenues.
 
 
 ## Principe de l'ACP
@@ -903,7 +903,7 @@ u_1,\ldots,u_q,
 $$
 qui définissent un sous-espace de dimension $q$ sur lequel l'inertie des projections est maximale.
 
-### Solution: sous espaces emboîtées
+### Solution : sous espaces emboîtées
 
 1. $u_1$ est la direction d'inertie maximale ;
 
@@ -1021,7 +1021,7 @@ print_table(
 ```
 L’ACP va nous aider à simplifier les données de sorte à
 
--  identifier les profils de villes en terme de températures
+- identifier les profils de villes en terme de températures
 - étudier la variabilité de ces profils.
 
 :::
@@ -1053,7 +1053,7 @@ print_table(
 :::
 
 
-## Premier résultat: les valeurs propres
+## Premier résultat : les valeurs propres
 
 ```{r}
 #| echo: false
@@ -1103,7 +1103,7 @@ $$
 
 
 
-**Choix du nombre de dimension:** se fait souvent sur des critères empiriques... Cela dépend aussi de la ﬁnalité de l’ACP : 
+**Choix du nombre de dimension :** se fait souvent sur des critères empiriques... Cela dépend aussi de la ﬁnalité de l’ACP : 
 
 - pour de la description de données on a souvent $q \leq 4$ (au delà diﬃcultés d’interprétation), 
 - pour de la compression $q$ peut être beaucoup plus grand
@@ -1134,21 +1134,21 @@ ggplot(eig, aes(x = axe, y = cum_variance, group = 1)) +
 
 
 
-**Méthode du seuil:** On peut choisir le plus petit $k$ pour lequel $i_k$ dépasse un seuil. Si on prend 0.90, dans l'example on a $i_1 = 0.824$ et $i_2 = 0.992$ ce qui donne 2 axes.
+**Méthode du seuil :** On peut choisir le plus petit $k$ pour lequel $i_k$ dépasse un seuil. Si on prend 0.90, dans l'exemple on a $i_1 = 0.824$ et $i_2 = 0.992$ ce qui donne 2 axes.
 
-**Méthode pratique:** ne retenir que les dimensions que l’on peut interpréter...
+**Méthode pratique :** ne retenir que les dimensions que l’on peut interpréter...
 
-**Méthode de Kaiser:** Ne retenir que les directions principales qui expliquent
-une proportion de l’inertie supérieure à $\frac{1}{p}$. Dans l’exemple : cela correspond à $q = 1$. Mais mieux vaut couper avant/apres un décrochement...
+**Méthode de Kaiser :** Ne retenir que les directions principales qui expliquent
+une proportion de l’inertie supérieure à $\frac{1}{p}$. Dans l’exemple : cela correspond à $q = 1$. Mais mieux vaut couper avant/après un décrochement...
 
 
 ## Combien d'axes conserver ?
 
-**Méthode du coude:** sur “l’éboulis” des valeurs propres, on observe un
+**Méthode du coude :** sur “l’éboulis” des valeurs propres, on observe un
 décrochement (coude) suivi d’une décroissance régulière : sélectionner les axes
 avant le décrochement.
 
-Le graphique des valeurs propres (*scree plot*) on lit:
+Le graphique des valeurs propres (*scree plot*) on lit :
 
 
 ::: {.panel-tabset}
@@ -1263,8 +1263,8 @@ plot(
 
 ::: {.column width="30%"}
 
-- axe 1: oppose villes les plus chaudes aux plus froides (Nice et Lille)
-- axe 2: oppose les des climats oceaniques aux climats plus continentaux, amplitude saisonniere (Brest et Strasbourg)
+- Axe 1 : oppose villes les plus chaudes aux plus froides (Nice et Lille).
+- Axe 2 : oppose les climats océaniques aux climats plus continentaux, amplitude saisonnière (Brest et Strasbourg).
 
 :::
 
@@ -1275,7 +1275,7 @@ plot(
 ## Qualité de représentation
 
 
-La **qualité de représentation d’un individu** $i$ sur un avec principal est mesurée par le cosinus carré de l’angle entre l’axe factoriel et le vecteur $X_{i,:}$ (ou $Z_{i,:}$ si centré-réduit). Pour un individu $i$ sur l'axe $k$ :
+La **qualité de représentation d’un individu** $i$ sur un axe principal est mesurée par le cosinus carré de l’angle entre l’axe factoriel et le vecteur $X_{i,:}$ (ou $Z_{i,:}$ si centré-réduit). Pour un individu $i$ sur l'axe $k$ :
 $$
 \cos^2_{i,k}
 =
@@ -1376,9 +1376,9 @@ plot(
 
 ::: {.column width="30%"}
 
-- tous les individus sont correctement représenté sur les premier plan principal
+- Tous les individus sont correctement représentés sur le premier plan principal.
 
-- Brest, Lyon, Nantes sont quasiment ortogonaux à $C_1$
+- Brest, Lyon et Nantes sont quasiment orthogonaux à $C_1$.
 
 :::
 
@@ -1513,7 +1513,7 @@ plot(
 
 ::: {.column width="30%"}
 
-- ajout d'une variable supplémenaire qualitative (Région)
+- Ajout d'une variable supplémenaire qualitative (Région).
 
 :::
 
@@ -1582,9 +1582,9 @@ W
 \Sigma_X^{-1/2}P\Lambda^{1/2}
 $$
 
-où $\Sigma_X = \operatorname{Diag}\left(\operatorname{Var}(X_{:,1}),\ldots, \operatorname{Var}(X_{:,p})\right) \in \mathbb R^{p \times p}$ est la matrice diagonale des variances des variables (Si les données sont centrées-réduites, alors $\Sigma_X=I_p$).
+où $\Sigma_X = \operatorname{Diag}\left(\operatorname{Var}(X_{:,1}),\ldots, \operatorname{Var}(X_{:,p})\right) \in \mathbb R^{p \times p}$ est la matrice diagonale des variances des variables (si les données sont centrées-réduites, alors $\Sigma_X=I_p$).
 
-- **Interprétation des composantes principales :** On mesure la relation entre $C_k$ et la variable $X_{:,j}$ l’aide de la corrélation $\operatorname{Cor}(C_k , X_{:,j})$. 
+- **Interprétation des composantes principales :** On mesure la relation entre $C_k$ et la variable $X_{:,j}$ à l’aide de la corrélation $\operatorname{Cor}(C_k , X_{:,j})$. 
 
 - **Représentation** des variables dans le plan défini par les deux premiers axes en considérant les deux premières colonnes de $W$. Étant donnés $C_1$ et $C_2$, on trace le “cercle de corrélations” : la variable $j$ est représentée par un point de coordonnées $(\operatorname{Cor}(C_1 , X_{:,j}), \operatorname{Cor} (C_2 , X_{:,j}))$ dans le disque. 
 
@@ -1625,7 +1625,7 @@ plot(
 
 - Les mois Mars, Oct, Avri, Sept (inter saison) sont les moins fortement corrélés à $C_2$.
 
-- correlation de signe opposé entre $C_2$ et les mois Janv, Dece, Fevr (hiver) et Aout, Mai, Juin, Juil (été) 
+- Correlation de signe opposé entre $C_2$ et les mois Janv, Dece, Fevr (hiver) et Aout, Mai, Juin, Juil (été). 
 :::
 :::
 
@@ -1646,7 +1646,7 @@ plot(
 - Les variables les mieux expliquées correspondent aux points les plus proches du cercle unité.
 
 
-**Remarque :** bien qu’ayant retenu un sous-espace factoriel expliquant une part importante de l’inertie totale, il est possible que certaines variables ou individus d’intérêt soient mal représentés dans ce sous-espace. Il sera alors intéressant de compléter le sous-espace factoriel en ajoutant des axes factoriels supplémentaires de sorte que ces variables ou individus d’intérêt soient bien représentés
+**Remarque :** bien qu’ayant retenu un sous-espace factoriel expliquant une part importante de l’inertie totale, il est possible que certaines variables ou certains individus d’intérêt soient mal représentés dans ce sous-espace. Il sera alors intéressant de compléter le sous-espace factoriel en ajoutant des axes factoriels supplémentaires de sorte que ces variables ou individus d’intérêt soient bien représentés.
 
 
 
@@ -1846,9 +1846,9 @@ sont reliés directement par $X$.
 ## Vocabulaire
 	
   
-- Espaces factoriels directs: ce sont les $p$ sev $Vect\{u_k\}$ engendrés par les $u_k\in\mathbb{R}^p$ (directions de plus grande inertie).
+- Espaces factoriels directs : ce sont les $p$ sev $Vect\{u_k\}$ engendrés par les $u_k\in\mathbb{R}^p$ (directions de plus grande inertie).
 
-- Espaces factoriels duals: ce sont les sev engendrés par les composantes principales. La $k$-ème composante principale est le vecteur $C_k \in \mathbb{R}^n$ des coordonnées des $n$ individus sur l'axe factoriel $Vect\{u_k\}$. En ACP normé on a:
+- Espaces factoriels duals : ce sont les sev engendrés par les composantes principales. La $k$-ème composante principale est le vecteur $C_k \in \mathbb{R}^n$ des coordonnées des $n$ individus sur l'axe factoriel $Vect\{u_k\}$. En ACP normée on a:
 $$
 			C_k = X u_k
 $$
@@ -1906,16 +1906,16 @@ plot(
 
 ## Exemple : temperatures de villes francaises
 
-Pour des temperatures mensuelles mesurees dans plusieurs villes francaises, une ACP sur les douze mois peut mettre en evidence :
+Pour des temperatures mensuelles mesurées dans plusieurs villes francaises, une ACP sur les douze mois peut mettre en évidence :
 
-- un premier axe lie au niveau moyen de temperature, opposant notamment les villes les plus chaudes aux plus froides ;
-- un second axe lie a l'amplitude saisonniere, opposant par exemple des climats oceaniques aux climats plus continentaux.
+- un premier axe lié au niveau moyen de température, opposant notamment les villes les plus chaudes aux plus froides ;
+- un second axe lié à l'amplitude saisonnière, opposant par exemple des climats océaniques aux climats plus continentaux.
 
-La temperature moyenne annuelle, la latitude, l'amplitude annuelle et la longitude peuvent etre ajoutees comme variables supplementaires pour aider a nommer les axes, sans modifier leur construction.
+La temperature moyenne annuelle, la latitude, l'amplitude annuelle et la longitude peuvent être ajoutées comme variables supplémentaires pour aider à nommer les axes, sans modifier leur construction.
 
 ## Realiser une ACP dans R
 
-Le package `FactoMineR` fournit la fonction `PCA()`. Les colonnes actives doivent etre quantitatives ; les variables supplementaires peuvent etre declarees separement.
+Le package `FactoMineR` fournit la fonction `PCA()`. Les colonnes actives doivent être quantitatives ; les variables supplémentaires peuvent être déclarées séparément.
 
 ```{r}
 #| eval: false
@@ -1929,15 +1929,15 @@ resultat <- PCA(
 )
 ```
 
-L'objet retourne contient notamment :
+L'objet retourné contient notamment :
 
-- `eig` : valeurs propres, pourcentages et pourcentages cumules d'inertie ;
-- `ind$coord`, `ind$contrib`, `ind$cos2` : resultats pour les individus ;
-- `var$coord`, `var$contrib`, `var$cos2` : resultats pour les variables.
+- `eig` : valeurs propres, pourcentages et pourcentages cumulés d'inertie ;
+- `ind$coord`, `ind$contrib`, `ind$cos2` : résultats pour les individus ;
+- `var$coord`, `var$contrib`, `var$cos2` : résultats pour les variables.
 
 
 
-## Autres implementations de l'ACP en R
+## Autres implémentations de l'ACP en R
 
 R propose aussi `prcomp()` et `princomp()`.
 
@@ -1968,7 +1968,7 @@ valeurs_propres <- resultat$sdev^2
 
 ## Réaliser une ACP en Python
 
-On recommende l'ACP implémentée dans `scikit-learn`. Voir la [documentation](https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html) 
+On recommande l'ACP implémentée dans `scikit-learn`. Voir la [documentation](https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html) 
 
 Centrage et réduction:
 
@@ -2000,12 +2000,12 @@ Principaux résultats :
 `pca.components_` : axes principaux ;
 `resultat` : coordonnées des individus.
 
-## A retenir
+## À retenir
 
 <br><br>
 
-L'ACP fournit une representation de dimension reduite qui conserve au mieux l'inertie du nuage des individus. Elle aide a comparer des profils, a resumer les liaisons entre variables et a construire une interpretation informee par les donnees et leur contexte.
+L'ACP fournit une représentation de dimension réduite qui conserve au mieux l'inertie du nuage des individus. Elle aide à comparer des profils, à résumer les liaisons entre variables et à construire une interprétation informée par les données et leur contexte.
 
 
-## Réferences
+## Références
 
