@@ -105,7 +105,7 @@ ggplot(df, aes(x = x, y = y)) +
     x = "Variable 1",
     y = "Variable 2"
   ) +
-  theme_minimal()
+  theme_metropolis
 ```
 
 
@@ -158,7 +158,7 @@ x_{n,1} & \cdots & x_{n,p}
 $$
 
 ::: {.callout-note}
-- Colonnes **actives** : variables utilisées pour construire l’ACP (par défaut, si rien n’est précisé).
+- Colonnes **actives** : variables utilisées pour construire l’ACP (par défaut).
 - Dans le cas contraire, on parle de variables **supplémentaires**, utiles pour l’**interprétation** des axes.
 :::
 
@@ -240,9 +240,7 @@ L’**analyse en composantes principales (ACP)** est une méthode de statistique
 
 ## Les méthodes linéaires
 
-Pour $p = 3$, on ne représente pas réellement le nuage en 3 dimensions:
-
-- On l’observe selon différents points de vue (**projection**)
+- On observe les nuages de points suivant différents points de vue (**projection**)
 
 - Certains points de vue sont meilleurs que d’autres : ce sont ceux où la forme du nuage est la moins altérée
 
@@ -252,8 +250,6 @@ Pour $p = 3$, on ne représente pas réellement le nuage en 3 dimensions:
 ![https://kumiyamashita.com/light-shadow](data/projection2.jpg){height=300}
 
 :::
-
-
 
 :::{.callout-important}
 ### Objectif de l’ACP
@@ -365,7 +361,7 @@ $$
 \frac{1}{n}\| Y_{:,j} \| \propto \text{écart type} \quad \text{ et } \quad \langle Y_{:,j} , Y_{:,k} \rangle_F \propto \text{covariance}
 $$
 
-- La **matrice de variance :** c’est la matrice $p\times p$ notée $V$ dont l'entrée $j,k$ contient $\operatorname{cov} (X_{:,j} , X_{:,k}) = \frac{1}{n}\sum_{i=1}^{n}(X_{i,j}-\bar{X}_{:,j}) (X_{i,k}-\bar{X}_{:,k})$. On a, dans le cas de données centrée $Y$,
+- La **matrice de variance :** c’est la matrice $p\times p$ notée $V$ dont l'entrée $j,k$ contient $\operatorname{cov} (X_{:,j} , X_{:,k}) = \frac{1}{n}\sum_{i=1}^{n}(X_{i,j}-\bar{X}_{:,j}) (X_{i,k}-\bar{X}_{:,k})$. On a, pour les données centrée $Y$,
 $$
 V =  \frac{1}{n} Y^\top Y 
 $$
@@ -427,11 +423,15 @@ On part d’un nuage qui vit dans $\mathbb R^2$, et on veut une image approchée
 
 ```{r}
 #| echo: false
+#| out-width: "100%"
+#| fig-align: "center"
+#| fig-height: 5
 
 library(plotly)
 
 set.seed(123)
 
+# (Assuming X is defined prior to this chunk)
 # Nuage 2D centré dans le plan défini par les deux premières variables
 X_2D <- X[, c("x", "z")]
 X_2D <- scale(X_2D, center = TRUE, scale = FALSE)
@@ -525,9 +525,8 @@ steps <- lapply(seq_along(angles), function(i) {
 
 fig %>%
 layout(
-  width = 800,
-  height = 600,
-  autosize = FALSE,
+  # Let Quarto/Plotly handle the sizing automatically
+  autosize = TRUE,
 
   title = list(
     text = "Quelle est la meilleure droite de projection ?",
@@ -538,14 +537,14 @@ layout(
 
   xaxis = list(
     title = "$X_1$",
-    range = c(-5, 5),
+    range = c(-5.5, 5.5), # Matched to Y axis span
     scaleanchor = "y",
     scaleratio = 1
   ),
 
   yaxis = list(
     title = "$X_2$",
-    range = c(-7, 7)
+    range = c(-5.5, 5.5)  # Matched to X axis span
   ),
 
   sliders = list(
@@ -554,13 +553,12 @@ layout(
       x = 0.15,
       y = -0.16,
       len = 0.7,
-      currentvalue = list(prefix = "Angle $\theta$ = "),
+      currentvalue = list(prefix = "Angle $\\theta$ = "),
       steps = steps
     )
   )
-)
-
-
+) %>%
+config(displayModeBar = FALSE)
 ```
 
 ## Exemple jouet
@@ -586,9 +584,13 @@ soit maximale, où $H_i$ est le projeté orthogonal de l'individu $X_{i,:}$ sur 
 
 ```{r}
 #| echo: false
+#| out-width: "100%"
+#| fig-align: "center"
+#| fig-height: 6
 
 library(plotly)
 
+# (Assuming X is already defined in your environment)
 # ------------------------------------------------------------
 # ACP
 # ------------------------------------------------------------
@@ -599,36 +601,28 @@ G <- colMeans(X)
 V <- acp$rotation[, 1:3]
 axis_colors <- c("#d62728", "#2ca02c", "#1f77b4")
 
-
 # --- Données centrées ---
 X_mat <- as.matrix(X)
 X_centered <- sweep(X_mat, 2, G, "-")
-
 
 # ------------------------------------------------------------
 # Projections
 # ------------------------------------------------------------
 
 V1 <- V[, 1, drop = FALSE]
-
 X_proj_1 <- X_centered %*% V1 %*% t(V1)
 X_proj_1 <- sweep(X_proj_1, 2, G, "+")
 colnames(X_proj_1) <- c("x", "y", "z")
 
-
 V12 <- V[, 1:2]
-
 X_proj_2 <- X_centered %*% V12 %*% t(V12)
 X_proj_2 <- sweep(X_proj_2, 2, G, "+")
 colnames(X_proj_2) <- c("x", "y", "z")
 
-
 V123 <- V[, 1:3]
-
 X_proj_3 <- X_centered %*% V123 %*% t(V123)
 X_proj_3 <- sweep(X_proj_3, 2, G, "+")
 colnames(X_proj_3) <- c("x", "y", "z")
-
 
 # ------------------------------------------------------------
 # Axes principaux
@@ -644,21 +638,16 @@ axes <- lapply(1:3, function(k) {
   )
 })
 
-
 # ------------------------------------------------------------
 # Plan principal PC1-PC2
 # ------------------------------------------------------------
 
 u <- seq(-6, 6, length.out = 20)
 v <- seq(-6, 6, length.out = 20)
-
 grid <- expand.grid(u = u, v = v)
 
 plane <- matrix(
-  G,
-  nrow = nrow(grid),
-  ncol = 3,
-  byrow = TRUE
+  G, nrow = nrow(grid), ncol = 3, byrow = TRUE
 ) +
   grid$u %o% V[, 1] +
   grid$v %o% V[, 2]
@@ -667,185 +656,91 @@ plane_x <- matrix(plane[, 1], length(u), length(v))
 plane_y <- matrix(plane[, 2], length(u), length(v))
 plane_z <- matrix(plane[, 3], length(u), length(v))
 
-
 # ------------------------------------------------------------
 # Figure
 # ------------------------------------------------------------
 
 fig <- plot_ly()
 
+# Nuage original
+fig <- fig %>% add_trace(
+  data = X, x = ~x, y = ~y, z = ~z,
+  type = "scatter3d", mode = "markers",
+  marker = list(size = 1.5, opacity = 0.15),
+  name = "Nuage original", visible = TRUE
+)
 
-# ------------------------------------------------------------
-# Nuage original : toujours visible et transparent
-# ------------------------------------------------------------
-
-fig <- fig %>%
-  add_trace(
-    data = X,
-    x = ~x, y = ~y, z = ~z,
-    type = "scatter3d",
-    mode = "markers",
-    marker = list(
-      size = 1.5,
-      opacity = 0.15
-    ),
-    name = "Nuage original",
-    visible = TRUE
-  )
-
-
-# ------------------------------------------------------------
 # Projection sur PC1
-# ------------------------------------------------------------
+fig <- fig %>% add_trace(
+  data = as.data.frame(X_proj_1), x = ~x, y = ~y, z = ~z,
+  type = "scatter3d", mode = "markers",
+  marker = list(size = 2.5),
+  name = "Projection sur PC1", visible = TRUE
+)
 
-fig <- fig %>%
-  add_trace(
-    data = as.data.frame(X_proj_1),
-    x = ~x, y = ~y, z = ~z,
-    type = "scatter3d",
-    mode = "markers",
-    marker = list(size = 2.5),
-    name = "Projection sur PC1",
-    visible = TRUE
-  )
-
-
-# ------------------------------------------------------------
 # Projection sur PC1-PC2
-# ------------------------------------------------------------
+fig <- fig %>% add_trace(
+  data = as.data.frame(X_proj_2), x = ~x, y = ~y, z = ~z,
+  type = "scatter3d", mode = "markers",
+  marker = list(size = 2.5),
+  name = "Projection sur PC1-PC2", visible = FALSE
+)
 
-fig <- fig %>%
-  add_trace(
-    data = as.data.frame(X_proj_2),
-    x = ~x, y = ~y, z = ~z,
-    type = "scatter3d",
-    mode = "markers",
-    marker = list(size = 2.5),
-    name = "Projection sur PC1-PC2",
-    visible = FALSE
-  )
-
-
-# ------------------------------------------------------------
 # Projection sur PC1-PC2-PC3
-# ------------------------------------------------------------
+fig <- fig %>% add_trace(
+  data = as.data.frame(X_proj_3), x = ~x, y = ~y, z = ~z,
+  type = "scatter3d", mode = "markers",
+  marker = list(size = 2.5),
+  name = "Projection sur PC1-PC2-PC3", visible = FALSE
+)
 
-fig <- fig %>%
-  add_trace(
-    data = as.data.frame(X_proj_3),
-    x = ~x, y = ~y, z = ~z,
-    type = "scatter3d",
-    mode = "markers",
-    marker = list(size = 2.5),
-    name = "Projection sur PC1-PC2-PC3",
-    visible = FALSE
-  )
-
-
-# ------------------------------------------------------------
 # Axes principaux
-# ------------------------------------------------------------
-
 for (k in 1:3) {
-
-  fig <- fig %>%
-    add_trace(
-      data = axes[[k]],
-      x = ~x, y = ~y, z = ~z,
-      type = "scatter3d",
-      mode = "lines",
-      line = list(
-        width = 7,
-        color = axis_colors[k]
-      ),
-      name = paste0("PC", k),
-      visible = (k == 1)
-    )
+  fig <- fig %>% add_trace(
+    data = axes[[k]], x = ~x, y = ~y, z = ~z,
+    type = "scatter3d", mode = "lines",
+    line = list(width = 7, color = axis_colors[k]),
+    name = paste0("PC", k), visible = (k == 1)
+  )
 }
 
-
-# ------------------------------------------------------------
 # Plan principal
-# ------------------------------------------------------------
-
-fig <- fig %>%
-  add_surface(
-    x = ~plane_x,
-    y = ~plane_y,
-    z = ~plane_z,
-    opacity = 0.25,
-    showscale = FALSE,
-    name = "Plan PC1-PC2",
-    visible = FALSE
-  )
-
+fig <- fig %>% add_surface(
+  x = ~plane_x, y = ~plane_y, z = ~plane_z,
+  opacity = 0.25, showscale = FALSE,
+  name = "Plan PC1-PC2", visible = FALSE
+)
 
 # ------------------------------------------------------------
-# Slider
+# Buttons (remplaçant le slider)
 # ------------------------------------------------------------
 
-steps <- list(
-
-  # Projection sur PC1
+buttons_list <- list(
   list(
     method = "update",
-
     args = list(
-      list(
-        visible = c(
-          TRUE,                 # nuage original
-          TRUE, FALSE, FALSE,   # projections
-          TRUE, FALSE, FALSE,   # axes
-          FALSE                 # plan
-        )
-      ),
+      list(visible = c(TRUE, TRUE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE)),
       list(title = "Projection sur le premier axe principal")
     ),
-
-    label = "PC1"
+    label = "PC1        "
   ),
-
-
-  # Projection sur PC1-PC2
   list(
     method = "update",
-
     args = list(
-      list(
-        visible = c(
-          TRUE,                 # nuage original
-          FALSE, TRUE, FALSE,   # projections
-          TRUE, TRUE, FALSE,    # axes
-          TRUE                  # plan
-        )
-      ),
+      list(visible = c(TRUE, FALSE, TRUE, FALSE, TRUE, TRUE, FALSE, TRUE)),
       list(title = "Projection sur le premier plan principal")
     ),
-
-    label = "PC1-PC2"
+    label = "PC1-PC2    "
   ),
-
-
-  # Trois axes
   list(
     method = "update",
-
     args = list(
-      list(
-        visible = c(
-          TRUE,                 # nuage original
-          FALSE, FALSE, TRUE,   # projections
-          TRUE, TRUE, TRUE,     # axes
-          FALSE                 # plan
-        )
-      ),
+      list(visible = c(TRUE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE)),
       list(title = "Projection sur les trois axes principaux")
     ),
-
     label = "PC1-PC2-PC3"
   )
 )
-
 
 # ------------------------------------------------------------
 # Affichage
@@ -853,16 +748,15 @@ steps <- list(
 
 fig %>%
   layout(
-    width = 800,
-    height = 600,
-    autosize = FALSE,
-
+    autosize = TRUE,
+    
     title = list(
       text = "Projection progressive sur les axes principaux",
       x = 0.5
     ),
 
-    margin = list(l = 40, r = 30, b = 85, t = 45),
+    # Augmentation de la marge droite (r) pour faire de la place aux boutons/légende
+    margin = list(l = 10, r = 150, b = 20, t = 50),
 
     scene = list(
       xaxis = list(title = "X", range = c(-6, 6)),
@@ -872,18 +766,30 @@ fig %>%
       aspectratio = list(x = 1, y = 1, z = 0.8)
     ),
 
-    sliders = list(
+    # Placement de la légende en haut à droite
+    legend = list(
+      x = 1.05,
+      y = 1,
+      xanchor = "left",
+      yanchor = "top"
+    ),
+
+    # Remplacement du slider par des boutons
+    updatemenus = list(
       list(
-        active = 0,
-
-        currentvalue = list(
-          prefix = "Projection : "
-        ),
-
-        steps = steps
+        type = "buttons",
+        direction = "down",
+        x = 1.05,        # Position X (à droite, alignée avec la légende)
+        y = 0.6,         # Position Y (en dessous de la légende)
+        xanchor = "left",
+        yanchor = "top",
+        showactive = TRUE,
+        buttons = buttons_list
       )
     )
-  )
+  ) %>%
+  # Suppression de la barre d'outils
+  config(displayModeBar = FALSE)
 ```
 
 - La premiere direction principale est celle sur laquelle l'inertie des projections est maximale. 
@@ -892,15 +798,13 @@ fig %>%
 
 ## Principe de l'ACP
 
-### Problème
-
-On considère un nuage de points dans $\mathbb{R}^p$, avec $p>2$, et on cherche une bonne représentation de ce nuage dans un espace vectoriel de dimension $q\ll p$ (typiquement $q=2$ ou $3$). On cherche donc à identifier $q$ directions orthogonales
+- **Problème :**  On considère un nuage de points dans $\mathbb{R}^p$, avec $p>2$, et on cherche une bonne représentation de ce nuage dans un espace vectoriel de dimension $q\ll p$ (typiquement $q=2$ ou $3$). On cherche donc à identifier $q$ directions orthogonales
 $$
 u_1,\ldots,u_q,
 $$
 qui définissent un sous-espace de dimension $q$ sur lequel l'inertie des projections est maximale.
 
-### Solution: sous espaces emboîtées
+- **Solution :** sous espaces emboîtés
 
 1. $u_1$ est la direction d'inertie maximale ;
 
@@ -933,12 +837,7 @@ $$
 S=P\Lambda P^\top,
 $$
 
-où $P$ est une matrice **orthogonale** $P^\top P=PP^\top=I$ et
-$$
-\Lambda=\operatorname{diag}(\lambda_1,\ldots,\lambda_p)
-$$
-
-contient les valeurs propres de $S$.
+où $P$ est une matrice **orthogonale** $P^\top P=PP^\top=I$ et $\Lambda=\operatorname{diag}(\lambda_1,\ldots,\lambda_p)$ contient les valeurs propres de $S$.
 
 - Comme $S$ est **symétrique semi-définie positive**, ses valeurs propres vérifient
 $$
@@ -1068,7 +967,12 @@ acp <- PCA(
   graph = FALSE
 )
 
-fviz_eig(acp, addlabels = TRUE)
+fviz_eig(acp,
+         geom= "bar",
+         labelsize = 6,
+         addlabels = FALSE) +
+  labs(title = NULL, y = "% de variance") +
+  theme_metropolis
 ```
 
 On cherche à
@@ -1079,7 +983,7 @@ On cherche à
 
 ## Qualité de la représentation
 
-On a vu que l'inertie totale du nuage est $\sum_{j=1}^p \lambda_j$. La **part d'inertie expliquée** par les $k$ premiers axes est :
+On a vu que l'inertie totale du nuage est $\displaystyle\sum_{j=1}^p \lambda_j$. La **part d'inertie expliquée** par les $k$ premiers axes est :
 
 $$
 i_k =
@@ -1097,12 +1001,14 @@ $$
 
 ## Combien d'axes conserver ?
 
+::: {.panel-tabset}
 
+### Température des villes
 ```{r}
 #| echo: false
-#| fig-width: 10
-#| fig-height: 5
-#| out-width: "100%"
+#| fig-width: 4
+#| fig-height: 3 
+
 
 eig <- data.frame(
   axe = 1:nrow(acp$eig),
@@ -1112,19 +1018,93 @@ eig <- data.frame(
 
 eig$cum_variance <- cumsum(eig$variance)
 
-ggplot(eig, aes(x = axe, y = cum_variance, group = 1)) +
-  geom_line() +
-  geom_point(size = 3) +
+ggplot(eig, aes(x = axe, y = cum_variance)) +
+  geom_col(fill = "steelblue") +
   labs(
     x = "Axe principal",
     y = "Inertie cumulée (%)"
   ) +
-  theme_minimal(base_size = 16) +
-  scale_y_continuous(limits = c(0, 100))
+  scale_y_continuous(limits = c(0, 100)) +
+  theme_metropolis
 
 ```
 
 
+### Titanic
+
+```{r}
+#| echo: false
+#| fig-width: 4
+#| fig-height: 3 
+
+
+library(FactoMineR)
+suppressPackageStartupMessages(library(PASWR))
+
+data("titanic3")
+df <- titanic3[, c("survived", "pclass", "sex", "age", "fare", "embarked")]
+
+# -------------------------- #
+#    Clean up data           #
+# -------------------------- #
+
+# Suppression des lignes ayant un NA sur la variable 'age'
+df_clean <- df[!is.na(df$age), ]
+
+# 2. Recodage de embarked pour ne garder que la première lettre ("C", "Q", "S")
+df_clean$embarked <- factor(substr(df_clean$embarked, 1, 1))
+
+# 2bis. Nettoyage des niveaux vides éventuels et vérification
+df_clean <- df_clean[df_clean$embarked %in% c("C", "Q", "S"), ]
+df_clean$embarked <- droplevels(df_clean$embarked)
+
+# -------------------------- #
+#    Convert variables       #
+# -------------------------- #
+
+# 3. Mise en forme des variables qualitatives
+df_clean$Survived <- factor(df_clean$survived)
+df_clean$Pclass   <- factor(df_clean$pclass)
+df_clean$Sex      <- factor(df_clean$sex)
+df_clean$Embarked <- factor(df_clean$embarked)
+df_clean$Fare <- df_clean$fare
+
+
+# 2. Découpage de l'Age en tranches
+df_clean$Age_cat <- cut(
+  df_clean$age,
+  breaks = c(0, 10, 18, 29, 49, Inf),
+  labels = c("[0;10]", "[11;18]", "[19;29]", "[30;49]", ">=50"),
+  include.lowest = TRUE
+)
+
+# 3. Sélection des variables (Fare est placée en dernière position)
+df_titanic <- df_clean[, c("Survived", "Pclass", "Sex", "Age_cat", "Embarked", "Fare")]
+
+titanic.mca <- MCA(df_titanic, quanti.sup = 6, ncp=10, graph = FALSE)
+
+eig.titanic <- data.frame(
+  axe = 1:nrow(titanic.mca$eig),
+  valeur_propre = titanic.mca$eig[, 1],
+  variance = titanic.mca$eig[, 2]
+)
+
+eig.titanic$cum_variance <- cumsum(eig.titanic$variance)
+
+ggplot(eig.titanic, aes(x = axe, y = cum_variance)) +
+  geom_col(fill = "steelblue") +
+  labs(
+    x = "Axe principal",
+    y = "Inertie cumulée (%)"
+  ) +
+  scale_y_continuous(limits = c(0, 100)) +
+  theme_metropolis
+
+```
+
+Le coude se situe ici autour de l'axe 3 : on conserverait donc les 3 premiers axes.
+
+:::
 
 **Méthode du seuil:** On peut choisir le plus petit $k$ pour lequel $i_k$ dépasse un seuil. Si on prend 0.90, dans l'exemple on a $i_1 = 0.824$ et $i_2 = 0.992$ ce qui donne 2 axes.
 
@@ -1149,38 +1129,34 @@ Le graphique des valeurs propres (*scree plot*) on lit:
 
 ```{r}
 #| echo: false
+#| fig-width: 4
+#| fig-height: 3 
 
-ggplot(eig, aes(x = axe, y = valeur_propre)) +
-  geom_line() +
-  geom_point(size = 3) +
-  labs(
-    x = "Axe principal",
-    y = "Valeur propre"
-  ) +
-  theme_minimal()
+fviz_eig(acp, 
+      geom= "bar",
+      labelsize = 6,
+      addlabels = FALSE) +
+  labs(title = NULL, y = "% de variance") + scale_y_continuous(limits = c(0, 100)) +
+  theme_metropolis
 ```
 
 Ici, on peut tout à fait ne garder que les 2 premières composantes principales.
 
 
-### Exemple jouet
+### Titanic
 
 ```{r}
 #| echo: false
+#| fig-width: 4
+#| fig-height: 3 
 
-eig_exemple <- data.frame(
-  axe = 1:8,
-  valeur = c(6, 3.5, 2.6, 0.6, 0.4, 0.3, 0.25, 0.2)
-)
 
-ggplot(eig_exemple, aes(x = axe, y = valeur)) +
-  geom_line() +
-  geom_point(size = 3) +
-  labs(
-    x = "Axe principal",
-    y = "Valeur propre"
-  ) +
-  theme_minimal()
+fviz_eig(titanic.mca,
+         geom= "bar",
+         labelsize = 6,
+         addlabels = FALSE) +
+  labs(title = NULL, y = "% de variance") +scale_y_continuous(limits = c(0, 100)) +
+  theme_metropolis
 ```
 
 Le coude se situe ici autour de l'axe 3 : on conserverait donc les 3 premiers axes.
@@ -1235,18 +1211,16 @@ Représentation du nuage de points par rapport aux 2 premières composantes prin
 #| fig-width: 12
 #| fig-height: 9
 
-ind <- as.data.frame(acp$ind$coord)
-ind$ville <- rownames(ind)
-
-plot(
+fviz_pca_ind(
   acp,
-  choix = "ind",
   axes = c(1, 2),
-  cex = 1.7,
   invisible = "quali",
-  cex.axis = 1.6,
-  cex.lab = 1.6
-)
+  labelsize = 9,
+  pointsize = 3,
+  repel = TRUE
+) +
+  labs(title = NULL) +
+  theme_metropolis
 
 ```
 
@@ -1266,17 +1240,16 @@ plot(
 ## Qualité de représentation
 
 
-La **qualité de représentation d’un individu** $i$ sur un avec principal est mesurée par le cosinus carré de l’angle entre l’axe factoriel et le vecteur $X_{i,:}$ (ou $Z_{i,:}$ si centré-réduit). Pour un individu $i$ sur l'axe $k$ :
+La **qualité de représentation d’un individu** $i$ sur un le principal $k$ est mesurée par le cosinus carré de l’angle entre l’axe factoriel et le vecteur $X_{i,:}$ (ou $Z_{i,:}$ si centré-réduit) :
 $$
-\cos^2_{i,k}
+0\leq \cos^2_{i,k}
 =
-\frac{C_{i,k}^2}{d^2(i,G)},
+\frac{C_{i,k}^2}{d^2(i,G)} \leq 1,
 $$
 où $d^2(i,G)$ est la distance au carré entre l'individu $i$ et le centre de gravité.
 
-- on a $0 \leq \cos^2_{i,k} \leq 1$
 - Plus le cosinus carré est proche de $1$, plus l'individu sera proche de l’axe factoriel et donc sera bien représenté sur cet axe ( $\cos^2$ proche de $0$ : l'axe représente **peu** l'individu).
-- Pour connaître la qualité de la représentation sur un espace $E_q$ on ajoute simplement les $q$ cosinus carrés. Dans le plan $(k,l)$, on peut additionner les deux qualités de représentation :
+- Qualité de la représentation sur un espace $E_q$ : on ajoute simplement les $q$ cosinus carrés. Dans le plan $(k,l)$, on a:
 $$
 \cos^2_{i,(k,l)}
 =
@@ -1285,15 +1258,53 @@ $$
 Un point dont le $\cos^2$ est élevé dans le plan est donc **bien représenté** par ce plan.
 
 ::: {.callout-tip}
-Il est préférable d'interpréter les points **bien représentés** et les
-**contributions les plus fortes**, en mobilisant la connaissance du contexte
-des données.
-
-**Contribution** → *le point participe-t-il fortement à la construction de l'axe ?*
-
-**$\cos^2$** → *le point est-il bien représenté par l'axe ?*
+Il est préférable d'interpréter les points **bien représentés**.
 :::
 
+## Représentation des individus
+
+
+::: {.columns style="align-items: center;"}
+
+::: {.column width="70%"}
+
+```{r}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 9
+
+fviz_pca_ind(
+  acp,
+  axes = c(1, 2),
+  invisible = "quali",
+  labelsize = 9,
+  col.ind = "cos2",
+  gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+  repel = TRUE
+) +
+  labs(title = NULL) +
+  theme_metropolis
+
+```
+
+:::
+
+::: {.column width="30%"}
+
+- tous les individus sont correctement représenté sur les premier plan principal
+
+- Brest, Lyon, Nantes sont quasiment ortogonaux à $C_1$
+
+
+```{r}
+#| echo: false
+
+
+print_table(acp$ind$cos2[,1:2], scroll="6")
+```
+:::
+
+:::
 
 
 ## Contribution
@@ -1328,38 +1339,30 @@ Ou parfois en pourcentage (somme à 100)
 **Interprétation :** un individu qui a une grande coordonnée en valeur absolue sur l'axe $k$ contribue fortement à la construction de cet axe.
 
 
-
-
-
-
-
-
 ## Visualisation des individus
 
-Représentation du nuage de points par rapport aux 2 premières composantes principales.
-
-::: {.columns style="align-items: center;"}
+::: {.columns}
 
 ::: {.column width="70%"}
 
 ```{r}
 #| echo: false
 #| fig-width: 12
-#| fig-height: 7
+#| fig-height: 9
 #| out-width: "100%"
 
-ind <- as.data.frame(acp$ind$coord)
-ind$ville <- rownames(ind)
-
-plot(
+fviz_pca_ind(
   acp,
-  choix = "ind",
   axes = c(1, 2),
-  cex = 1.7,
   invisible = "quali",
-  cex.axis = 1.6,
-  cex.lab = 1.6
-)
+  labelsize = 9,
+  col.ind = "contrib",
+  gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+  repel = TRUE
+) +
+  labs(title = NULL) +
+  theme_metropolis
+
 
 ```
 
@@ -1367,70 +1370,12 @@ plot(
 
 ::: {.column width="30%"}
 
-- tous les individus sont correctement représenté sur les premier plan principal
-
-- Brest, Lyon, Nantes sont quasiment ortogonaux à $C_1$
-
-:::
-
-:::
-
-::: {.panel-tabset}
-
-
-###  $\cos^2$:
-
-::: {.columns style="align-items: center;"}
-
-::: {.column width="50%"}
-
 ```{r}
 #| echo: false
 
 
-print_table(acp$ind$cos2[1:7,1:2])
+print_table(acp$ind$contrib[,1:2], scroll="6")
 ```
-
-:::
-
-::: {.column width="50%"}
-
-```{r}
-#| echo: false
-
-
-print_table(acp$ind$cos2[8:14,1:2])
-```
-
-:::
-
-:::
-
-### Contrib:
-
-::: {.columns style="align-items: center;"}
-
-::: {.column width="50%"}
-
-```{r}
-#| echo: false
-
-
-print_table(acp$ind$contrib[1:7,1:2])
-```
-
-:::
-
-::: {.column width="50%"}
-
-```{r}
-#| echo: false
-
-
-print_table(acp$ind$contrib[8:14,1:2])
-```
-
-:::
 
 :::
 
@@ -1440,9 +1385,8 @@ print_table(acp$ind$contrib[8:14,1:2])
 
 ## Visualisation des individus (ajout de variables supplémentaires)
 
-Représentation du nuage de points par rapport aux 2 premières composantes principales.
 
-::: {.columns style="align-items: center;"}
+::: {.columns}
 
 ::: {.column width="70%"}
 
@@ -1451,22 +1395,19 @@ Représentation du nuage de points par rapport aux 2 premières composantes prin
 ```{r}
 #| echo: false
 #| fig-width: 12
-#| fig-height: 7
+#| fig-height: 9
 #| out-width: "100%"
 
-ind <- as.data.frame(acp$ind$coord)
-ind$ville <- rownames(ind)
-
-plot(
+fviz_pca_ind(
   acp,
-  choix = "ind",
   axes = c(1, 2),
-  cex = 1.7,
   invisible = "quali",
-  cex.axis = 1.6,
-  cex.lab = 1.6
-)
-
+  labelsize = 9,
+  pointsize = 3,
+  repel = TRUE
+) +
+  labs(title = NULL) +
+  theme_metropolis
 ```
 :::
 
@@ -1474,28 +1415,21 @@ plot(
 ```{r}
 #| echo: false
 #| fig-width: 12
-#| fig-height: 7
+#| fig-height: 9
 #| out-width: "100%"
 
-ind <- as.data.frame(acp$ind$coord)
-ind$ville <- rownames(ind)
-
-plot(
+fviz_pca_ind(
   acp,
-  choix = "ind",
   axes = c(1, 2),
-  cex = 1.7,
   invisible = "quali",
-  habillage = "Région",
-  cex.axis = 1.6,
-  cex.lab = 1.6
+  habillage= "Région",
+  pallette="jco",
+  labelsize = 9,
+  pointsize = 3,
+  repel = TRUE
 ) +
-  theme(
-    legend.position = c(0.98, 0.98),
-    legend.justification = c("right", "top"),
-    legend.background = element_blank() # optionnel : rend le fond de la légende transparent
-  )
-
+  labs(title = NULL) +
+  theme_metropolis
 ```
 :::
 
@@ -1580,9 +1514,7 @@ où $\Sigma_X = \operatorname{Diag}\left(\operatorname{Var}(X_{:,1}),\ldots, \op
 - **Représentation** des variables dans le plan défini par les deux premiers axes en considérant les deux premières colonnes de $W$. Étant donnés $C_1$ et $C_2$, on trace le “cercle de corrélations” : la variable $j$ est représentée par un point de coordonnées $(\operatorname{Cor}(C_1 , X_{:,j}), \operatorname{Cor} (C_2 , X_{:,j}))$ dans le disque. 
 
 
-## Visualisation des variables
-
-Cette représentation est appelée le **cercle des corrélations**.
+## Visualisation des variables: le cercle des corrélations
 
 ::: columns
 
@@ -1591,18 +1523,18 @@ Cette représentation est appelée le **cercle des corrélations**.
 ```{r}
 #| echo: false
 #| fig-width: 12
-#| fig-height: 12
+#| fig-height: 9
 #| out-width: "100%"
 
-plot(
+fviz_pca_var(
   acp,
-  choix = "var",
   axes = c(1, 2),
-  cex = 1.7,
   invisible = "quanti.sup",
-  cex.axis = 2.2,
-  cex.lab = 4.2
-)
+  labelsize = 9,
+  repel = TRUE
+) +
+  labs(title = NULL) +
+  theme_metropolis
 ```
 
 :::
@@ -1610,13 +1542,13 @@ plot(
 ::: {.column width="40%"}
 
 ::: {.fragment}
-- Le coefficient de corrélation entre Oct et $C_1$ vaut $\sim 0{,}95$.
+- Le coefficient de corrélation entre `Oct` et $C_1$ vaut $\sim 0{,}95$.
 
 - Tous les mois sont fortement et positivement corrélés à $C_1$.
 
-- Les mois Mars, Oct, Avri, Sept (inter saison) sont les moins fortement corrélés à $C_2$.
+- Les mois `Mars`, `Oct`, `Avri`, `Sept` (inter saison) sont les moins fortement corrélés à $C_2$.
 
-- correlation de signe opposé entre $C_2$ et les mois Janv, Dece, Fevr (hiver) et Aout, Mai, Juin, Juil (été) 
+- correlation de signe opposé entre $C_2$ et les mois `Janv`, `Dece`, `Fevr` (hiver) et `Aout`, `Mai`, `Juin`, `Juil` (été) 
 :::
 :::
 
@@ -1630,7 +1562,7 @@ plot(
 ## Qualité de la représentation
 
 
-- La qualité de représentation d’une variable $j$ sur le $k$-ème axe factoriel dual est exprimée par le coefficient de corrélation linéaire^[Quand les données sont centrée-réduites, on peut en prendre le carré et retrouver le $\cos^2$] $r(C_k , X_{:,j})$ entre la variable initiale $X_{:,j}$ et la nouvelle variable $C_k$. 
+- La qualité de représentation d’une variable $j$ sur le $k$-ème axe factoriel dual est exprimée par le coefficient de corrélation linéaire^[Quand les données sont centrée-réduites, on peut en prendre le carré et retrouver le $\cos^2$] $\operatorname{Cor}(X_{:,j},C_{:,k})$ entre la variable initiale $X_{:,j}$ et la nouvelle variable $C_k$. 
 
 - La valeur de cette corrélation sera également très importante pour interpréter ces nouveaux axes factoriels en fonction des variables initiales.
 
@@ -1640,16 +1572,13 @@ plot(
 **Remarque :** bien qu’ayant retenu un sous-espace factoriel expliquant une part importante de l’inertie totale, il est possible que certaines variables ou individus d’intérêt soient mal représentés dans ce sous-espace. Il sera alors intéressant de compléter le sous-espace factoriel en ajoutant des axes factoriels supplémentaires de sorte que ces variables ou individus d’intérêt soient bien représentés
 
 
-
-
-
 ## Contribution
 
 
 Pour une variable $j$, sa contribution à l'axe $k$ est :
 
 $$
-\operatorname{contrib}^{(var)}_{j,k}
+\operatorname{contrib}^{\text{(var)}}_{j,k}
 =
 \frac{W_{j,k}^2}{p\lambda_k}.
 $$
@@ -1657,25 +1586,18 @@ $$
 On a également
 
 $$
-0 \leq \operatorname{contrib}^{(var)}_{j,k} \leq 1
+0 \leq \operatorname{contrib}^{\text{(var)}}_{j,k} \leq 1
 $$
 
 et
 
 $$
 \sum_{j=1}^p
-\operatorname{contrib}^{(var)}_{j,k}
+\operatorname{contrib}^{\text{(var)}}_{j,k}
 =1.
 $$
 
 **Interprétation :** une variable qui a une forte corrélation avec l'axe $k$ contribue fortement à sa construction.
-
-
-
-
-
-
-
 
 
 
@@ -1689,29 +1611,29 @@ $$
 ```{r}
 #| echo: false
 #| fig-width: 12
-#| fig-height: 12
+#| fig-height: 9
 #| out-width: "100%"
 
-plot(
+fviz_pca_var(
   acp,
-  choix = "varcor",
   axes = c(1, 2),
-  cex = 1.7,
-  cex.axis = 1.6,
-  cex.lab = 1.6
-)
+  labelsize = 9,
+  repel = TRUE
+) +
+  labs(title = NULL) +
+  theme_metropolis
 ```
 
 :::
 
 ::: {.column width="40%"}
-- La corrélation entre $C_1$ et la température moyenne est très proche de 1.
+- La corrélation entre $C_1$ et `Moye` (température moyenne) est très proche de 1.
 
-- La latitude est également fortement corrélée à cet axe.
+- La latitude `Lati` est également fortement corrélée à cet axe.
 
-- L’amplitude annuelle est très fortement corrélée à $C_2$ .
+- L’amplitude annuelle `Ampl` est très fortement corrélée à $C_2$ .
 
-- La longitude est également fortement corrélée à cet axe.
+- La longitude `Long` est également fortement corrélée à cet axe.
 :::
 
 :::
@@ -1725,15 +1647,9 @@ plot(
 
 - On remarque dans les données que, tout au long de l’année, il fait plus froid à Lille et plus chaud à Nice relativement aux autres villes de France.
 
-<br>
-
 - On peut vérifier que la **température moyenne annuelle** est très fortement corrélée à $C_1$.
 
-<br>
-
 - On remarque également que Brest est la ville où les **amplitudes thermiques** sont les plus faibles au cours de l’année, contrairement à Strasbourg.
-
-<br>
 
 - On peut vérifier que l’**amplitude thermique annuelle** est très fortement corrélée à $C_2$.
 
@@ -1743,13 +1659,6 @@ plot(
 Il n’est pas toujours aussi aisé de faire des liens directs avec des variables supplémentaires !
 
 :::
-
-
-
-
-
-
-
 
 
 
@@ -1779,16 +1688,12 @@ Il n’est pas toujours aussi aisé de faire des liens directs avec des variable
 
 ## La dualité individus / variables
 
-L'ACP peut être vue de deux façons :
+- L'ACP peut être vue de deux façons :  deux nuages sont construits à partir de la **même matrice de données** $X$
 
 - **Nuage des individus** : les $n$ individus sont des points de $\mathbb{R}^p$.
 - **Nuage des variables** : les $p$ variables sont des points de $\mathbb{R}^n$.
 
-Ces deux nuages sont construits à partir de la **même matrice de données** $X$.
-
-### Deux matrices, un même problème
-
-Pour les individus, on étudie :
+- **Deux matrices, un même problème.** Pour les individus, on étudie :
 $$
 S_X = \frac{1}{n}X^\top X
 $$
@@ -1803,12 +1708,11 @@ Or $X^\top X$ et $XX^\top$ ont les **mêmes valeurs propres non nulles**.
 ::: {.callout-tip}
 
 **C'est la dualité de l'ACP :**  étudier les individus ou étudier les variables conduit aux **mêmes valeurs propres** et donc aux **mêmes axes principaux**. Voir la SVD.
-
 :::
 
 ## La dualité individus / variables
 
-### Pourquoi retrouve-t-on les mêmes axes ?
+- **Pourquoi retrouve-t-on les mêmes axes ?**
 
 Si
 $$
@@ -1828,18 +1732,17 @@ $$
 XX^\top v_k = \lambda_k v_k.
 $$
 
-Ainsi, les vecteurs propres de $X^\top X$ et de $XX^\top$
-sont reliés directement par $X$.
+Ainsi, les vecteurs propres de $X^\top X$ et de $XX^\top$ sont reliés directement par $X$.
 
-**La représentation des individus et celle des variables sont donc deux faces du même objet.**
+La représentation des individus et celle des variables sont donc deux faces du même objet.
 
 
 ## Vocabulaire
 	
   
-- Espaces factoriels directs: ce sont les $p$ sev $Vect\{u_k\}$ engendrés par les $u_k\in\mathbb{R}^p$ (directions de plus grande inertie).
+- **Espaces factoriels directs:** ce sont les $p$ sous espaces vectoriels $\operatorname{Vect}\{u_k\}$ engendrés par les $u_k\in\mathbb{R}^p$ (droite/directions de plus grande inertie).
 
-- Espaces factoriels duals: ce sont les sev engendrés par les composantes principales. La $k$-ème composante principale est le vecteur $C_k \in \mathbb{R}^n$ des coordonnées des $n$ individus sur l'axe factoriel $Vect\{u_k\}$. En ACP normé on a:
+- **Espaces factoriels duals:** ce sont les sous espaces vectoriels engendrés par les composantes principales. La $k$-ème composante principale est le vecteur $C_k \in \mathbb{R}^n$ des coordonnées des $n$ individus sur l'axe factoriel $\operatorname{Vect}\{u_k\}$. En ACP normé on a:
 $$
 			C_k = X u_k
 $$
@@ -1848,26 +1751,27 @@ La composante principale $C_k$ est donc une combinaison linéaire des variables 
 
 ## Nuage des variables
 
-### Problème
-
-Chaque variable est un point de $\mathbb{R}^n$, et on souhaite obtenir une représentation dans un espace de dimension $m<n$, typiquement $m=2$.
+- **Problème :** chaque variable est un point de $\mathbb{R}^n$, et on souhaite obtenir une représentation dans un espace de dimension $m<n$, typiquement $m=2$.
 
 On cherche à nouveau $m$ directions orthogonales
 $$
 v_1,\ldots,v_m,
 $$
+
 mais cette fois en maximisant la **corrélation globale avec les variables**.
 
 
-### Solution
+- **Solution :** sous espaces vectoriels emboîtés
 
-1. $v_1$ est la direction maximisant $\sum_{j=1}^p \rho^2(v,X_{:,j})$.
+1. $v_1$ est la direction maximisant $\sum_{j=1}^p \operatorname{Cor}^2(v,X_{:,j})$.
 
-2. $v_2$ est la direction orthogonale à $v_1$ qui maximise $\sum_{j=1}^p \rho^2(v,X_{:,j})$.
+2. $v_2$ est la direction orthogonale à $v_1$ qui maximise $\sum_{j=1}^p \operatorname{Cor}^2(v,X_{:,j})$.
 
 3. $\ldots$
 
-où $\rho(U,V)$ désigne le **coefficient de corrélation** entre $U$ et $V$.
+où $\operatorname{Cor}(U,V)$ désigne le **coefficient de corrélation** entre $U$ et $V$.
+
+
 
 ## Plot twist
 
@@ -1876,16 +1780,17 @@ On retrouve **exactement la même représentation** que lors de l’étude du nu
 ```{r}
 #| echo: false
 #| fig-width: 12
-#| fig-height: 12
+#| fig-height: 9
 #| out-width: "100%"
-plot(
+
+fviz_pca_var(
   acp,
-  choix = "varcor",
   axes = c(1, 2),
-  cex = 1.7,
-  cex.axis = 1.6,
-  cex.lab = 1.6
-)
+  labelsize = 9,
+  repel = TRUE
+) +
+  labs(title = NULL) +
+  theme_metropolis
 ```
 
 
@@ -1999,4 +1904,3 @@ L'ACP fournit une representation de dimension reduite qui conserve au mieux l'in
 
 
 ## Réferences
-
