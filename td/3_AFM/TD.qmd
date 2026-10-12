@@ -103,9 +103,9 @@ ocde.mfa <- MFA(
 ```
 
 
-1. Résumer la méthodologie de mise en œuvre de l’AFM pour étudier les individus et les variables.
+1. Résumez la méthodologie de mise en œuvre de l’AFM pour étudier les individus et les variables.
 
-2. On va se concentrer sur le premier plan principal. On donne la représentation des individus et des variables ci-dessous, ainsi que les `cos2` des individus et des variables
+2. On se concentre sur le premier plan factoriel. Les représentations des individus et des variables, ainsi que leurs `cos2`, sont données ci-dessous.
 
 
 ::: {.columns}
@@ -182,7 +182,7 @@ theme(
 
 
 
-Faîtes une première interprétation des individus et des variables dans ce plan.
+Faites une première interprétation des individus et des variables dans ce plan.
 
 
 3. On va à présent comparer les 5 groupes de variables, en commençant par les représenter dans le 1er plan principal, ainsi que les coefficients $\mathcal{L}_g$ et $RV$.
@@ -236,8 +236,8 @@ print_table(ocde.mfa$group$RV,  max.col.width ="7em")
 
 
 
-  (a) À quoi correspondent les coordonnées associées à chaque groupe sur le graphique de gauche ?
-  (b) Rappeler ce que calculent les coefficients $\mathcal{L}_g$ et $RV$ et interpréter les résultats.
+   a. À quoi correspondent les coordonnées associées à chaque groupe sur le graphique de gauche ?
+   b. Rappelez ce que calculent les coefficients $\mathcal{L}_g$ et $RV$ et interprétez les résultats.
 
 <!-- 4. On s’intéresse aux inerties axiales, en commençant par le calcul des ratios d’inerties des 2 premières directions
 
@@ -245,8 +245,8 @@ print_table(ocde.mfa$group$RV,  max.col.width ="7em")
 ocde.mfa$inertia.ratio[1:2]
 ```
 
-  (a) Rappeler les inerties constituant ces ratios.
-  (b) Que pourrait-on dire à partir de ces mesures ?
+   a. Rappelez les inerties constituant ces ratios.
+   b. Que pourrait-on dire à partir de ces mesures ?
 -->
 5. On fait apparaître les points partiels associés au Canada, la France et la Grèce :
 
@@ -285,8 +285,8 @@ for (i in seq_along(p$layers)) {
 p
 ```
 
-  (a) Rappeler ce à quoi correspondent les points partiels.
-  (b) Mettre cette visualisation en parallèle des informations sur les inerties intra associées à ces 3 pays ci-dessous
+   a. Rappelez à quoi correspondent les points partiels.
+   b. Mettez cette visualisation en parallèle avec les informations ci-dessous sur les inerties intra associées à ces trois pays.
 
 
 ::: {.columns}
@@ -319,9 +319,9 @@ print_table(ocde.mfa$ind$within.partial.inertia[lignes_select,1:3])
 :::
 
 
-6. On cherche finalement à mettre en parallèle les résultats des ACPs propres à chaque groupe de variable
-  (a) Commencer par rappeler la méthodologie pour faire cette comparaison.
-  (b) On représente ci-dessous le graphique associé à cette méthodologie. Commenter.
+6. On cherche finalement à mettre en parallèle les résultats des ACP réalisées séparément pour chaque groupe de variables.
+   a. Rappelez la méthodologie permettant d'effectuer cette comparaison.
+   b. Le graphique associé à cette méthodologie est représenté ci-dessous. Commentez-le.
 
 ```{r}
 #| fig-width: 12

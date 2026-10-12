@@ -1,5 +1,5 @@
 ---
-title: "TD 2 -- Analyse Factorielle des Correspondences et Analyse des Correspondances Multiples"
+title: "TD 2 -- Analyse Factorielle des Correspondances et Analyse des Correspondances Multiples"
 
 format: 
   html:
@@ -40,15 +40,15 @@ chisq.test(smoke, simulate.p.value=TRUE)
 
 Que conclut-on quant à la significativité statistique de l'association ? Quel garde-fou méthodologique faut-il garder en tête lors des questions suivantes ?
 
-<!-- Ce qu'il faut expliciter : Les proximités et alignements observés sur le biplot (ex. l'axe 1 opposant Heavy et None) ne constituent pas une preuve scientifique ou statistique.La formulation type : « Ces oppositions sont présentées à titre purement exploratoire et qualitatif. Étant donné le test du $\chi^2$ non significatif ($p = 0{,}165$), ces structures géométriques peuvent provenir d'un simple bruit d'échantillonnage. » -->
+<!-- Ce qu'il faut expliciter : Les proximités et alignements observés sur le biplot (ex. l'axe 1 opposant Heavy et None) ne constituent pas une preuve scientifique ou statistique. La formulation type : « Ces oppositions sont présentées à titre purement exploratoire et qualitatif. Étant donné le test du $\chi^2$ non significatif ($p = 0{,}165$), ces structures géométriques peuvent provenir d'un simple bruit d'échantillonnage. » -->
 
 
 
 1. Préparation des données
 
-  a) Donner le code R ou Python pour construire la matrice $F$ des fréquences, les vecteurs $r$ et $c$ des distributions marginales et la matrice $Z$ des écarts à l'indépendance.
+   a. Donnez le code R ou Python pour construire la matrice $F$ des fréquences, les vecteurs $r$ et $c$ des distributions marginales et la matrice $Z$ des écarts à l'indépendance.
 
-```{r}
+   ```{r}
 #| echo: false
   
 # Matrice des fréquences
@@ -60,11 +60,11 @@ c <- colSums(F)
 
 # Matrice Z des écarts à l'indépendance
 Z <- (F - r %*% t(c)) / (r %*% t(c))
-```
+   ```
 
-  b) Compléter les entrées manquantes `??` dans les sorties ci-dessous :
+   b. Complétez les entrées manquantes `??` dans les sorties ci-dessous :
 
-```{r}
+   ```{r}
 #| echo: false
 
 # Formatage pour affichage et masquage des valeurs
@@ -77,49 +77,49 @@ c_str[3] <- " ??"
 Z_str <- apply(round(Z, 2), 2, as.character)
 dimnames(Z_str) <- dimnames(Z)
 Z_str[3, 1] <- " ??"
-```
+   ```
 
-Le vecteur $r$ des masses des lignes
-```{r}
+   Le vecteur $r$ des masses des lignes
+   ```{r}
 #| echo: false
 
 print(r_str, quote = FALSE)
-```
+   ```
 
-Le vecteur $c$ des masses des colonnes
-```{r}
+   Le vecteur $c$ des masses des colonnes
+   ```{r}
 #| echo: false
 
 print(c_str, quote = FALSE)
-```
+   ```
 
-La matrice $Z$ des écarts à l'indépendance
-```{r}
+   La matrice $Z$ des écarts à l'indépendance
+   ```{r}
 #| echo: false
 
 print_table(Z_str)
-```
+   ```
 
 ---
 
 2. Représentation des données sur les axes factoriels
 
-  a) La fonction `gsvd` ci-dessous réalise la décomposition en valeurs singulières généralisée d’une matrice réelle $Z$ de dimension $n \times p$ avec les métriques diagonales $N = \operatorname{Diag}(r)$ sur $\mathbb{R}^n$ et $M = \operatorname{Diag}(c)$ sur $\mathbb{R}^p$.
+   a. La fonction `gsvd` ci-dessous réalise la décomposition en valeurs singulières généralisée d’une matrice réelle $Z$ de dimension $n \times p$ avec les métriques diagonales $N = \operatorname{Diag}(r)$ sur $\mathbb{R}^n$ et $M = \operatorname{Diag}(c)$ sur $\mathbb{R}^p$.
 
-```{r}
+   ```{r}
 #| echo: true
 #| code-fold: true
 
 # Fonction SVD généralisée avec métriques diagonales
 gsvd <- function(Z, r, c) {
-  #-----entree---------------
-  # Z matrice numerique de dimension (n,p) et de rang k
-  # r poids de la metrique des lignes N=diag(r)
-  # c poids de la metrique des colonnes M=diag(c)
-  #-----sortie---------------
-  # d vecteur de taille k contenant les valeurs singulieres (racines carres des valeurs propres)
-  # U matrice de dimension (n,k) des vecteurs propres de de ZMZ'N
-  # V matrice de dimension (p,k) des vecteurs propres de de Z'NZM
+  #-----Entrée---------------
+  # Z : matrice numérique de dimension (n, p) et de rang k
+  # r : poids de la métrique des lignes N = diag(r)
+  # c : poids de la métrique des colonnes M = diag(c)
+  #-----Sortie---------------
+  # d : vecteur de taille k contenant les valeurs singulières (racines carrées des valeurs propres)
+  # U : matrice de dimension (n, k) des vecteurs propres de ZMZ'N
+  # V : matrice de dimension (p, k) des vecteurs propres de Z'NZM
   #----------------------------
 
   k <- qr(Z)$rank
@@ -141,11 +141,11 @@ gsvd <- function(Z, r, c) {
   }
   return(list(U = U, V = V, d = d))
 }
-```
+   ```
 
-  Donner le code qui calcule, avec la fonction `gsvd` les quantités suivantes. Le vecteur $\Lambda$ des valeurs singulières
+   b. Donnez le code qui calcule, avec la fonction `gsvd`, le vecteur $\Lambda$ des valeurs singulières ainsi que les matrices $X$ et $Y$ des coordonnées factorielles.
 
-```{r}
+   ```{r}
 #| echo: false
 
 res_gsvd <- gsvd(Z, r, c)
@@ -155,41 +155,41 @@ Lambda <- res_gsvd$d
 
 X <- sweep(U, 2, STATS = Lambda, FUN = "*")
 Y <- sweep(V, 2, STATS = Lambda, FUN = "*")
-```
+   ```
 
-```{r}
+   ```{r}
 print_table(Lambda)
-```
+   ```
 
-et les matrices $X$ et $Y$ des coordonnées factorielles des profils-lignes et profils-colonnes de l’AFC
+   et les matrices $X$ et $Y$ des coordonnées factorielles des profils-lignes et profils-colonnes de l’AFC
 
-::: {.columns}
+   ::: {.columns}
 
-::: {.column}
+   ::: {.column}
 
-```{r}
+   ```{r}
 print_table(X)
-```
+   ```
 
-:::
+   :::
 
-::: {.column}
+   ::: {.column}
 
-```{r}
+   ```{r}
 print_table(Y)
-```
+   ```
 
-:::
+   :::
 
-:::
+   :::
 
-  b) Calculer les inerties associées à chaque axe ainsi que le pourcentage d'inertie expliquée par le premier plan factoriel.
+   c. Calculez les inerties associées à chaque axe ainsi que le pourcentage d'inertie expliquée par le premier plan factoriel.
 
-  c) Représenter à la main (ou sous R) les profils-lignes et les profils-colonnes sur le premier plan factoriel de l’AFC.
+   d. Représentez à la main (ou sous R) les profils-lignes et les profils-colonnes sur le premier plan factoriel de l’AFC.
 
 3. Exploitation des sorties `FactoMineR` suivantes :
 
-```{r}
+   ```{r}
 #| echo: true
 
 library(FactoMineR)
@@ -198,37 +198,37 @@ res <- CA(smoke, graph = FALSE)
 
 stopifnot(isTRUE(all.equal(abs(unname(res$row$coord)), abs(unname(X)), tolerance = 1e-8)))
 stopifnot(isTRUE(all.equal(abs(unname(res$col$coord)), abs(unname(Y)), tolerance = 1e-8)))
-```
+   ```
 
 
 
-  a) Expliquer le code R ci-dessus. 
+   a. Expliquez le code R ci-dessus.
   
-  b) On donne:
+   b. On donne :
   
-::: {.columns}
+   ::: {.columns}
   
-::: {.column}
+   ::: {.column}
   
-```{r}
+   ```{r}
 print_table(res$row$contrib)
-```
+   ```
   
-:::
+   :::
   
-::: {.column}
+   ::: {.column}
   
-```{r}
+   ```{r}
 print_table(res$col$contrib)
-```
+   ```
   
-:::
+   :::
   
-:::
+   :::
   
-  Pourquoi ne prend on pas la peine d'afficher `res$row$cos2` et `res$col$cos2` ?
+    Pourquoi ne prend-on pas la peine d'afficher `res$row$cos2` et `res$col$cos2` ?
   
-  c) Interpréter les axes factoriels et le graphique réalisé à la question 2.c.
+   c. Interprétez les axes factoriels et le graphique réalisé à la question 2.d.
 
 
 
@@ -258,7 +258,7 @@ data("titanic3")
 df <- titanic3[, c("survived", "pclass", "sex", "age", "fare", "embarked")]
 
 # -------------------------- #
-#    Clean up data           #
+#    Nettoyage des données   #
 # -------------------------- #
 
 # Suppression des lignes ayant un NA sur la variable 'age'
@@ -272,7 +272,7 @@ df_clean <- df_clean[df_clean$embarked %in% c("C", "Q", "S"), ]
 df_clean$embarked <- droplevels(df_clean$embarked)
 
 # -------------------------- #
-#    Convert variables       #
+#    Conversion des variables #
 # -------------------------- #
 
 # 3. Mise en forme des variables qualitatives
@@ -287,7 +287,7 @@ df_clean$Embarked <- factor(df_clean$embarked)
 df_clean$Fare <- df_clean$fare
 
 
-# 2. Découpage de l'Age en tranches
+# 2. Découpage de l'âge en tranches
 df_clean$Age_cat <- cut(
   df_clean$age,
   breaks = c(0, 10, 18, 29, 49, Inf),
@@ -323,7 +323,7 @@ groupes_modalites <- factor(
 )
 ```
 
-1. On affiche d’abord les résultats suivants
+1. On affiche d’abord les résultats suivants.
 
 
 ::: {.columns}
@@ -355,10 +355,10 @@ fviz_eig(titanic.mca,
 
 :::
 
-  (a) Justifier le fait qu’il y ait 10 lignes dans ce tableau
-  (b) À partir de ces affichages, combien de directions principales aurait-on envie de conserver ?
+   a. Justifiez le fait qu’il y ait 10 lignes dans ce tableau.
+   b. À partir de ces affichages, combien de directions principales aurait-on envie de conserver ?
 
-2. On trace les représentations ci-dessous
+2. On trace les représentations ci-dessous.
 
 
 ::: {.columns}
@@ -470,12 +470,12 @@ fviz_mca_var(
 :::
 
 
-  a) Commenter la représentation des individus dans ces plans.
-  b) Rappeler comment sont calculées les positions des modalités sur ce graphe.
-  c) Commenter la représentation des variables dans ces 2 plans.
-  d) Interprétez les positions des différentes modalités par rapport à celles de la variable Survived.
+   a. Commentez la représentation des individus dans ces plans.
+   b. Rappelez comment sont calculées les positions des modalités sur ces graphiques.
+   c. Commentez la représentation des variables dans ces deux plans.
+   d. Interprétez les positions des différentes modalités par rapport à celles de la variable `Survived`.
 
-3. On affiche à présent les sorties suivantes
+3. On affiche à présent les sorties suivantes.
 
 
 ::: {.columns}
@@ -503,7 +503,7 @@ print_table(
 :::
 Quelle tendance semble se dégager ?
 
-4. Synthétiser votre analyse en quelques lignes.
+4. Synthétisez votre analyse en quelques lignes.
 
 
 ```{r}

@@ -102,7 +102,7 @@ p +
 
 ```
 
- Que représente l'axe des ordonnées sur cette représentation graphique ? En se basant uniquement sur l'examen du dendrogramme, combien de classes paraît-il naturel de conserver ?
+ Que représente l'axe des ordonnées sur cette représentation graphique ? En vous appuyant uniquement sur le dendrogramme, combien de classes paraît-il naturel de conserver ?
 
 3. Que représente concrètement ce graphique ? En vous appuyant sur cette représentation, combien de classes paraît-il opportun de retenir ?
 
@@ -165,8 +165,8 @@ fviz_pca_ind(
 ```{r}
 print_table(deca.acp$eig)
 ```
-Si on souhaitait refaire la CAH mais après réduction de dimension, combien de directions principales proposeriez
-vous de conserver ? Commentez le fraph ce-dessous.
+
+Si l'on souhaitait refaire la CAH après une réduction de dimension, combien de directions principales proposeriez-vous de conserver ? Commentez le graphique ci-dessous.
 
 ```{r}
 #| echo: false
@@ -192,5 +192,4 @@ fviz_pca_ind(
   theme_metropolis +
   theme(legend.position = "bottom")
 ```
-
 

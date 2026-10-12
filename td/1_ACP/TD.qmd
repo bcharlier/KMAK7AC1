@@ -32,7 +32,7 @@ X =
 \end{pmatrix}
 $$
 
-1. Caluler $Z$, la version centrée-réduite de la matrice $X$.
+1. Calculer $Z$, la version centrée-réduite de la matrice $X$.
 
 2. En déduire la matrice d'inertie de $Z$ $S$ associée à $X$.
 
@@ -94,7 +94,7 @@ print_table(cidre, , max.col.width = "4.5em")
 
 1. Quel est l'objectif d'une ACP dans ce contexte ?
 
-2. Les donnée sont dans un `data.frame` nommé `cidre` et on effectue
+2. Les données sont dans un `data.frame` nommé `cidre` et on effectue
 l'ACP dans R.
 
 ```{r}
@@ -313,13 +313,13 @@ plot_ly() |>
 :::
 
 
-  a. Quels seraient les variables mal représentées dans le premier plan principal ? Pourquoi ?
+  a. Quelles seraient les variables mal représentées dans le premier plan factoriel ? Pourquoi ?
   
-  b. Quels seraient les variables les plus corrélées (positivement ou négativement) au caractère alcool ? Celles qui le seraient le moins ?
+  b. Quelles seraient les variables les plus corrélées (positivement ou négativement) à la teneur en alcool ? Celles qui le seraient le moins ?
 
   c. Quels seraient les caractères qui contribuent le plus au premier axe principal ?
   
-  d. Même questions avec les deux autres axes.
+  d. Mêmes questions avec les deux autres axes.
 
 4. On considère maintenant les sorties R
 
@@ -467,11 +467,11 @@ plot_ly(
 
 :::
   
-  a. Les individus sont ils bien représentés ?
+  a. Les individus sont-ils bien représentés ?
   
   b. Quels individus seraient représentatifs de profils opposés par rapport au premier axe principal ? Même question pour les deux autres axes.
   
-  c. Proposer des profils de cidres, en précisant leurs caractéristiques principales.
+  c. Proposez des profils de cidres en précisant leurs caractéristiques principales.
 
 ## Exercice 3.
 
@@ -481,12 +481,12 @@ dans un `data.frame` nommé decastar
 ```{r}
 require(FactoMineR)
 
-# Charge dataset in R
+# Charger le jeu de données dans R
 data(decathlon) 
 
-# keep only decastar competition
+# Ne conserver que la compétition Décastar
 decastar = decathlon[decathlon$Competition == 'Decastar', ]
-# Drop useless competition column
+# Supprimer la colonne « Competition », devenue inutile
 decastar = decastar[ , colnames(decastar) != 'Competition']
 print_table(decastar, max.col.width = "3.5em")
 ```
@@ -512,7 +512,7 @@ print_table(deca.acp$eig)
 ```
 
 
-### Valeur propres
+### Valeurs propres
 
 ```{r}
 #| echo: false
@@ -544,13 +544,10 @@ ggplot2::ggplot(
   theme_metropolis
 ```
 
-
-
-
 :::
 
 
-4. Commenter les résultats numériques et graphiques ci-dessous en terme d’individus et de variables (suivre le
+4. Commentez les résultats numériques et graphiques ci-dessous en termes d’individus et de variables (suivez le
 modèle de l’exercice précédent)
 
 
@@ -734,7 +731,7 @@ fviz_pca_var(
 ```
 
 
-### Interactive plot
+### Graphique interactif
 
 ```{r}
 #| echo: false
@@ -839,7 +836,7 @@ plot_ly() |>
 
 :::
 
-5. On se propose à présent de mettre en parallèle le classement des athlètes avec les résultats obtenus. Commenter les graphiques ci-dessous.
+5. On se propose à présent de mettre en parallèle le classement des athlètes avec les résultats obtenus. Commentez les graphiques ci-dessous.
 
 
 ::: {.panel-tabset}
@@ -881,7 +878,7 @@ fviz_pca_var(
   theme_metropolis
 ```
 
-### Interactive plot
+### Graphique interactif
 
 ```{r}
 #| echo: false
@@ -1027,4 +1024,3 @@ plot_ly() |>
 ```
 
 :::
-

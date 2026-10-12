@@ -1,5 +1,5 @@
 ---
-title: "TP 2 -- Analyse Factorielle des Correspondences"
+title: "TP 2 -- Analyse Factorielle des Correspondances"
 author: B. Charlier, Marie Chavent
 
 format: 
@@ -229,14 +229,14 @@ fviz_ca_col(writers.pca,
   theme(legend.position = "bottom")
 ```
 
-5. Effectuez avec la fonction `hclust()` une classification ascendante hiérarchique de Ward des 17 échantillons décrits par leurs coordonnées factorielles sur les quatre premières dimensions de l'AFC. Quelle est la partition en 4 classes ? Tracer sur le premier plan factoriel.
+5. Effectuez avec la fonction `hclust()` une classification ascendante hiérarchique de Ward des 17 échantillons décrits par leurs coordonnées factorielles sur les quatre premières dimensions de l'AFC. Quelle est la partition en 4 classes ? Tracez-la sur le premier plan factoriel.
 
 ```{r}
 #| include: !expr params$correction
 
-#matrice des coordonnees factorielles sur 4 dimensions
+# Matrice des coordonnées factorielles sur 4 dimensions
 X <- rbind(res$row$coord[,1:4],res$row.sup$coord[,1:4])
-#matrice de distance euclidiennes entre les 17 echantillons
+# Matrice des distances euclidiennes entre les 17 échantillons
 D <- dist(X)
 #CAH
 tree <- hclust(D,method="ward.D2")
@@ -288,7 +288,7 @@ confusion_matrix
 
 ## Exercice 2.
 
-Récupérez le jeu de données [`chiens.cvs`](data/chiens.csv). Il s'agit de données fictives où 27 races de chiens sont décrites par 7 variables qualitatives.
+Récupérez le jeu de données [`chiens.csv`](data/chiens.csv). Il s'agit de données fictives où 27 races de chiens sont décrites par 7 variables qualitatives.
 
 1. Chargez le jeu de données `chiens.csv` dans `R`. Affichez les données. Quelle est la classe de cet objet ?
 
@@ -312,7 +312,7 @@ class(chiens)
 
 ```
 
-2. Créez une matrice $H$ contenant la description des $n = 27$ races canines sur uniquement les $p = 6$ premières variables. *Indication: on pourra faire avec la fonction `subset()` *
+2. Créez une matrice $H$ contenant la description des $n = 27$ races canines à partir des $p = 6$ premières variables uniquement. *Indication : vous pouvez utiliser la fonction `subset()`.*
 
 ```{r}
 #| include: !expr params$correction
@@ -323,18 +323,18 @@ H
 
 3. On veut effectuer l'ACM de cette matrice $H$.
 
-   a. QQuelle décomposition en valeurs singulières généralisées (GSVD) faut-il faire ? Réalisez cette GSVD avec `R` et stockez les résultats dans des matrices `U`, `V` et `d`. *Indication: on pourra utiliser la fonction `FactoMineR::svd.triplet()`.*
+   a. Quelle décomposition en valeurs singulières généralisées (GSVD) faut-il faire ? Réalisez cette GSVD avec `R` et stockez les résultats dans des matrices `U`, `V` et `d`. *Indication : vous pouvez utiliser la fonction `FactoMineR::svd.triplet()`.*
 
-```{r}
+   ```{r}
 #| include: !expr params$correction
 
 library(FactoMineR)
 K <- tab.disjonctif(H)
 #------Calcul de la matrice R ------------
 
-F <- K/sum(K) #matrice des frequences
-r<-apply(F,1,sum) #poids des lignes
-c<-apply(F,2,sum) #poids des colonnes
+F <- K/sum(K) # matrice des fréquences
+r<-apply(F,1,sum) # poids des lignes
+c<-apply(F,2,sum) # poids des colonnes
 
 R <- diag(1/r) %*% (F-r%*%t(c)) %*% diag(1/c)
 
@@ -344,31 +344,31 @@ U <- R.svd$U
 V <- R.svd$V
 d <- R.svd$vs
 
-```
-```{r}
+   ```
+   ```{r}
 round(U[1:5,1:5], 3)
 round(V[1:5,1:5], 3)
 round(d[1:5], 3)
-```
+   ```
 
    b. Montrez qu'en ACM, l'inertie totale des données vaut toujours $\frac{J}{p} - 1$, où $J$ est le nombre total de modalités et $p$ le nombre de variables qualitatives. Vérifiez ensuite avec `R` que la somme des valeurs propres (ou carrés des valeurs singulières) trouvées à la question précédente vaut bien $\frac{J}{p} - 1$.
-```{r}
+   ```{r}
 #| include: !expr params$correction
 
-sum(d^2) #somme des valeurs singulieres
+sum(d^2) # somme des valeurs singulières
 
-p <- ncol(H) #nb de variables qualitatives
-J <- ncol(K) #nb de modalites
+p <- ncol(H) # nombre de variables qualitatives
+J <- ncol(K) # nombre de modalités
 J/p-1
 
 stopifnot(isTRUE(all.equal(sum(d^2), J / p - 1)))
-```
+   ```
 
    c. Vérifiez également que le nombre maximum de dimensions de cette ACM vaut bien $\min(n - 1, J - p)$.
-```{r}
+   ```{r}
 #| include: !expr params$correction
 
-#10 valeurs propres non nulles
+# 10 valeurs propres non nulles
 round(d^2,digit=3)
 
 n <- nrow(H)
@@ -376,50 +376,50 @@ min(n-1,J-p)
 
 tol <- max(dim(R)) * max(d) * .Machine$double.eps
 stopifnot(sum(d > tol) == min(n - 1, J - p))
-```
-   
+   ```
+
    d. Représentez dans un diagramme en barres les pourcentages d'inertie expliquée par les dimensions de l'ACM.
 
-```{r}
+   ```{r}
 #| include: !expr params$correction
 
 #| fig-width: 8
 
 barplot(d^2/sum(d^2)*100,names.arg=1:length(d),xlab="dim",ylab="pourcentage d'inertie expliquée")   
-```
+   ```
 
    e. Déterminez les matrices $X$ et $Y$ des coordonnées factorielles des races de chiens et des modalités des variables qualitatives sur les $k = 3$ premières dimensions. Modifiez les noms des lignes et des colonnes dans $X$ et $Y$ afin qu'ils soient parlants.
 
-```{r}
+   ```{r}
 #| include: !expr params$correction
 
-#coordonnees factorielles des races de chiens
+# Coordonnées factorielles des races de chiens
 X <- data.frame(U[,1:3] %*% diag(d[1:3]))
 rownames(X) <- rownames(H)
 colnames(X) <- paste("dim", 1:3, sep = "")
-```
-```{r}
+   ```
+   ```{r}
 #| echo: false
 
 print_table(head(X))
-```
+   ```
 
-```{r}
+   ```{r}
 #| include: !expr params$correction
 
-#coordonnees factorielles des modalités
+# Coordonnées factorielles des modalités
 Y <- data.frame(V[,1:3] %*% diag(d[1:3]))
 rownames(Y) <- colnames(K)
 colnames(Y) <- paste("dim", 1:3, sep = "")
-```
-```{r}
+   ```
+   ```{r}
 #| echo: false
 
 print_table(head(Y))
-```
+   ```
 
-   f. À partir du code suivant, faites un graphique (plot) des modalités dans le premier plan factoriel.
-```{r}
+   f. À partir du code suivant, faites un graphique des modalités dans le premier plan factoriel.
+   ```{r}
 library(ggplot2)
 library(ggrepel)
 
@@ -446,9 +446,9 @@ ggplot(individus, aes(x = x, y = y, label = nom)) +
   ) +
   labs(x = lab.x, y = lab.y) +
   theme_minimal()
-```
+   ```
 
-```{r}
+   ```{r}
 #| include: !expr params$correction
 
 library(ggplot2)
@@ -477,28 +477,28 @@ ggplot(modalites, aes(x = x, y = y, label = nom)) +
   ) +
   labs(x = lab.x, y = lab.y) +
   theme_minimal()
-```
+   ```
 
 
    g. Utilisez la relation quasi-barycentrique pour retrouver les coordonnées factorielles de la modalité `T++` à partir des coordonnées factorielles des races de chiens.
-```{r}
+   ```{r}
 #| include: !expr params$correction
 
-#indice des lignes des chiens T++
+# Indices des lignes correspondant aux chiens T++
 which(K[,1]==1) 
 
-#moyenne des coord. fact. des chiens T++
+# Moyenne des coordonnées factorielles des chiens T++
 moy <- apply(X[which(K[,1]==1),],2,mean) 
 
-#relation quasi-barycentrique
+# Relation quasi-barycentrique
 moy*(1/d[1:3]) 
 
-#coord. fact. de T++
+# Coordonnées factorielles de T++
 unname(Y[1,]) 
-```
+   ```
 
    h. Que calcule la fonction suivante ? <!--Quel est le rapport de corrélation entre la variable *taille* et la première composante principale ? Entre la variable *taille* et la seconde composante principale ? -->
-```{r}
+   ```{r}
 fun <- function(x, gpe) {
   moyennes <- tapply(x, gpe, mean)
   effectifs <- tapply(x, gpe, length)
@@ -507,25 +507,25 @@ fun <- function(x, gpe) {
   res <- varinter / vartot
   return(res)
 }
-```
+   ```
 
-```{r}
+   ```{r}
 fun(X$dim1, chiens$taille)
 fun(X$dim2, chiens$taille)
-```
+   ```
 
 4. On veut maintenant utiliser la fonction `MCA()` du package `FactoMineR`.
   
-  a. Faire l’ACM des données sur les races canines en mettant la variable fonction en supplémentaire.
+   a. Faire l’ACM des données sur les races canines en mettant la variable fonction en supplémentaire.
 
-```{r}
+   ```{r}
 #| include: !expr params$correction
 
 chiens.MCA <- MCA(chiens, quali.sup = 7, graph = FALSE)
-```
+   ```
   
-  b. Retrouvez les résulats numériques et les graphiques de la question 2.
-```{r}
+   b. Retrouvez les résultats numériques et les graphiques de la question 2.
+   ```{r}
 #| include: !expr params$correction
 
 head(X)
@@ -533,10 +533,10 @@ head(chiens.MCA$ind$coord)
 
 head(Y)
 head(chiens.MCA$var$coord)
-```
+   ```
 
 
-```{r}
+   ```{r}
 #| include: !expr params$correction
 #| fig-width: 12
 #| fig-height: 9
@@ -556,9 +556,9 @@ fviz_mca_ind(
     name = expression(cos^2)
   ) + theme_metropolis +
   theme(legend.position = "bottom")
-```
+   ```
 
-```{r}
+   ```{r}
 #| include: !expr params$correction
 #| fig-width: 12
 #| fig-height: 9
@@ -570,18 +570,18 @@ fviz_mca_var(
   repel = TRUE,
   labelsize = 9
 ) + theme_metropolis
-```
+   ```
 
-c. Retrouver les rapports de corrélations entre les variables qualitatives et les deux premières composantes principales. 
+   c. Retrouver les rapports de corrélations entre les variables qualitatives et les deux premières composantes principales.
 
-```{r}
+   ```{r}
 #| include: !expr params$correction
 
 chiens.MCA$var$eta2["taille",1:2]
-```
+   ```
 
-d. Faire le plot des variables en fonction de ces rapports de corrélation en utilisant la fonction `plot.MCA`.
-```{r}
+   d. Représentez les variables en fonction de ces rapports de corrélation à l'aide de la fonction `plot.MCA`.
+   ```{r}
 #| include: !expr params$correction
 
 #plot(chiens.MCA,choix="var",invisible=c("ind"))
@@ -592,4 +592,4 @@ fviz_mca_var(
   labelsize=9
 ) +
   theme_metropolis
-```
+   ```
