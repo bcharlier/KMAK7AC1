@@ -145,7 +145,7 @@ partition_3 <- factor(res_hcpc$data.clust$clust)
 names(partition_3) <- rownames(res_hcpc$data.clust)
 
 # ACP des 10 épreuves pour représenter les individus
-deca.acp <- PCA(decastar_normalized, graph = FALSE)
+deca.acp <- PCA(decastar_normalized, ncp=10, graph = FALSE)
 
 fviz_pca_ind(
   deca.acp,
