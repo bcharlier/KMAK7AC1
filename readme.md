@@ -10,45 +10,36 @@ work. The published website is available at:
 ## Contents
 
 - `cours/`: course materials
-- `slides/`: presentation slides, including the PCA presentation
 - `td/`: tutorial sheets and exercises
 - `tp/`: practical work and Quarto documentation
 - `R/`: shared R helper functions
-- `custom.scss`: custom website styling
+- `assets`: custom website styling
 - `.github/workflows/quarto-pages.yml`: GitHub Pages deployment workflow
 
-## Prerequisites
+## Installation
 
-Install:
+- Install [Quarto](https://quarto.org/docs/get-started/)
+- the website uses the Iconify Quarto extension for icons. If it is missing from a
+fresh checkout, install it from the project root:
 
-- [Quarto](https://quarto.org/docs/get-started/)
-- R and the packages `knitr`, `reticulate`, `rmarkdown`, `plotly`,
-	`FactoMineR`, `ggplot2` and `PASWR`
-- Python 3.12 or a compatible version
-- Python packages `jupyter`, `numpy`, `pandas`, `matplotlib` and
-	`scikit-learn`
+```bash
+quarto add mcanouil/quarto-iconify@4.1.2
+```
 
-## Local setup
+- R and its dependencies (listed in the [`DESCRIPTION` file](./DESCRIPTION)). You can install them in R using:
+```bash
+Rscript -e 'install.packages("remotes"); remotes::install_deps()'
+```
 
-From the project root, create and activate a Python environment:
-
+- Python 3.12 or a compatible version and [needed packages](./requirements.txt)
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install jupyter numpy pandas matplotlib scikit-learn
+pip install -r requirements.txt
 ```
 
-Install the R packages from R:
-
-```r
-install.packages(c(
-	"knitr", "reticulate", "rmarkdown", "plotly",
-	"FactoMineR", "ggplot2", "PASWR"
-))
-```
-
-The local `.Rprofile` uses `.venv/bin/python` when it exists. In continuous
+The local [`.Rprofile`](./.Rprofile) uses `.venv/bin/python` when it exists. In continuous
 integration, it preserves the Python interpreter configured by GitHub Actions.
 
 ## Render the website
@@ -84,15 +75,3 @@ as a Pages artifact and deploys it to GitHub Pages.
 The workflow can also be started manually from the **Actions** tab on GitHub.
 Set the repository Pages source to **GitHub Actions** under
 **Settings > Pages**.
-
-## Quarto extensions
-
-The website uses the Iconify extension for icons. If it is missing from a
-fresh checkout, install it from the project root:
-
-```bash
-quarto add mcanouil/quarto-iconify@4.1.2
-```
-
-Generated files such as `_site/`, `_freeze/` and `.quarto/` are excluded from
-version control.

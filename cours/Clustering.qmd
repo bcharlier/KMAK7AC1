@@ -27,8 +27,7 @@ source("../R/functions.R")
 
 ## Panorama des méthodes
 
-Rechercher dans un jeu de données une répartition des observations en diérentes
-groupes... Source: [documentation Scikit-learn](https://scikit-learn.org/stable/auto_examples/cluster/plot_cluster_comparison.html)
+Rechercher dans un jeu de données une répartition des observations en différents groupes... Source: [documentation Scikit-learn](https://scikit-learn.org/stable/auto_examples/cluster/plot_cluster_comparison.html)
 
 ```{python}
 #| echo: false
@@ -309,12 +308,12 @@ plt.show()
 ```
 
 
-## Partition et hierarchie
+## Partition et hiérarchie
 
 
 ::: {.panel-tabset}
 
-## Défintion
+## Définition
 
 - **Partition finie :** Une partition d'un ensemble fini $E$ en $K$ classes correspond à une famille de sous-ensembles $(\mathcal{G}^{(1)}, \dots, \mathcal{G}^{(K)})$ non vides, deux à deux disjoints ($\mathcal{G}^{(i)} \cap \mathcal{G}^{(j)} = \emptyset$ pour $i \neq j$) et dont la réunion forme l'ensemble des individus ($\bigcup_{k=1}^K \mathcal{G}^{(k)} = E$).
 
@@ -329,9 +328,88 @@ plt.show()
 
 ```{r}
 #| echo: false
-#| message: false
-#| warning: false
+#| fig.width: 12
+#| fig.height: 6
 
+library(ggplot2)
+library(ggforce)
+library(patchwork)
+
+# 1. Génération des données synthétiques
+set.seed(42)
+g1 <- data.frame(x = rnorm(6, mean = 2, sd = 0.4), y = rnorm(6, mean = 2, sd = 0.4), cluster = "C1")
+g2 <- data.frame(x = rnorm(6, mean = 3.5, sd = 0.4), y = rnorm(6, mean = 2, sd = 0.4), cluster = "C2")
+g3 <- data.frame(x = rnorm(8, mean = 6, sd = 0.5), y = rnorm(8, mean = 6, sd = 0.5), cluster = "C3")
+
+df <- rbind(g1, g2, g3)
+
+# Couleurs pour la partition
+colors_part <- c("C1" = "#2b5c8f", "C2" = "#d95f02", "C3" = "#27ae60")
+
+# --- 1. GRAPHIQUE : PARTITION (CLASSES SEPARÉES) ---
+p_partition <- ggplot(df, aes(x = x, y = y)) +
+  geom_point(aes(color = cluster), size = 3.5, alpha = 0.9) +
+  scale_color_manual(values = colors_part) +
+  coord_equal(xlim = c(0, 8), ylim = c(0, 8)) +
+  labs(
+    title = "Partition (K = 3)",
+    subtitle = "Sous-ensembles stricts et disjoints"
+  ) +
+  theme_void(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5, color = "#2c3e50"),
+    plot.subtitle = element_text(hjust = 0.5, size = 11, color = "#7f8c8d"),
+    panel.grid.minor = element_blank(),
+    legend.position = "none",
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank()
+  )
+
+# --- 2. GRAPHIQUE : HIÉRARCHIE (EMBOÎTEMENT DES GROUPES) ---
+p_hierarchy <- ggplot(df, aes(x = x, y = y)) +
+  # Niveau 3 : Ensemble global E (Grand groupe englobant tout)
+  geom_mark_hull(
+    aes(group = 1), 
+    fill = "#95a5a6", color = "#7f8c8d", alpha = 0.08, 
+    linetype = "dashed", expand = unit(4, "mm"), concavity = 100
+  ) +
+  # Niveau 2 : Regroupement intermédiaire (C1 + C2)
+  geom_mark_hull(
+    data = subset(df, cluster %in% c("C3")), aes(group = 1),
+    fill = "#3498db", color = "#2980b9", alpha = 0.15, 
+    linetype = "dotdash", expand = unit(3, "mm"), concavity = 100
+  ) +
+  geom_mark_hull(
+    data = subset(df, cluster %in% c("C1", "C2")), aes(group = 1),
+    fill = "#3498db", color = "#2980b9", alpha = 0.15, 
+    linetype = "dotdash", expand = unit(3, "mm"), concavity = 100
+  ) +
+  # Niveau 1 : Fine granularité / Petites classes individuelles
+  geom_mark_hull(
+    aes(group = cluster), 
+    fill = "#e67e22", color = "#d35400", alpha = 0.2, 
+    expand = unit(2, "mm"), concavity = 100
+  ) +
+  geom_point(size = 3.5, color = "#2c3e50") +
+  coord_equal(xlim = c(0, 8), ylim = c(0, 8)) +
+  labs(
+    title = "Hiérarchie H",
+    subtitle = "Emboîtement de sous-ensembles (A ∩ B ∈ {∅, A, B})"
+  ) +
+  theme_void(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5, color = "#2c3e50"),
+    plot.subtitle = element_text(hjust = 0.5, size = 11, color = "#7f8c8d"),
+    panel.grid.minor = element_blank(),
+    legend.position = "none",
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank()
+  )
+
+# --- ASSEMBLAGE PAR PATCHWORK ---
+p_partition | p_hierarchy
 
 ```
 
@@ -370,12 +448,12 @@ $$x_i = (x_{i,1}, x_{i,2}, \dots, x_{i,p})^\top \in \mathbb{R}^p$$
 
 L'objectif est de construire une partition de l'ensemble des observations $\{x_1, \dots, x_n\}$ en $K$ groupes disjoints $\mathcal{G}^{(1)}, \dots, \mathcal{G}^{(K)}$.
 
-Notations principales
+Notations principales :
 
 - **Centre de gravité global :** $\displaystyle g = \frac{1}{n} \sum_{i=1}^n x_i$
 
 - **Effectif du groupe $k$ :**
-  $\displaystyle n_k = |\mathcal{G}^{(k)}| = \sum_{i=1}^n \mathbb{I}_{\{x_i \in \mathcal{G}^{(k)}\}}$
+  $\displaystyle n_k = |\mathcal{G}^{(k)}| = \sum_{i=1}^n \mathbb{1}_{\{x_i \in \mathcal{G}^{(k)}\}}$
 
 - **Centre de gravité du groupe $k$ :**
   $\displaystyle g^{(k)} = \frac{1}{n_k} \sum_{x_i \in \mathcal{G}^{(k)}} x_i$
@@ -400,11 +478,11 @@ $\displaystyle d = d_2$
 
 ::: {.callout-note}
 ### Complexité spatiale et calculatoire
-La première étape de nombreux algorithmes de partitionnement repose sur le calcul des distances deux à deux entre toutes les observations. Le stockage et complecité algorithmique deviennent problématiques pour de grandes valeurs de $n$.
+La première étape de nombreux algorithmes de partitionnement repose sur le calcul des distances deux à deux entre toutes les observations. Le stockage et la complexité algorithmique deviennent problématiques pour de grandes valeurs de $n$.
 :::
 
 
-## Décomposition de l'intertie
+## Décomposition de l'inertie
 
 - **Inertie totale :**
   $\displaystyle \text{Inertie}_{\text{tot}} = \frac{1}{n} \sum_{i=1}^n d(x_i, g)^2$ avec $g$ le barycentre de toutes les observations.
@@ -413,7 +491,7 @@ La première étape de nombreux algorithmes de partitionnement repose sur le cal
   $\displaystyle \text{Inertie}_{\text{inter}} = \sum_{k=1}^K \frac{n_k}{n} d(g^{(k)}, g)^2$
 
 - **Inertie intra-classe :**
-  $\displaystyle \text{Inertie}_{\text{intra}} = \frac{1}{n} \sum_{k=1}^K \sum_{i \in \mathcal{G}^{(k)}} d(x_i, g^{(k)})^2 = \sum_{k=1}^K \frac{n_k}{n} \text{Inertie}(\mathcal{G}^{(k)})$
+  $\displaystyle \text{Inertie}_{\text{intra}} = \frac{1}{n} \sum_{k=1}^K \sum_{x_i \in \mathcal{G}^{(k)}} d(x_i, g^{(k)})^2 = \sum_{k=1}^K \frac{n_k}{n} \text{Inertie}(\mathcal{G}^{(k)})$
 
 ::: {.callout-important}
 ### Théorème de Huygens
@@ -456,28 +534,26 @@ avec $n_k = |\mathcal{G}^{(k)}|$ le nombre d'observations appartenant au groupe 
 :::: {.columns}
 
 ::: {.column width="60%"}
-### Distance minimale (Saut simple)
+- **Distance minimale (Saut simple) :**
 
-$$d_{\min}(\mathcal{G}^{(k)}, \mathcal{G}^{(k')}) = \min_{i_k \in \mathcal{G}^{(k)}, i_{k'} \in \mathcal{G}^{(k')}} d(x_{i_k}, x_{i_{k'}})$$
+$$d_{\min}(\mathcal{G}^{(k)}, \mathcal{G}^{(k')}) = \min_{x_i \in \mathcal{G}^{(k)}, x_{i'} \in \mathcal{G}^{(k')}} d(x_i, x_{i'})$$
 
-* **Inconvénients :** Sensible à l'effet de chaîne, tendance à créer de grands groupes allongés en fusionnant des sous-ensembles proches.
-* **Avantages :** Capable de détecter des formes de classes non sphériques et irrégulières.
+  - *Avantages :* Capable de détecter des formes de classes non sphériques et irrégulières.
+  - *Inconvénients :* Sensible à l'effet de chaîne (*chaining effect*), tendance à créer de grands groupes allongés en fusionnant des sous-ensembles proches.
 
 <br>
 
-### Distance maximale (Saut complet)
+- **Distance maximale (Saut complet) :**
 
-$$d_{\max}(\mathcal{G}^{(k)}, \mathcal{G}^{(k')}) = \max_{i_k \in \mathcal{G}^{(k)}, i_{k'} \in \mathcal{G}^{(k')}} d(x_{i_k}, x_{i_{k'}})$$
+$$d_{\max}(\mathcal{G}^{(k)}, \mathcal{G}^{(k')}) = \max_{x_i \in \mathcal{G}^{(k)}, x_{i'} \in \mathcal{G}^{(k')}} d(x_i, x_{i'})$$
 
-* **Inconvénients :** Très sensible aux individus isolés (*outliers*).
-* **Avantages :** Produit des classes compactes et de diamètres homogènes.
+  - *Avantages :* Produit des classes compactes et de diamètres homogènes.
+  - *Inconvénients :* Très sensible aux individus isolés (*outliers*).
 :::
 
 ::: {.column width="40%"}
 ```{r}
 #| echo: false
-#| message: false
-#| warning: false
 #| fig.width: 5
 #| fig.height: 9
 
@@ -552,23 +628,23 @@ grid.arrange(p_min, p_max, ncol = 1)
 :::: {.columns}
 
 ::: {.column width="60%"}
-### Distance moyenne (Average linkage)
+- **Distance moyenne (Average linkage) :**
 
-$$d_{\text{mean}}(\mathcal{G}^{(k)}, \mathcal{G}^{(k')}) = \frac{1}{n_k n_{k'}} \sum_{i_k \in \mathcal{G}^{(k)}} \sum_{i_{k'} \in \mathcal{G}^{(k')}} d(x_{i_k}, x_{i_{k'}})$$
+$$ d_{\text{mean}}(\mathcal{G}^{(k)}, \mathcal{G}^{(k')}) = \frac{1}{n_k n_{k'}} \sum_{x_i \in \mathcal{G}^{(k)}} \sum_{x_{i'} \in \mathcal{G}^{(k')}} d(x_i, x_{i'})$$
 
-* Prend en compte l'ensemble des paires d'observations entre les deux groupes.
-* Compromis robuste entre la distance minimale et la distance maximale.
+  - Prend en compte l'ensemble des paires d'observations entre les deux groupes.
+  - Compromis robuste entre la distance minimale et la distance maximale.
 
 <br>
 
-### Distance barycentrique (Centroid linkage)
+- **Distance barycentrique (Centroid linkage) :**
 
 $$d_{\text{bar}}(\mathcal{G}^{(k)}, \mathcal{G}^{(k')}) = d(g^{(k)}, g^{(k')})$$
 
-avec $g^{(k)}$ le centre de gravité (barycentre) du groupe $\mathcal{G}^{(k)}$.
+avec $g^{(k)}$ le centre de gravité du groupe $\mathcal{G}^{(k)}$.
 
-* **Avantages :** Simple à calculer et interpréter, moins sensible aux observations isolées (*outliers*).
-* **Limite :** Peut présenter des inversions dans le dendrogramme (non-monotonie).
+  - *Avantages :* Simple à calculer et à interpréter, moins sensible aux observations isolées (*outliers*).
+  - *Inconvénients :* Peut présenter des inversions dans le dendrogramme (non-monotonie de l'indice de hauteur).
 :::
 
 ::: {.column width="40%"}
@@ -662,12 +738,12 @@ grid.arrange(p_mean, p_bar, ncol = 1)
 
 - **Processus d'agrégation itératif :**  À l'étape $m \in \{1, \dots, n-1\}$ :
 
-  1. **Recherche :** de la paire $(\mathcal{G}^{(A)}, \mathcal{G}^{(B)})$ minimisant la distance inter-groupes $\delta(\mathcal{G}^{(A)}, \mathcal{G}^{(B)})$.
-  2. **Fusion :** des deux groupes en un seul groupe $\mathcal{G}^{(A \cup B)} = \mathcal{G}^{(A)} \cup \mathcal{G}^{(B)}$.
-  3. **Mise à jour :** des distances entre le nouveau groupe et l'ensemble des groupes restants.
+  1. *Recherche :* de la paire $(\mathcal{G}^{(A)}, \mathcal{G}^{(B)})$ minimisant la distance inter-groupes $\delta(\mathcal{G}^{(A)}, \mathcal{G}^{(B)})$.
+  2. *Fusion :* des deux groupes en un seul groupe $\mathcal{G}^{(A \cup B)} = \mathcal{G}^{(A)} \cup \mathcal{G}^{(B)}$.
+  3. *Mise à jour :* des distances entre le nouveau groupe et l'ensemble des groupes restants.
 
 
-- **Condition d'arrêt :**  obtention d'un groupe unique contenant toutes les observations ($\mathcal{P}_1 = \{\Omega\}$).
+- **Condition d'arrêt :**  obtention d'un groupe unique contenant toutes les observations ($\mathcal{P}_1 = \{E\}$).
 
 ::: {.callout-note}
 ### Choix de la partition finale
@@ -689,10 +765,9 @@ $$d_W(\mathcal{G}^{(k)}, \mathcal{G}^{(k')})^2 = \frac{w_k w_{k'}}{w_k + w_{k'}}
 
 avec $w_k = \frac{n_k}{n}$ et $w_{k'} = \frac{n_{k'}}{n}$ les poids de $\mathcal{G}^{(k)}$ et $\mathcal{G}^{(k')}$.
 
-C'est la distance inter-groupe qui minimise l'augmentation de l'inertie intra lors de la fusion de groupes.
 :::
 
-- **Propriété clé :** on minimise la perte d'inertie inter-classes: on garantit des classes les plus homogènes possible à chaque étape.
+- **Propriété :** on minimise la perte d'inertie inter-classes garantissant des classes les plus homogènes possible à chaque étape.
 
 ## Illustration
 
@@ -719,7 +794,6 @@ C'est la distance inter-groupe qui minimise l'augmentation de l'inertie intra lo
 Favorise l’agrégation de classes de faibles poids et casse l’effet chaine du lien
 minimum.
 
-```{r}
 ```{r}
 #| echo: false
 #| fig.width: 12
@@ -1105,7 +1179,7 @@ print_table(gains_df)
 
 ::::
 
-## Choix du nombre de groupes ($K$)
+## Choix du nombre $K$ de groupes
 
 :::: {.columns}
 
@@ -1163,6 +1237,7 @@ names(partitions) <- paste0("k", 2:5)
 fviz_pca_ind(
   temperature.acp,
   habillage = partitions$k2,
+  mean.point = FALSE,
   palette = "Dark2",
   repel = TRUE,
   labelsize = 8
@@ -1181,6 +1256,7 @@ fviz_pca_ind(
 fviz_pca_ind(
   temperature.acp,
   habillage = partitions$k3,
+  mean.point = FALSE,
   palette = "Dark2",
   repel = TRUE,
   labelsize = 8
@@ -1199,6 +1275,7 @@ fviz_pca_ind(
 fviz_pca_ind(
   temperature.acp,
   habillage = partitions$k4,
+  mean.point = FALSE,
   palette = "Dark2",
   repel = TRUE,
   labelsize = 8
@@ -1217,6 +1294,7 @@ fviz_pca_ind(
 fviz_pca_ind(
   temperature.acp,
   habillage = partitions$k5,
+  mean.point = FALSE,
   palette = "Dark2",
   repel = TRUE,
   labelsize = 8
@@ -1505,12 +1583,12 @@ ggplot(df_km, aes(x = x, y = y, color = Groupe_t2)) +
 
 ## Synthèse : CAH vs. K-means
 
-|  | Avantages | Inconvénients |
-|:---|:---|:---|
-| **CAH** | **+ Choix de $K$ a posteriori** une fois l'arbre (dendrogramme) construit<br><br>**+ Traçabilité** de l'ensemble des niveaux d'agrégation | **- Numériquement coûteux** <br><br>**- Irréversibilité :** des observations une fois regroupées le restent<br><br>**- Sensibilité :** dépend de la métrique et du critère d'agrégation |
-| **K-means** | **+ Algorithme rapide** et adapté aux grands jeux de données <br><br>**+ Réallocation dynamique :** un point peut changer de groupe au fil des itérations | **- Choix de $K$ obligatoire en amont** <br><br>**- Instabilité :** dépend du choix des noyaux initiaux (minima locaux)<br><br>**- Contrainte de forme :** tend à privilégier des classes sphériques |
+| | **CAH** | **K-means** |
+|:---:|:---|:---|
+| <span style="writing-mode: vertical-rl; transform: rotate(180deg); display: block; margin: auto; font-weight: bold; color: #27ae60;">Avantages</span> | **+ Choix de $K$ *a posteriori*** une fois l'arbre (dendrogramme) construit<br><br>**+ Traçabilité** de l'ensemble des niveaux d'agrégation | **+ Algorithme rapide** et adapté aux grands jeux de données<br><br>**+ Réallocation dynamique :** un point peut changer de groupe au fil des itérations |
+| <span style="writing-mode: vertical-rl; transform: rotate(180deg); display: block; margin: auto; font-weight: bold; color: #c0392b;">Inconvénients</span> | **- Numériquement coûteux** ($O(n^2)$ à $O(n^3)$)<br><br>**- Irréversibilité :** des observations une fois regroupées le restent<br><br>**- Sensibilité :** dépend de la métrique et du critère d'agrégation | **- Choix de $K$ obligatoire *a priori***<br><br>**- Instabilité :** dépend du choix des noyaux initiaux (minima locaux)<br><br>**- Contrainte géométrique :** tend à privilégier des classes sphériques / convexes |
 
-: {tbl-colwidths="[10,45,45]"}
+: {tbl-colwidths="[6,47,47]"}
 
 
 ::: {.columns}
@@ -1601,3 +1679,305 @@ Lorsqu'on dispose de données mixtes (variables quantitatives et qualitatives), 
 
 1. **Discrétisation :** Transformer l'ensemble des variables quantitatives en variables qualitatives ordinales (découpage en classes/quantiles).
 2. **Partitionnement :** Effectuer la classification à partir de la distance du $\chi^2$ appliquée au Tableau Disjonctif Complet (TDC) résultant.
+
+
+# Algorithme DBSCAN
+
+## En résumé
+
+**DBSCAN :** *Density-Based Spatial Clustering of Applications with Noise*
+
+
+- **Un cluster :** une zone caractérisée par une forte densité d'observations.
+- **Paramètres fondamentaux :**
+  - Un rayon $\varepsilon>0$ de voisinage autour d'une observation
+  - Un nombre minimal de points dans ce voisinage pour former un cluster (`minPts`)
+
+```{r}
+#| echo: false
+#| fig.width: 10
+#| fig.height: 6
+library(ggplot2)
+library(dbscan)
+
+# 1. Génération de données synthétiques (2 arcs/lunes + du bruit)
+set.seed(123)
+n_pts <- 150
+
+# Arc supérieur
+t1 <- runif(n_pts, 0, pi)
+moon1 <- data.frame(
+  x = cos(t1) + rnorm(n_pts, sd = 0.08),
+  y = sin(t1) + rnorm(n_pts, sd = 0.08)
+)
+
+# Arc inférieur
+t2 <- runif(n_pts, 0, pi)
+moon2 <- data.frame(
+  x = 1 - cos(t2) + rnorm(n_pts, sd = 0.08),
+  y = 0.5 - sin(t2) + rnorm(n_pts, sd = 0.08)
+)
+
+# Bruit uniforme (Outliers)
+bruit <- data.frame(
+  x = runif(25, -1.2, 2.2),
+  y = runif(25, -0.7, 1.3)
+)
+
+df_db <- rbind(moon1, moon2, bruit)
+
+# 2. Exécution de DBSCAN (eps = 0.15, minPts = 5)
+res_db <- dbscan(df_db, eps = 0.15, minPts = 5)
+df_db$cluster <- as.factor(res_db$cluster)
+
+# Identification des types de points :
+# 0 = Bruit, >0 = Cluster. Les points cœurs sont déterminés séparément.
+core_points <- is.corepoint(as.matrix(df_db[, c("x", "y")]), eps = 0.15, minPts = 5)
+df_db$type <- "Bruit (Noise)"
+df_db$type[res_db$cluster > 0 & core_points] <- "Point cœur (Core)"
+df_db$type[res_db$cluster > 0 & !core_points] <- "Point frontière (Border)"
+
+df_db$type <- factor(df_db$type, levels = c("Point cœur (Core)", "Point frontière (Border)", "Bruit (Noise)"))
+
+# 3. Graphique ggplot2
+
+# 3. Graphique ggplot2
+ggplot(df_db, aes(x = x, y = y)) +
+  # Halos de densité
+  stat_density_2d(
+    data = subset(df_db, type == "Point cœur (Core)"),
+    aes(fill = cluster), geom = "polygon", alpha = 0.15, show.legend = FALSE
+  ) +
+  # Points dessinés avec shape = 18 et size = 7
+  geom_point(aes(color = cluster), size = 5, alpha = 0.85) +
+  scale_color_manual(
+    values = c("0" = "#7f8c8d", "1" = "#2b5c8f", "2" = "#d95f02"),
+    name = "Cluster :",
+    labels = c("0" = "Bruit", "1" = "Groupe 1", "2" = "Groupe 2")
+  ) +
+  labs(
+    title = "Détection de clusters non sphériques avec DBSCAN",
+    subtitle = expression(paste("Paramètres : ", epsilon, " = 0.25, ", minPts, " = 5"))
+  ) +
+  coord_equal() +
+  theme_void(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5, color = "#2c3e50"),
+    plot.subtitle = element_text(hjust = 0.5, size = 11, color = "#7f8c8d"),
+    legend.position = "bottom",
+    panel.grid.minor = element_blank(),
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank()
+  )
+
+```
+
+
+## Ingrédients de l'algorithme
+
+- **$\varepsilon$-voisinage :** 
+  Pour $\varepsilon > 0$, le voisinage d'une observation $x \in \mathbb{R}^p$ est l'ensemble des points à une distance strictement inférieure à $\varepsilon$ :
+  $$N_\varepsilon(x) = \{y \in \mathbb{R}^p \mid d(x, y) < \varepsilon\}$$
+
+- **Point cœur :** 
+  Pour un paramètre $N_{\min}$ fixé, $x$ est un **point cœur** si son $\varepsilon$-voisinage est suffisamment dense :
+  $$|N_\varepsilon(x)| \ge N_{\min}$$
+
+- **Connexion par densité :** 
+  Deux points $x$ et $z$ sont connectés s'ils sont reliés par une chaîne de points cœurs ($y_0 = x, \dots, y_{m+1} = z$), où chaque point appartient au voisinage du précédent :
+  $$y_i \in N_\varepsilon(y_{i-1})$$
+
+
+## Algorithme DBSCAN
+
+**1. Initialisation**
+- Sélectionner au hasard un point $x$ non déjà visité
+- Déterminer son $\varepsilon$-voisinage $N_\varepsilon(x)$
+
+**2. Évaluation et expansion**
+- **Si $|N_\varepsilon(x)| < N_{\min}$ :**
+  - $x$ est étiqueté comme **bruit / anomalie** (classe 0).
+- **Sinon ($x$ est un point cœur) :**
+  - Création d'un nouveau cluster $k$.
+  - $x$ et tous ses voisins $y \in N_\varepsilon(x)$ reçoivent l'étiquette $k$.
+  - **Propagation par densité :** Pour chaque point $y$ ajouté, on évalue son propre voisinage $N_\varepsilon(y)$. S'il contient au moins $N_{\min}$ points, ses voisins rejoignent également le cluster $k$.
+
+**3. Itération**
+- Répéter les étapes 1 et 2 pour chaque point non encore visité, jusqu'à ce que l'ensemble du jeu de données ait été exploré.
+
+## Subtilité de l'algorithme : repêchage du bruit
+
+::: {.callout-important title="Réaffectation dynamique"}
+Un point initialement étiqueté comme **bruit** lors de l'exploration algorithmique peut finalement être rattaché à un autre cluster en tant que **point frontière**.
+:::
+
+**Mécanisme illustré ($N_{\min} = 4$) :**
+
+- Le point $\color{#e74c3c}{x_{\text{bruit}}}$ est visité en premier. Son $\varepsilon$-voisinage ne contient pas assez de points. Il est provisoirement étiqueté comme **bruit**.
+- Plus tard, l'algorithme visite $\color{#2980b9}{x_{\text{cœur}}}$. Son voisinage est suffisamment dense ($\ge N_{\min}$) : c'est un **point cœur** qui forme un cluster.
+- **$\Rightarrow$** Puisque $\color{#e74c3c}{x_{\text{bruit}}}$ appartient au voisinage de $\color{#2980b9}{x_{\text{cœur}}}$, il est repêché et intègre ce nouveau cluster !
+
+```{r}
+#| echo: false
+#| fig.width: 10
+#| fig.height: 5.5
+#| fig.align: "center"
+
+library(ggplot2)
+
+# Coordonnées des points (Nmin = 4, eps = 1)
+pts <- data.frame(
+  id = c("xC", "xB", "p1", "p2", "p3"),
+  x = c(0, 0.9, -0.4, -0.2, -0.3),
+  y = c(0, 0, 0.5, -0.6, -0.1),
+  color_cat = c("Coeur", "Bruit", "Autre", "Autre", "Autre")
+)
+
+# Génération des cercles de voisinage (eps = 1)
+theta <- seq(0, 2*pi, length.out = 100)
+eps <- 1
+circle_C <- data.frame(x = 0 + eps*cos(theta), y = 0 + eps*sin(theta))
+circle_B <- data.frame(x = 0.9 + eps*cos(theta), y = 0 + eps*sin(theta))
+
+ggplot() +
+  # Voisinage de xB (visité en premier, insuffisant)
+  geom_polygon(data = circle_B, aes(x, y), fill = "#e74c3c", alpha = 0.05) +
+  geom_path(data = circle_B, aes(x, y), color = "#e74c3c", linetype = "dashed", linewidth = 0.8) +
+  
+  # Voisinage de xC (visité ensuite, point coeur)
+  geom_polygon(data = circle_C, aes(x, y), fill = "#3498db", alpha = 0.15) +
+  geom_path(data = circle_C, aes(x, y), color = "#2980b9", linewidth = 1) +
+  
+  # Les points avec shape = 18 et size = 7
+  geom_point(data = pts, aes(x = x, y = y, color = color_cat), shape = 18, size = 7) +
+  scale_color_manual(values = c("Autre" = "#7f8c8d", "Bruit" = "#e74c3c", "Coeur" = "#2980b9"), guide = "none") +
+  
+  # Textes identifiants
+  annotate("text", x = 0, y = -0.15, label = expression(x[coeur]), color = "#2980b9", fontface = "bold", size = 5) +
+  annotate("text", x = 0.9, y = 0.15, label = expression(x[bruit]), color = "#e74c3c", fontface = "bold", size = 5) +
+  
+  # Annotations explicatives (les bulles de texte)
+  annotate("label", x = 1.4, y = 0.8, 
+           label = "1. Visite de x_bruit :\nVoisinage = 2 points (< 4)\n=> Classé Bruit", 
+           color = "#c0392b", fill = "#fdfefe", fontface = "italic", hjust = 0) +
+           
+  annotate("label", x = -1.3, y = 1, 
+           label = "2. Visite de x_coeur :\nVoisinage = 5 points (>= 4)\n=> Devient Point Cœur\n=> Englobe x_bruit !", 
+           color = "#2980b9", fill = "#fdfefe", fontface = "bold", hjust = 0) +
+  
+  # Flèche pour montrer l'englobement
+  annotate("segment", x = -0.2, y = 0.8, xend = 0.5, yend = 0.2, 
+           arrow = arrow(length = unit(0.3, "cm")), color = "#2980b9", linewidth = 1) +
+
+  coord_equal(xlim = c(-1.5, 3.2), ylim = c(-1.2, 1.4)) +
+  theme_void()
+```
+
+
+
+## Commentaires et synthèses sur DBSCAN
+
+- **Avantages :**
+  - Peu coûteux numériquement (tant que la dimension $p$ n'est pas trop grande).
+  - Robuste aux données aberrantes (*outliers* / bruit).
+  - Capable de repérer des formes de groupes très variées (non sphériques).
+
+- **Inconvénients :**
+  - Sensible au fléau de la dimensionnalité (peu adapté aux grandes dimensions).
+  - Sensibilité au choix des hyperparamètres :
+    - **Choix de $\varepsilon$ :**
+      - $\varepsilon$ trop grand $\Rightarrow$ risque de ne détecter qu'un unique cluster géant.
+      - $\varepsilon$ trop faible $\Rightarrow$ surdétection d'anomalies (trop de bruit).
+    - **Choix de $N_{\min}$ :**
+      - $N_{\min}$ trop grand $\Rightarrow$ seuls les clusters extrêmement denses sont identifiés.
+      - $N_{\min}$ trop faible $\Rightarrow$ fragmentation en de nombreux clusters peu denses.
+
+## Choix des paramètres
+
+```{r}
+#| echo: false
+#| fig.width: 12
+#| fig.height: 9
+#| fig.align: "center"
+
+library(ggplot2)
+library(dbscan)
+
+# 1. Génération du jeu de données (2 lunes + bruit)
+set.seed(123)
+n_pts <- 150
+
+
+# Arc supérieur
+t1 <- runif(n_pts, 0, pi)
+moon1 <- data.frame(
+  x = cos(t1) + rnorm(n_pts, sd = 0.08),
+  y = sin(t1) + rnorm(n_pts, sd = 0.08)
+)
+
+# Arc inférieur
+t2 <- runif(n_pts, 0, pi)
+moon2 <- data.frame(
+  x = 1 - cos(t2) + rnorm(n_pts, sd = 0.08),
+  y = 0.5 - sin(t2) + rnorm(n_pts, sd = 0.08)
+)
+
+# Bruit uniforme (Outliers)
+bruit <- data.frame(
+  x = runif(25, -1.2, 2.2),
+  y = runif(25, -0.7, 1.3)
+)
+
+df_base <- rbind(moon1, moon2, bruit)
+
+# 2. Construction de la grille de paramètres (2x2)
+grid_params <- expand.grid(
+  eps = c(0.05, 0.12, 0.35),
+  minPts = c(3, 5, 12)
+)
+
+# Application de DBSCAN sur la grille
+df_grid <- do.call(rbind, lapply(1:nrow(grid_params), function(i) {
+  e <- grid_params$eps[i]
+  m <- grid_params$minPts[i]
+  
+  res <- dbscan(df_base, eps = e, minPts = m)
+  
+  df_temp <- df_base
+  df_temp$cluster <- as.factor(res$cluster)
+  df_temp$eps_lab <- factor(paste0("epsilon == ", e))
+  df_temp$minPts_lab <- factor(paste0("N[min] == ", m))
+  return(df_temp)
+}))
+
+# Palette dynamique : 0 = Bruit (Gris #7f8c8d), autres = Couleurs distinctes
+unique_cls <- sort(unique(df_grid$cluster))
+my_colors <- setNames(
+  c("#7f8c8d", scales::hue_pal()(length(unique_cls) - 1)),
+  unique_cls
+)
+
+# 3. Graphique ggplot2 facetté
+ggplot(df_grid, aes(x = x, y = y)) +
+  geom_point(aes(color = cluster), size = 2, alpha = 0.85) +
+  facet_grid(
+    eps_lab ~ minPts_lab, 
+    labeller = label_parsed
+  ) +
+  scale_color_manual(values = my_colors, guide = "none") +
+  coord_equal() +
+  theme_bw(base_size = 12) +
+  theme(
+    strip.background = element_rect(fill = "#2c3e50"),
+    strip.text = element_text(color = "white", face = "bold", size = 11),
+    panel.grid.minor = element_blank(),
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    plot.margin = margin(2, 2, 2, 2)
+  )
+
+
+
+```

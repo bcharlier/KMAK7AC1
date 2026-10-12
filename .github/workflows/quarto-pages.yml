@@ -25,36 +25,20 @@ jobs:
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
         with:
-          use-public-rspm: true
+          r-version: 'release'
 
-      - name: Install R dependencies
+      - name: Install R dependencies from DESCRIPTION
         uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          packages: |
-            any::knitr
-            any::reticulate
-            any::ade4
-            any::rmarkdown
-            any::plotly
-            any::FactoMineR
-            any::factoextra
-            any::ggplot2
-            any::PASWR
-            any::ca
-            any::RColorBrewer
-            any::svglite
-            any::ggdendro
-            any::patchwork
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Install Python dependencies
+      - name: Install Python dependencies from requirements.txt
         run: |
           python -m pip install --upgrade pip
-          python -m pip install jupyter numpy pandas matplotlib scikit-learn plotly
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Configure Python for reticulate
         run: echo "RETICULATE_PYTHON=$(python -c 'import sys; print(sys.executable)')" >> "$GITHUB_ENV"

@@ -1,0 +1,26 @@
+Package: KMAK7AC1
+Title: Rendu Quarto R et Python pour le matériel de cours
+Version: 0.0.1
+Authors@R: 
+    person("Benjamin", "Charlier", email = "benjamin.charlier@inrae.fr", role = c("aut", "cre"))
+Description: Dépendances R nécessaires pour le projet Quarto.
+License: MIT
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    knitr,
+    reticulate,
+    ade4,
+    rmarkdown,
+    plotly,
+    FactoMineR,
+    factoextra,
+    ggplot2,
+    PASWR,
+    ca,
+    RColorBrewer,
+    svglite,
+    ggdendro,
+    patchwork,
+    dbscan,
+    ggforce
