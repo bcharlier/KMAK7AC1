@@ -1743,12 +1743,6 @@ df_db$type <- factor(df_db$type, levels = c("Point cœur (Core)", "Point fronti�
 
 # 3. Graphique ggplot2
 ggplot(df_db, aes(x = x, y = y)) +
-  # Halos de densité
-  stat_density_2d(
-    data = subset(df_db, type == "Point cœur (Core)"),
-    aes(fill = cluster), geom = "polygon", alpha = 0.15, show.legend = FALSE
-  ) +
-  # Points dessinés avec shape = 18 et size = 7
   geom_point(aes(color = cluster), size = 5, alpha = 0.85) +
   scale_color_manual(
     values = c("0" = "#7f8c8d", "1" = "#2b5c8f", "2" = "#d95f02"),
@@ -1757,7 +1751,7 @@ ggplot(df_db, aes(x = x, y = y)) +
   ) +
   labs(
     title = "Détection de clusters non sphériques avec DBSCAN",
-    subtitle = expression(paste("Paramètres : ", epsilon, " = 0.25, ", minPts, " = 5"))
+    subtitle = expression(paste("Paramètres : ", epsilon, " = 0.15, ", minPts, " = 5"))
   ) +
   coord_equal() +
   theme_void(base_size = 13) +
