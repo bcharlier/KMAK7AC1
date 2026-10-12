@@ -32,7 +32,7 @@ X =
 \end{pmatrix}
 $$
 
-1. Caluler $Z$, la version centrée-réduite de la matrice $X$.
+1. Calculer $Z$, la version centrée-réduite de la matrice $X$.
 
 2. En déduire la matrice d'inertie de $Z$ $S$ associée à $X$.
 
@@ -94,7 +94,7 @@ print_table(cidre, , max.col.width = "4.5em")
 
 1. Quel est l'objectif d'une ACP dans ce contexte ?
 
-2. Les donnée sont dans un `data.frame` nommé `cidre` et on effectue
+2. Les données sont dans un `data.frame` nommé `cidre` et on effectue
 l'ACP dans R.
 
 ```{r}
@@ -313,13 +313,13 @@ plot_ly() |>
 :::
 
 
-  a. Quels seraient les variables mal représentées dans le premier plan principal ? Pourquoi ?
+  a. Quelles seraient les variables mal représentées dans le premier plan principal ? Pourquoi ?
   
-  b. Quels seraient les variables les plus corrélées (positivement ou négativement) au caractère alcool ? Celles qui le seraient le moins ?
+  b. Quelles seraient les variables les plus corrélées (positivement ou négativement) au caractère alcool ? Celles qui le seraient le moins ?
 
   c. Quels seraient les caractères qui contribuent le plus au premier axe principal ?
   
-  d. Même questions avec les deux autres axes.
+  d. Même question avec les deux autres axes.
 
 4. On considère maintenant les sorties R
 
@@ -467,7 +467,7 @@ plot_ly(
 
 :::
   
-  a. Les individus sont ils bien représentés ?
+  a. Les individus sont-ils bien représentés ?
   
   b. Quels individus seraient représentatifs de profils opposés par rapport au premier axe principal ? Même question pour les deux autres axes.
   
@@ -550,7 +550,7 @@ ggplot2::ggplot(
 :::
 
 
-4. Commenter les résultats numériques et graphiques ci-dessous en terme d’individus et de variables (suivre le
+4. Commenter les résultats numériques et graphiques ci-dessous en termes d’individus et de variables (suivre le
 modèle de l’exercice précédent)
 
 
