@@ -193,3 +193,13 @@ fviz_pca_ind(
   theme(legend.position = "bottom")
 ```
 
+## Exercice 2.Démonstration du théorème de Huygens
+
+Soient $x_1, \dots, x_n$ des observations dans $\mathbb{R}^p$ partitionnées en $K$ groupes disjoints $\mathcal{G}^{(1)}, \dots, \mathcal{G}^{(K)}$. 
+
+Démontrer la décomposition de l'inertie (théorème de Huygens) :
+$$
+\frac{1}{n} \sum_{i=1}^n d(x_i, g)^2 = \frac{1}{n} \sum_{k=1}^K \sum_{x_i \in \mathcal{G}^{(k)}} d(x_i, g^{(k)})^2 + \sum_{k=1}^K \frac{n_k}{n} d(g^{(k)}, g)^2
+$$
+
+où $g = \frac{1}{n} \sum_{i=1}^n x_i$ est le centre de gravité global, $n_k = |\mathcal{G}^{(k)}|$ désigne l'effectif du groupe $k$ et $g^{(k)} = \frac{1}{n_k} \sum_{x_i \in \mathcal{G}^{(k)}} x_i$ est le centre de gravité du groupe $k$.
