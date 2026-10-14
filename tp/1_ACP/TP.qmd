@@ -378,7 +378,7 @@ t(e$vectors)%*%e$vectors # Les vecteurs propres sont bien orthonormés
 
 ###### Matrice des coordonnées factorielles des variables (charges factorielles) ######
 Phi<-t(Z)%*%N%*%U
-apply(Psi,2,mean) # Vérification de la nullité des moyennes
+apply(Phi,2,mean) # Vérification de la nullité des moyennes
 ```
 
 ```{r}
