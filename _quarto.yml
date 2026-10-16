@@ -35,6 +35,7 @@ project:
   - tp/0_quarto/quarto.qmd
   - tp/1_ACP/TP.qmd
   - tp/2_AFC-ACM/TP.qmd
+  - tp/3_Clustering/TP.qmd
 
   post-render: assets/make-pdf.sh
 
@@ -87,6 +88,8 @@ website:
             href: tp/1_ACP/TP.qmd
           - text: TP 2. AFC/ACM
             href: tp/2_AFC-ACM/TP.qmd
+          - text: TP 3. Clustering
+            href: tp/3_Clustering/TP.qmd
       - text: Quarto
         menu:
           - text: Markdown

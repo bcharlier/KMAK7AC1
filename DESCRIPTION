@@ -23,4 +23,6 @@ Imports:
     ggdendro,
     patchwork,
     dbscan,
-    ggforce
+    ggforce,
+    ggcorrplot,
+    jpeg

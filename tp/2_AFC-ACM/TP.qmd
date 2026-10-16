@@ -80,6 +80,8 @@ fviz_eig(writers.ca, geom = "bar") + theme_metropolis
 
 ```{r}
 #| include: !expr params$correction
+#| fig-width: 6
+#| fig-height: 6
 
 fviz_ca_row(writers.ca,
             axes = c(1, 2),
@@ -106,6 +108,8 @@ fviz_ca_row(writers.ca,
 
 ```{r}
 #| include: !expr params$correction
+#| fig-width: 6
+#| fig-height: 6
 
 fviz_ca_row(writers.ca,
             axes = c(3, 4),
@@ -136,6 +140,8 @@ fviz_ca_row(writers.ca,
 
 ```{r}
 #| include: !expr params$correction
+#| fig-width: 6
+#| fig-height: 6
 
 fviz_ca_col(writers.ca,
             axes = c(1, 2),
@@ -160,6 +166,8 @@ fviz_ca_col(writers.ca,
 
 ```{r}
 #| include: !expr params$correction
+#| fig-width: 6
+#| fig-height: 6
 
 fviz_ca_col(writers.ca,
             axes = c(3, 4),
@@ -197,6 +205,7 @@ writers.pca <- CA(writers, row.sup = c(16,17), graph = FALSE)
 #| include: !expr params$correction
 #| fig-width: 12
 #| fig-height: 9
+#| out-width: "80%"
 
 p <- fviz_ca_row(writers.pca,
                  axes = c(1, 2),
@@ -246,6 +255,8 @@ fviz_dist(D)
 
 ```{r}
 #| include: !expr params$correction
+#| out-width: "60%"
+
 
 #CAH
 tree <- hclust(D,method="ward.D2")
@@ -264,6 +275,7 @@ partition_4 <- cutree(tree, k = 4)
 #| include: !expr params$correction
 #| fig-width: 12
 #| fig-height: 9
+#| out-width: "80%"
 
 fviz_ca_row(writers.ca,
             axes = c(1, 2),
@@ -311,6 +323,13 @@ chiens <- read.csv(file=fname, header = TRUE, row.names = 1)
 
 print_table(head(chiens))
 ```
+
+```{r}
+#| eval: false
+
+chiens <- read.csv("https://bcharlier.github.io/KMAK7AC1/tp/2_AFC-ACM/data/chiens.csv", header = TRUE, row.names = 1)
+```
+
 
 ```{r}
 #| include: !expr params$correction

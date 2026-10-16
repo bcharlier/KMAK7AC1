@@ -1,0 +1,769 @@
+---
+title: "TP 4 -- Clustering"
+author: B. Charlier, C. Chouquet
+
+format: 
+  html:
+    output-file: TP_Clustering_topdf.html
+
+other-links:
+  - text: "Version PDF"
+    icon: file-pdf
+    href: "TP_Clustering.pdf"
+
+params:
+  correction: true
+---
+
+```{r}
+#| label: setup
+#| include: false
+source("../../R/functions.R")
+```
+
+## Exercice 1 : Segmentation de clientèle bancaire
+
+### Problématique
+
+On souhaite analyser des données relatives à une enquête réalisée sur $810$ clients d'une banque, contenues dans le fichier `banque.csv`. On s'intéresse tout d'abord aux variables suivantes :
+
+- `crcon` : a des crédits à la consommation ? (`0` : non, `1` : $< 3000$ €, `3` : $> 3000$ €)
+- `crhab` : a des crédits immobiliers ? (`0` : non, `1` : oui)
+- `port` :  a un portefeuille de titres boursiers ? (`0` : non, `1` : $< 3000$, `2` : $> 3000$ et $< 15000$, `3` : $> 15000$)
+- `epliv` : possède un livret d'épargne ? (`0` : non, `1` : $< 3000$, `3` : $> 3000$)
+- `eplog` : possède un plan d'épargne logement ? (`0` : non, `1` : $< 3000$, `3` : $> 3000$)
+- `prfin` : prélèvements par un organisme financier (`0` : non, `1` : $< 150$, `2` : $> 150$)
+- `prtre` : prélèvements par le Trésor public (`0` : non, `1` : $< 150$, `2` : $> 150$)
+
+On charge les données
+
+```{r}
+#| eval: false
+
+banque <- read.csv("https://bcharlier.github.io/KMAK7AC1/tp/3_Clustering/data/banque.csv", header = TRUE, row.names = 1)
+
+donnees.actives=banque[,c(10:13,17:18,21)]
+summary(donnees.actives)
+```
+
+
+```{r}
+#| echo: false
+fname <- file.path(get_script_dir(), "data", "banque.csv")
+banque <- read.table(fname, header = TRUE, colClasses = "factor")
+donnees.actives <- banque[, c(10:13, 17:18, 21)]
+
+summary(donnees.actives)
+```
+
+
+
+### Réduction de dimension
+
+1. Le tableau de Burt $\mathbf{B}$ associé à $Q$ variables qualitatives est une matrice symétrique de taille $\sum_{j=1}^Q K_j \times \sum_{j=1}^Q K_j$ (où $K_j$ est le nombre de modalités de la variable $j$). 
+- Les **blocs diagonaux** contiennent les tables de contingence de chaque variable avec elle-même (matrices diagonales dont les éléments sont les effectifs marginaux des modalités).
+- Les **blocs extra-diagonaux** contiennent les tables de contingence croisées entre paires de variables qualitatives.
+
+Calculer le avec la fonction `acm.burt` de la librairie `ade4`, retrouvez sa structure et
+relevez les 3 catégories à plus fort effectif, et les 3 catégories à plus faible effectif.
+
+```{r}
+#| include: !expr params$correction
+
+library(ade4)
+library(ggcorrplot)
+tb <- as.matrix(acm.burt(donnees.actives, donnees.actives))
+```
+
+```{r}
+#| echo: false
+#| fig-width: 7
+#| fig-height: 7
+
+ggcorrplot(
+  tb,
+  method = "square",
+  hc.order = FALSE,
+  type = "full",
+  lab = TRUE,
+  legend.limit = NULL, # <-- Désactive les bornes par défaut [-1, 1] au profit des vraies valeurs
+  colors = c("#3B528B", "#FDE725", "#440154"),
+  title = "Tableau de Burt (Échelle adaptée aux effectifs)"
+) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
+    axis.text.y = element_text(size = 6),
+    plot.title = element_text(face = "bold", hjust = 0.5)
+  )
+```
+
+
+```{r}
+#| include: !expr params$correction
+
+effectifs_modalites <- diag(tb)
+# Les 3 catégories à plus fort effectif
+head(sort(effectifs_modalites, decreasing = TRUE), 3)
+
+# Les 3 catégories à plus faible effectif
+head(sort(effectifs_modalites, decreasing = FALSE), 3)
+```
+
+::: {.content-visible when-meta="params.correction"}
+
+À partir de ce tableau de Burt, on peut détecter dans un premier temps la tendance principale de l'échantillon : les clients n'ayant aucun produit. Cela est visible par exemple sur la ligne `eplog.0` : 702 clients (sur 810) n'ont pas d'épargne logement et, parmi ceux-là, 567 n'ont pas non plus de livret d'épargne, 634 n'ont pas de crédit immobilier, etc. Ce groupe d'individus "sans produit bancaire" constitue la majeure partie de l'échantillon et se situera au centre du nuage projeté des modalités.
+
+Par opposition, on peut repérer les catégories ayant les plus faibles effectifs (`prtre.2`, `eplog.1` et `epliv.2`), qui peuvent se démarquer dans l'analyse en raison de cette rareté. On veillera, dans la suite des analyses, à ce que ces modalités ne soient pas trop prédominantes dans les résultats de l'ACM et ne masquent pas d'autres phénomènes.
+:::
+
+
+2. On procède à une Analyse des Correspondances Multiples (ACM) :
+
+   a. Utilisez la fonction `MCA` de `FactoMineR` sur le tableau `donnees.actives`.
+```{r}
+#| include: !expr params$correction
+
+library(FactoMineR)
+acm.b <- MCA(donnees.actives, graph = FALSE, ncp = 10)
+```
+  
+  b. Combien d'axes peut-on raisonnablement conserver ?
+```{r}
+#| out-width: "50%"
+#| include: !expr params$correction
+
+library(factoextra)
+fviz_eig(acm.b, geom = "bar", choice = "eigenvalue", ncp = 15) + theme_metropolis 
+```
+
+::: {.content-visible when-meta="params.correction"}
+Selon la règle de Kaiser, on retient en ACM les valeurs propres supérieures à $1/p = 1/7 \approx 0.142$, soit 5 axes. En complément, on peut également visualiser l'éboulis des valeurs propres et on observe un coude après la deuxième valeur propre ou après la troisième valeur propre. On peut donc retenir 3 axes en vérifiant que chacun (et en particulier l'axe 3) apporte une interprétation intéressante. Pour rappel, en ACM, le pourcentage d'inertie projetée ne doit pas être utilisé naïvement, puisque la somme des valeurs propres n'a pas la même signification qu'en ACP ou en AFC.
+:::
+
+   c. Quelles sont les catégories qui déterminent ces axes factoriels ? Que peut-on dire de la qualité de représentation de ces catégories sur les axes ?
+
+::: {.columns}
+
+::: {.column}
+```{r}
+#| echo: false
+
+# Contributions des modalités aux axes 1 et 2
+fviz_contrib(acm.b, choice = "var", axes = 1:2, top = 15) + theme_metropolis  +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1))
+```
+:::
+
+::: {.column}
+```{r}
+#| echo: false
+
+# Qualité de représentation (cos2) des modalités
+fviz_cos2(acm.b, choice = "var", axes = 1:2, top = 15) + theme_metropolis  +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1))
+```
+:::
+
+:::
+
+
+
+::: {.columns}
+
+::: {.column}
+
+```{r}
+#| echo: false
+#| fig-width: 6
+#| fig-height: 6
+
+fviz_mca_var(acm.b,
+            axes = c(1, 2),
+            pointsize = "cos2",
+            col.var = "contrib",
+            gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+            labelsize = 6,
+            repel = TRUE) +
+  scale_size_continuous(
+    limits = c(0, 1),
+    breaks = seq(0, 1, by = 0.5),
+    range = c(1, 10),
+    name = expression(cos^2)
+  ) + theme_metropolis +
+  theme(legend.position = "bottom")
+```
+
+
+:::
+
+::: {.column}
+
+```{r}
+#| echo: false
+#| fig-width: 6
+#| fig-height: 6
+
+fviz_mca_ind(acm.b,
+            axes = c(1, 2),
+            geom = "point",
+            pointsize = "cos2",
+            col.ind = "contrib",
+            gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+            repel = TRUE) +
+  scale_size_continuous(
+    limits = c(0, 1),
+    breaks = seq(0, 1, by = 0.5),
+    range = c(1, 10),
+    name = expression(cos^2)
+  ) + theme_metropolis +
+  theme(legend.position = "bottom")
+```
+
+
+:::
+
+:::
+
+
+::: {.content-visible when-meta="params.correction"}
+Dans un premier temps, on identifie les modalités les plus contributives. Dans un deuxième temps, on vérifie lesquelles de ces modalités sont le mieux représentées (grâce à un $cos^2$ élevé).
+
+Sur le premier plan factoriel, les modalités qui se distinguent par leur forte contribution sont : `eplog.3` (et `1`), `epliv.3` (et `1`), `crhab.1`, `crcon.1` (et `3`), `prtre.1` (et `2`), `prfin.1` et `2`, ainsi que `port.1`, `2` et `3`. Globalement, les modalités `.0` de toutes les variables (absence de produit bancaire) contribuent peu puisqu'elles constituent la classe majoritaire au centre du nuage. Parmi ces modalités contributives, les mieux représentées sont `eplog.3`, `epliv.3` (et `1`), `crcon.1`, `crhab.1`, `prtre.1`, `port.1` et `port.3`.
+
+En examinant les coordonnées des modalités sur les trois premiers axes, on relève les points les plus excentrés :
+- **Sur l'axe 1** : `epliv.3`, `eplog.3` et `port.3` s'opposent à `crcon.1`.
+- **Sur l'axe 2** : `prtre.1`, `prtre.2` et `eplog.3` portent l'essentiel de l'axe.
+- **Sur l'axe 3** : `prtre.2` s'oppose à `prfin.1`.
+
+Cette structure met en évidence une opposition nette entre les clients dépositaires d'une épargne importante, ceux ayant recours à de petits crédits à la consommation, et ceux cumulant des placements d'épargne avec des engagements financiers plus lourds (crédits immobiliers en particulier).
+:::
+
+
+   d. Lisez la documentation de `factoextra::fviz_ellipses` et représentez le nuage d'individus en y ajoutant les ellipses `norm` :
+
+```{r}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 9
+
+base_colors <- c("#0073C2", "#EFC000", "#868686", "#CD534C", "#7AA6DC", 
+                 "#003C67", "#8F7700", "#3B3B3B", "#A73030", "#4A6984")
+
+
+# 2. Créer une fonction de palette dynamique qui s'adapte au nombre de groupes (ex: toutes les modalités)
+nb_modalites <- sum(sapply(donnees.actives, function(x) length(levels(as.factor(x)))))
+my_custom_palette <- colorRampPalette(base_colors)(nb_modalites)
+
+fviz_ellipses(
+  acm.b, 
+  habillage = 1:ncol(donnees.actives), # Indices ou noms des variables à illustrer (ex: c("eplog", "epliv"))
+  axes = c(1, 2), 
+  ellipse.type = "norm",         # Type d'ellipse ("confidence", "convex", "t", "norm", "euclid")
+  geom = "point",          
+palette = my_custom_palette
+) +  theme_metropolis +
+  theme(legend.position ="none")
+```
+
+3. On cherche à préciser les caractéristiques des axes en termes de type de client. On s'intéresse donc aux variables supplémentaires suivantes :
+   - `csp` : `agric` (agriculteur), `artis` (artisan), `cadsu` (cadre supérieur), `emplo` (employé), `etudi` (étudiant), `inact` (inactif), `inter` (profession intermédiaire), `ouvri` (ouvrier), `retra` (retraité) ;
+   - `age` (âge du client) : `ai25` ($[18, 25[$), `ai35` ($[25, 35[$), `ai45` ($[35, 45[$), `ai55` ($[45, 55[$), `ai75` ($[55, 75[$) ;
+   - `sexe` du client : `hom`, `fem` ;
+   - `duree` (durée depuis laquelle la personne est cliente) : `dm2` (moins de 2 ans), `d24` (de 2 à 4 ans), `d48` (de 4 à 8 ans), `d812` (de 8 à 12 ans), `dp12` (plus de 12 ans) ;
+   - `oppo` (a déjà fait opposition à un chèque ?) : `oui`, `non` ;
+   - `interdit` (a déjà été interdit bancaire ?) : `oui`, `non` ;
+   - `cableue` (possède une carte bleue ?) : `oui`, `non`.
+
+
+   a. Quelles sont les catégories supplémentaires les plus pertinentes ? *Indication: utiliser le coefficient $\eta^2$.*
+
+```{r}
+#| include: !expr params$correction
+
+# Ajoute les variables supplémentaires
+donnees=banque[,c(1:7,10:13,17:18,21)]
+acm.b.sup <- MCA(donnees, quali.sup=1:7, ncp = 10)
+
+# Extraction des valeurs de p-value ou du eta2 via FactoMineR pour justifier la sélection
+sort(rowSums(acm.b.sup$quali.sup$eta2[,1:2]), decreasing = TRUE)
+```
+
+::: {.content-visible when-meta="params.correction"}
+Le coefficient $\eta^2$ (rapport de corrélation) permet d'évaluer la force de liaison entre un axe factoriel et une variable qualitative supplémentaire. Les variables telles que `csp`, `age`, `duree` et `cableue` affichent les $\eta^2$ les plus élevés sur les premiers axes, ce qui légitime leur sélection pour l'interprétation sociodémographique et comportementale des profils clients, tandis que d'autres variables (comme le sexe ou des incidents très rares) peuvent s'avérer moins discriminantes.
+:::
+
+   b. À l'aide des graphiques suivants, identifiez les tendances des profils en termes de variables supplémentaires :
+
+```{r}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 6
+
+
+donnees <- banque[,c(1,2,4,7,10:13,17:18,21)]
+acm.b.sup <- MCA(donnees, quali.sup=c(1:4), ncp = 3, graph = FALSE)
+
+fviz_mca_var(acm.b.sup, axes = c(1, 2), repel = TRUE, palette = "jco") 
+```
+
+
+::: {.content-visible when-meta="params.correction"}
+Au vu des positions des modalités correspondantes, on observe que :
+
+- *Les retraités et les clients de plus de 75 ans* correspondent aux profils détenant des produits d'épargne (portefeuille et livret) ;
+- *Les étudiants de moins de 25 ans*, clients depuis peu (moins de 2 ans), caractérisent davantage les individus sans produit bancaire ;
+- *Les ouvriers et employés* se positionnent plus près du groupe d'individus ayant de petits crédits à la consommation et ne possédant pas d'épargne ;
+- *Les agriculteurs, cadres supérieurs et professions intermédiaires* sont proches des individus disposant d'un crédit immobilier et d'un peu d'épargne.
+:::
+
+4. Synthétisez vos observations et décrivez les groupes possibles de consommateurs de produits bancaires.
+
+::: {.content-visible when-meta="params.correction"}
+En résumé, l'Analyse des Correspondances Multiples (ACM) permet de mettre en évidence une typologie claire des clients selon leurs comportements d'équipement et leurs profils sociodémographiques :
+
+- *Le groupe "sans équipement" (majoritaire)* : il rassemble la majeure partie de l'échantillon, caractérisée par l'absence de produits bancaires, qu'il s'agisse de crédits ou d'épargne (modalités `.0`). Ce profil est particulièrement représenté par les jeunes (moins de 25 ans), les étudiants et les clients récents (moins de 2 ans d'ancienneté).
+- *Le groupe des clients "épargnants / hauts revenus"* : composé de clients utilisant la banque principalement pour des placements sur des livrets d'épargne ou des portefeuilles de titres boursiers (`epliv.3` et `port.3`). Ce groupe se superpose aux profils de retraités (plus de 75 ans) et de personnes disposant d'un patrimoine constitué.
+- *Le groupe "propriétaires / installés"* : regroupe des clients ayant souscrit un crédit immobilier tout en maintenant un niveau d'épargne modéré (`crhab.1` et `epliv.1`). On y retrouve préférentiellement les cadres supérieurs, les professions intermédiaires et les agriculteurs.
+- *Le groupe "crédit de consommation / budget contraint"* : constitué de clients aux ressources financières plus limitées, recourant à des petits crédits à la consommation et des prélèvements spécifiques (`crcon.1` et `prfin.1`). Ce profil correspond principalement aux ouvriers et aux employés.
+:::
+
+
+### Classification non supervisée sur données qualitatives
+
+Les méthodes de classification non supervisée classiques, telles que la Classification Ascendante Hiérarchique (CAH) utilisant la distance euclidienne ou l'algorithme des $k$-means, sont spécifiquement conçues pour traiter des variables quantitatives. 
+
+Dans le cas présent, le jeu de données étant exclusivement composé de variables qualitatives, il n'est pas possible d'appliquer directement ces algorithmes sur le tableau brut initial. 
+
+Une solution éprouvée consiste à réaliser une **Classification sur Composantes Principales (HCPC - *Hierarchical Clustering on Principal Components*)** : on effectue d'abord une Analyse des Correspondances Multiples (ACM), puis on applique la classification non supervisée sur les coordonnées des individus obtenues sur les premiers axes factoriels retenus.
+
+1. Réaliser une CAH sur les 2 premières coordonnées factorielles de l'ACM contenues dans `...$ind$coord`.
+
+   a. Calculer la distance euclidienne au carré sur les coordonnées des axes retenus :
+```{r}
+#| out-fig: "60%"
+#| include: !expr params$correction
+
+
+acm.b.clust <- MCA(banque[,c(10:13,17:18,21)], ncp = 2, graph = FALSE)
+points_coord <- acm.b.clust$ind$coord
+
+DE.ind <- dist(points_coord, method = "euclidean")^2
+fviz_dist(DE.ind, show_labels = FALSE) + theme_metropolis +
+  theme(legend.position = "right")
+```
+
+   b. Réaliser la classification et afficher l'arbre (dendrogramme) :
+
+```{r}
+#| include: !expr params$correction
+cah.ind <- hclust(DE.ind, method = "ward.D2")
+fviz_dend(
+     cah.ind,
+     k = 4,                   # Nombre de classes suggéré (ex: 4 groupes)
+     cex = 0.5, 
+     palette = "jco", 
+     rect = TRUE, 
+     rect_fill = TRUE,
+     main = "CAH sur les individus (ACM)"
+   ) + theme_metropolis 
+```
+
+   c. Tracer les sauts d'inertie.
+```{r}
+#| out-fig: "60%"
+#| include: !expr params$correction
+ 
+nb_max <- min(50, length(cah.ind$height))
+inertie.ind <- sort(cah.ind$height, decreasing = TRUE)
+df_inertie <- data.frame(k = 1:nb_max, inertie = inertie.ind[1:nb_max])
+
+# limite à 50 classes
+ggplot(df_inertie, aes(x = k[1:50], y = inertie[1:50])) +
+    geom_line(color = "#0073C2", linewidth = 1) +
+    geom_point(color = "#0073C2", size = 2) +
+    labs(
+    title = "Évolution de l'inertie inter-classes",
+    x = "Nombre de classes",
+    y = "Inertie"
+    ) +
+theme_metropolis
+```
+
+   d. Combien de clusters peut-on choisir ? Representer les groupes sur le premier plan factoriel.
+```{r}
+#| include: !expr params$correction
+#| fig-width: 8
+#| fig-height: 6
+
+library(factoextra)
+library(ggplot2)
+# Découpage de l'arbre hiérarchique en 4 classes
+groupes.cah <- cutree(cah.ind, k = 4)
+# Visualisation des clusters de la CAH sur le premier plan factoriel (1, 2)
+fviz_cluster(
+  list(data = points_coord, cluster = groupes.cah),
+  axes = c(1, 2),
+  palette = "jco",
+  ellipse.type = "convex",
+  geom = "point",
+  pointsize = 1.5,
+  show.clust.cent = TRUE,
+  main = "Partitionnement par CAH (k = 4) sur les axes de l'ACM"
+) + 
+  theme_metropolis +
+  theme(legend.position = "right")
+```
+
+2. Une fois le nombre de clusters choisi, mettre en œuvre la méthode des $k$-means (toujours à partir des coordonnées factorielles de l'ACM). *Indication : définir une graine pour le générateur de nombres aléatoires. Utiliser l'option `nstart` de `kmeans`.*
+```{r}
+#| include: !expr params$correction
+#| fig-width: 8
+#| fig-height: 6
+
+library(factoextra)
+library(ggplot2)
+
+# Fixer une graine aléatoire pour la reproductibilité des k-means
+set.seed(123)
+
+# Application des k-means sur les premiers axes factoriels (coordonnées des individus)
+res.km <- kmeans(points_coord, centers = 4, nstart = 25)
+
+# 3. Visualisation graphique des clusters sur le premier plan factoriel (1, 2)
+   fviz_cluster(
+     res.km, 
+     data = points_coord,
+     axes = c(1, 2),
+     palette = "jco",
+     ellipse.type = "convex",
+     geom = "point",
+     pointsize = 1.5,
+     show.clust.cent = TRUE,
+     main = "Partitionnement par K-means (k = 4) sur les axes de l'ACM"
+   ) + 
+     theme_metropolis +
+     theme(legend.position = "right")
+```
+
+
+3. Comparer les deux methodes.
+
+```{r}
+library(knitr)
+
+# Matrice de confusion comparant les partitions de la CAH et des K-means (k = 4)
+
+groupes.cah <- cutree(cah.ind, k = 4)
+table_comp <- table(CAH = groupes.cah, Kmeans = res.km$cluster)
+kable(
+  table_comp
+)
+```
+
+4. Vous pouvez tester la fonction `HCPC` sur les résultats de l'AFCM. Elle a pour avantage de mettre en œuvre une CAH puis des $k$-means de manière intégrée.
+
+```{r}
+res.hcpc <- HCPC(acm.b.clust, graph = FALSE, nb.clust = 4)
+```
+
+La fonction `nb.clust` peut prendre les valeurs :
+   - `-1` pour que R choisisse automatiquement le nombre de clusters ;
+   - `0` pour que vous choisissiez le nombre de clusters (en cliquant sur le dendrogramme), en vous basant sur le graphique de perte d'inertie inter-classe ;
+   - `3` par exemple, pour fixer à 3 le nombre de clusters.
+
+
+```{r}
+#| include: !expr params$correction
+#| fig-width: 8
+#| fig-height: 6
+
+library(FactoMineR)
+library(factoextra)
+
+# Visualisation des individus et des clusters sur le plan factoriel avec factoextra
+fviz_cluster(
+  res.hcpc, 
+  axes = c(1, 2),
+  palette = "jco",
+  ellipse.type = "convex",
+  geom = "point",
+  pointsize = 1.5,
+  show.clust.cent = TRUE,
+  main = "Classification HCPC sur les axes de l'ACM"
+) + 
+  theme_metropolis +
+  theme(legend.position = "right")
+```
+
+::: {.content-visible when-meta="params.correction"}
+La fonction `HCPC()` automatise et intègre l'ensemble de la démarche que nous avons menée pas à pas : 
+1. Elle extrait les coordonnées factorielles de l'ACM.
+2. Elle réalise une Classification Ascendante Hiérarchique (CAH) selon le critère de Ward.
+3. Elle consolide la partition obtenue par un algorithme des $k$-means en utilisant les centres de gravité de la CAH comme initialisation.
+4. Elle génère automatiquement des rapports de description statistique des classes (`res.hcpc$desc.var`), permettant de caractériser précisément chaque profil de client par ses sur-représentations de modalités.
+:::
+
+```{r}
+library(knitr)
+
+# Matrice de confusion comparant les partitions des K-means (k = 4) et HCPC
+
+kable(
+  table(HCPC = res.hcpc$data.clust$clust, Kmeans = res.km$cluster)
+)
+```
+
+5. À partir du choix du nombre de clusters fait à la question précédente, la fonction met en œuvre la méthode des $k$-means. Les individus sont ainsi répartis dans ces nouveaux clusters dont on peut étudier les caractéristiques par les commandes suivantes :
+
+   - Pour afficher la répartition des individus dans les clusters :
+```{r}
+#| eval: false
+table(res.hcpc$data.clust$clust)
+```
+```{r}
+#| echo: false
+#| include: !expr params$correction
+
+table(res.hcpc$data.clust$clust)
+```
+
+   - Pour représenter les clusters sur les axes factoriels de l'ACM :
+```{r}
+#| eval: false
+fviz_cluster(res.hcpc, axes = c(1, 2))
+```
+```{r}
+#| include: !expr params$correction
+#| echo: false
+#| fig-width: 8
+#| fig-height: 6
+fviz_cluster(
+  res.hcpc,
+  axes = c(1, 2),
+  palette = "jco",
+  ellipse.type = "convex",
+  geom = "point",
+  pointsize = 1.5,
+  show.clust.cent = TRUE,
+  main = "Représentation des clusters HCPC"
+) + 
+  theme_metropolis +
+  theme(legend.position = "right")
+```
+
+   - Pour tester la relation entre les variables initiales et le partitionnement proposé :
+
+```{r}
+#| eval: false
+
+res.hcpc$desc.var$test.chi2
+```
+```{r}
+#| include: !expr params$correction
+#| echo: false
+res.hcpc$desc.var$test.chi2
+```
+
+   - Pour décrire chaque cluster par les modalités les plus corrélées avec la classe :
+```{r}
+#| eval: false
+
+res.hcpc$desc.var$category
+```
+```{r}
+#| include: !expr params$correction
+#| echo: false
+res.hcpc$desc.var$category
+```
+   - Pour afficher les « parangons », points les plus représentatifs de chaque cluster (centres de gravité locaux) :
+```{r}
+#| eval: false
+
+res.hcpc$desc.ind$para
+```
+```{r}
+#| include: !expr params$correction
+#| echo: false
+
+res.hcpc$desc.ind$para
+```
+
+   - Pour afficher les 5 points les plus extrêmes (les plus éloignés du centre) de chaque cluster : 
+```{r}
+#| eval: false
+
+res.hcpc$desc.ind$dist
+```
+
+```{r}
+#| include: !expr params$correction
+#| echo: false
+
+res.hcpc$desc.ind$dist
+```
+
+
+
+
+## Exercice 2.
+
+```{r}
+#| include: false
+library(jpeg)
+library(ggplot2)
+library(gridExtra)
+```
+
+### Introduction et Objectifs
+
+La quantification des couleurs est une technique fondamentale de traitement d'image et de compression. Elle consiste à remplacer un espace colorimétrique étendu (par exemple, $2^{24} \approx 16{,}7$ millions de couleurs pour une image RGB standard à 8 bits par canal) par un nombre restreint $k$ de couleurs représentatives.
+
+Dans cet exercice, nous allons :
+1. Charger une image RGB et la structurer sous forme de nuage de points tridimensionnel ($R, G, B$).
+2. Appliquer l'algorithme des $k$-means pour réduire la palette à **$k = 8$**, **$k = 16$** et **$k = 32$** couleurs.
+3. Comparer cette approche non supervisée avec une quantification uniforme par réduction de profondeur binaire.
+4. Analyser l'impact visuel et la distorsion colorimétrique.
+
+---
+
+### Chargement et préparation de l'image
+
+Nous utilisons une image de test intégrée ou accessible pour manipuler les matrices de pixels.
+
+1. Analyser le code suivant. À quoi sert la dernière ligne ?
+```{r}
+
+# Chargement d'une image exemple
+url_img <- "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Arachnothera_magna_-_Kaeng_Krachan.jpg/500px-Arachnothera_magna_-_Kaeng_Krachan.jpg"
+temp_file <- tempfile(fileext = ".jpg")
+download.file(url_img, temp_file, mode = "wb")
+
+img <- readJPEG(temp_file)
+img <- img[, , 1:3]
+```
+
+```{r}
+#| echo: false
+#| fig-width: 3
+#| fig-height: 4
+
+plot(c(1, 2), c(1, 2), type = 'n', axes = FALSE, xlab = "", ylab = "")
+rasterImage(img, 1, 1, 2, 2)
+```
+
+::: {.content-visible when-meta="params.correction"}
+Explication de la dernière ligne : `img <- img[, , 1:3]` ne conserve que les trois premiers canaux de couleur (Rouge, Vert, Bleu). Elle permet d'éliminer un éventuel quatrième canal (canal Alpha correspondant à la transparence) afin de garantir que l'image est bien représentée sous la forme d'un tableau tridimensionnel de taille $H \times W \times 3$.
+:::
+
+2. Afficher les niveaux RGB du pixel situé à la ligne 5 et colonne 67.
+```{r}
+#| include: !expr params$correction
+img[5, 67, 1:3]
+```
+
+3. On enregistre maintenant les dimensions de l'image originale :
+```{r}
+dims <- dim(img)  # H <- dims[1]; W <- dims[2]; C <- dim[3]
+```
+
+Créez ensuite la matrice `pixels` de taille $(H \times W) \times 3$, dont les lignes contiennent les niveaux RGB de tous les pixels.
+
+```{r}
+#| include: !expr params$correction
+
+# Transformation du tableau (H x W x 3) en matrice 2D (Pixels x 3 canaux)
+pixels <- matrix(img, ncol = 3)
+```
+
+Vérifier alors que 
+
+```{r}
+i <- 5
+j <- 67
+H <- dims[1]
+
+stopifnot(all(img[i, j, 1:3] == pixels[(j - 1) * H + i, 1:3]))
+```
+
+### Application de l'algorithme des $k$-means pour $k \in \{8, 16, 32\}$
+
+L'algorithme des $k$-means partitionne l'espace colorimétrique RGB en $k$ groupes. Chaque pixel est ensuite remplacé par la couleur du centroïde de son cluster d'appartenance. *Indication: L'utilisation de `nstart = 5` permet de stabiliser l'initialisation des centroïdes et d'éviter les minima locaux de l'inertie intra-classe.*
+
+```{r}
+#| eval: false
+
+set.seed(42) # Reproductibilité
+
+# Fonction de quantification par k-means
+quantifier_kmeans <- function(pixels_mat, k, dims_orig) {
+  # Appliquer le kmeans à pixels_mat
+  km <- ...
+  # Remplacement des pixels par leurs centroïdes respectifs
+  pixels_quantifies <- ...
+  # Reconstruction du format image 3D
+  img_quant <- array(pixels_quantifies, dim = dims_orig)
+  return(img_quant)
+}
+
+# Génération des images quantifiées
+img_k8  <- quantifier_kmeans(pixels, k = 8, dims)
+img_k16 <- quantifier_kmeans(pixels, k = 16, dims)
+img_k32 <- quantifier_kmeans(pixels, k = 32, dims)
+```
+
+
+```{r}
+#| include: !expr params$correction
+
+set.seed(42) # Reproductibilité
+
+# Fonction de quantification par k-means
+quantifier_kmeans <- function(pixels_mat, k, dims_orig) {
+  km <- kmeans(pixels_mat, centers = k, nstart = 5)
+  # Remplacement des pixels par leurs centroïdes respectifs
+  pixels_quantifies <- km$centers[km$cluster, ]
+  # Reconstruction du format image 3D
+  img_quant <- array(pixels_quantifies, dim = dims_orig)
+  return(img_quant)
+}
+
+# Génération des images quantifiées
+img_k8  <- quantifier_kmeans(pixels, k = 8, dims)
+img_k16 <- quantifier_kmeans(pixels, k = 16, dims)
+img_k32 <- quantifier_kmeans(pixels, k = 32, dims)
+```
+
+
+
+### Comparaison avec la quantification uniforme par réduction de bits
+
+La quantification uniforme consiste à tronquer uniformément les bits de poids faible de chaque canal indépendamment de la distribution réelle des couleurs.
+
+1.  À partir de l'image originale, créer des images avec $k=2,3$ bit par canal
+```{r}
+
+# Fonction de quantification uniforme sur b bits par canal
+quantifier_bits <- function(img_mat, bits) {
+  niveaux <- 2^bits
+  img_bits <- round(img_mat * (niveaux - 1)) / (niveaux - 1)
+  return(img_bits)
+}
+
+# Simulation de réductions de profondeur de bits
+img_bit2 <- quantifier_bits(img, bits = 2) # 2 bit/canal (64 couleurs max au total)
+img_bit3 <- quantifier_bits(img, bits = 3) # 3 bits/canal (512 couleurs max au total)
+```
+
+2. Comparer les résultats des deux méthodes.
+```{r}
+# 4. Visualisation comparative
+par(mfrow = c(2, 3), mar = c(1, 1, 2, 1))
+plot(c(1, 2), c(1, 2), type = 'n', axes = FALSE, xlab = "", ylab = ""); rasterImage(img, 1, 1, 2, 2); title("1. Originale")
+plot(c(1, 2), c(1, 2), type = 'n', axes = FALSE, xlab = "", ylab = ""); rasterImage(img_k8, 1, 1, 2, 2); title("2. K-means (k = 8)")
+plot(c(1, 2), c(1, 2), type = 'n', axes = FALSE, xlab = "", ylab = ""); rasterImage(img_k16, 1, 1, 2, 2); title("3. K-means (k = 16)")
+plot(c(1, 2), c(1, 2), type = 'n', axes = FALSE, xlab = "", ylab = ""); rasterImage(img_k32, 1, 1, 2, 2); title("4. K-means (k = 32)")
+plot(c(1, 2), c(1, 2), type = 'n', axes = FALSE, xlab = "", ylab = ""); rasterImage(img_bit2, 1, 1, 2, 2); title("5. 64 couleurs")
+plot(c(1, 2), c(1, 2), type = 'n', axes = FALSE, xlab = "", ylab = ""); rasterImage(img_bit3, 1, 1, 2, 2); title("6. 512 couleurs")
+```
