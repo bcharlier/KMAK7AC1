@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Fira+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Fira+Sans:ital,wght@0,200;0,400;0,600;0,700;1,400&display=swap');
 
 /* Masquer les titres d'onglets injectés JS en mode web normal */
 .print-tab-title {
@@ -11,7 +11,7 @@
      ========================================================= */
   @page {
     size: A4 portrait;
-    margin: 15mm 15mm 15mm 15mm;
+    margin: 15mm;
   }
 
 /* Masquer uniquement les éléments de navigation de Quarto */
@@ -45,11 +45,12 @@
     color: #000 !important;
   }
 
-  /* Égaliser la zone de contenu sur 100 % de la largeur */
+  /* Le flux d'impression hérite de la zone utile délimitée par @page */
   #quarto-content,
   main.content,
   .page-columns,
   .body-content {
+    box-sizing: border-box !important;
     max-width: 100% !important;
     width: 100% !important;
     margin: 0 !important;
@@ -66,11 +67,18 @@
 
   html, body {
     font-size: 11px !important;
-    font-weight: 200 !important; /* Renforce la lisibilité à 11px sur papier */
+    font-weight: 200 !important;
     line-height: 1.35 !important;
     color: #111111 !important;
   }
 
+  em, i {
+    font-weight: 300 !important;
+  }
+
+  strong, b {
+    font-weight: 600 !important;
+  }
 
   /* =========================================================
      3. HIÉRARCHIE DES TITRES & TITRES D'ONGLETS
@@ -129,6 +137,12 @@
      ========================================================= */
   p, ul, ol {
     margin: 0 0 0.4rem 0 !important;
+  }
+
+  p, li {
+    text-align: justify !important;
+    text-justify: inter-word;
+    hyphens: auto;
   }
 
   li {

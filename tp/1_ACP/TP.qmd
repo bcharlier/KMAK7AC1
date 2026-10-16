@@ -13,7 +13,7 @@ other-links:
     href: "TP_ACP.pdf"
 
 params:
-  correction: False
+  correction: true
 ---
 
 
@@ -86,7 +86,7 @@ apply(Z, 2, mean) # Vérification de la nullité des moyennes
 apply(Z, 2, sd) * sqrt((n-1)/n) # Vérification des écarts-types égaux à 1
 ###### Calcul de la matrice des corrélations ######
 
-N <- diag(rep(1/n,n))
+N <- diag(rep(1/n, n))
 R <- t(Z) %*% N %*% Z
    ```
 
@@ -103,11 +103,11 @@ round(unname(R), 3)
 
 ###### Décomposition spectrale avec la fonction `eigen()` ######
 
-e<-eigen(R)
+e <- eigen(R)
 e$values
 e$vectors
 
-t(e$vectors)%*%e$vectors # Les vecteurs propres sont bien orthonormés
+t(e$vectors) %*% e$vectors # Les vecteurs propres sont bien orthonormés
 
 
 sum(e$values)
@@ -150,9 +150,9 @@ round(unname(Psi), 3)
 #| include: !expr params$correction
 
 ###### Matrice des coordonnées factorielles des individus (scores) ######
-Psi<-Z%*%e$vectors
-apply(Psi,2,mean) # Vérification de la nullité des moyennes
-apply(Psi,2,var)*(n-1)/n
+Psi <- Z %*% e$vectors
+apply(Psi, 2, mean) # Vérification de la nullité des moyennes
+apply(Psi, 2, var) * (n-1) / n
 e$values
 ```
 
@@ -352,8 +352,7 @@ L'idée est toujours de retrouver les quantités définies dans le cours.
 ```{r}
 #| include: !expr params$correction
 
-N<-diag(rep(1/n,n))
-PS<-Z%*%t(Z)%*%N
+PS <- N %*% Z %*% t(Z)
 
 ```
 
@@ -363,12 +362,12 @@ PS<-Z%*%t(Z)%*%N
 #| include: !expr params$correction
 
 ###### Décomposition spectrale avec la fonction `eigen()` ######
-e<-eigen(PS)
+e <- eigen(PS)
 e$values
-U<-sqrt(n)*e$vectors[,1:3] # Pour obtenir des vecteurs de norme N égale à 1
-t(U)%*%N%*%U
+U <- sqrt(n) * e$vectors[,1:3] # Pour obtenir des vecteurs de norme N égale à 1
+t(U) %*% N %*% U
 
-t(e$vectors)%*%e$vectors # Les vecteurs propres sont bien orthonormés
+t(e$vectors) %*% e$vectors # Les vecteurs propres sont bien orthonormés
 ```
 
 3. Calculez la matrice $\varphi$ des coordonnées factorielles des 3 variables sur les trois axes factoriels. Représentez graphiquement les 3 variables sur le premier plan factoriel (1-2).
@@ -377,8 +376,7 @@ t(e$vectors)%*%e$vectors # Les vecteurs propres sont bien orthonormés
 #| include: !expr params$correction
 
 ###### Matrice des coordonnées factorielles des variables (charges factorielles) ######
-Phi<-t(Z)%*%N%*%U
-apply(Phi,2,mean) # Vérification de la nullité des moyennes
+Phi<- t(Z) %*% N %*% U
 ```
 
 ```{r}
@@ -389,13 +387,12 @@ round(unname(Phi), 3)
 #| include: !expr params$correction
 
 ###### Représentation graphique des variables sur les plans factoriels ######
-par(mfrow=c(1,2))
-plot(Phi[,1:2])
-text(Phi[,1:2],colnames(X))
+par(mfrow = c(1, 2))
+plot(Phi[, 1:2])
+text(Phi[, 1:2], colnames(X))
 
-plot(Phi[,2:3])
-text(Phi[,2:3],colnames(X))
-
+plot(Phi[, 2:3])
+text(Phi[, 2:3], colnames(X))
 ```
 
 4. Effectuez la décomposition en valeurs singulières (SVD) de $Z$ avec les métriques $I_p$ et $N$. *Indication : vous pouvez utiliser la fonction `FactoMineR::svd.triplet()`.*
@@ -410,7 +407,7 @@ text(Phi[,2:3],colnames(X))
 #| include: !expr params$correction
 
 ###### SVD classique ######
-svd_vanilla<-svd(N^0.5%*%Z)
+svd_vanilla<-svd(N^0.5 %*% Z)
 
 svd_vanilla$d^2 # On retrouve bien les valeurs propres
 e$values
@@ -422,9 +419,9 @@ e$values
 ###### SVD pondérée ######
 
 ?svd.triplet()
-row.w<-rep(1/n, n)
-col.w<-rep(1, p)
-svd_weighted<-svd.triplet(Z,row.w,col.w)
+row.w <- diag(N)
+col.w <- rep(1, p)
+svd_weighted <- svd.triplet(Z, row.w, col.w)
 
 svd_weighted$vs^2 # On retrouve bien les valeurs propres
 e$values
@@ -437,13 +434,13 @@ e$values
 
 ###### SVD classique ######
 
-U<-sqrt(n)*svd_vanilla$u
-V<-svd_vanilla$v
+U <- sqrt(n) * svd_vanilla$u
+V <- svd_vanilla$v
 
-U%*%diag(svd_vanilla$d) # Première formule de passage vérifiée
+U %*% diag(svd_vanilla$d) # Première formule de passage vérifiée
 unname(Psi)
 
-V%*%diag(svd_vanilla$d) # Seconde formule de passage vérifiée
+V %*% diag(svd_vanilla$d) # Seconde formule de passage vérifiée
 unname(Phi)
 ```
 
@@ -452,8 +449,8 @@ unname(Phi)
 
 ###### SVD pondérée ######
 
-U<-svd_weighted$U
-V<-svd_weighted$V
+U <- svd_weighted$U
+V <- svd_weighted$V
 
 U %*% diag(svd_weighted$vs) # Première formule de passage vérifiée
 unname(Psi)
@@ -466,8 +463,8 @@ unname(Phi)
 ```{r}
 #| include: !expr params$correction
 
-Phi[1,1]
-cor(X[,1],Psi[,1]) # Corrélation entre la variable et la composante
+Phi[1, 1]
+cor(X[, 1], Psi[, 1]) # Corrélation entre la variable et la composante
 ```
 
 ### II. Avec `R` et le package `FactoMineR`
@@ -500,4 +497,8 @@ fviz_pca_var (eaux.pca, col.var = "cos2",
     limits = c(0, 1),
     breaks = seq(0, 1, by = .2)
   ) + theme_metropolis
+
+
+
+plot(eaux.pca, choix="var")
 ```
