@@ -12,7 +12,7 @@ other-links:
     href: "TP_Clustering.pdf"
 
 params:
-  correction: true
+  correction: false
 ---
 
 ```{r}
