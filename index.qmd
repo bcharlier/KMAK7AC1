@@ -53,7 +53,7 @@ Compétences acquises
 | 05/10 | CM/TD | AFM/ACM |
 | 06/10 | TP1 * 2 | ACP|
 | 07/10 | CM/TD | ACM |
-| 12/10 | CM/TD | Clustering + CC |
+| 12/10 | CM/TD | Clustering |
 | 14/10 | TP2 * 2 | AFC/ACM |
-| 21/10 | CM/TD | Clustering |
+| 21/10 | CM/TD | Clustering + CC |
 | 21/10 | TP3 * 2 | Clustering |
