@@ -18,10 +18,215 @@ params:
 ```{r}
 #| label: setup
 #| include: false
+
 source("../../R/functions.R")
 ```
 
-## Exercice 1 : Segmentation de clientèle bancaire
+## Exercice 1. Faut-t-il centrer-réduire les données avant de faire la classification ?
+
+On utilise le jeu de données [`fromages.txt`](data/fromage.txt) » où 29 fromages sont décrits par 9 variables continues.
+
+```{r}
+#| eval: false
+
+X <- read.table("https://bcharlier.github.io/KMAK7AC1/tp/3_Clustering/data/fromage.txt", sep="	", header=TRUE, row.names=1)
+```
+
+```{r}
+#| echo: false
+
+fname <- file.path(get_script_dir(), "data", "fromage.txt")
+X <- read.table(fname, sep="	", header=TRUE, row.names=1)
+print_table(X, scroll=10, max.col.width="5em")
+```
+
+### Sans normalisation
+
+Dans cet partie, il s’agit de faire une classification hiérarchique de Ward avec la distance Euclidienne simple (directement sur $X$) et d’interpréter cette partition à l’aide d’une ACP non normée (analyse du nuage des individus centrés).
+
+
+1. Avec la fonction `var()` de R, calculer les variances des 9 variables. Que pouvez-vous en conclure ?
+
+```{r}
+#| include: !expr params$correction
+
+vars <- apply(X, 2, var)
+print(vars)
+```
+
+::: {.content-visible when-meta="params.correction"}
+De très fortes disparités existent entre les variances des variables (les variables `calories`, `sodium` et `calcium` dominent largement). Sans centrer-réduire, ces variables pèseront de manière excessive dans le calcul de la distance euclidienne.
+:::
+
+
+2. Faire la classification hiérarchique de Ward avec la distance Euclidienne simple. Regarder le dendrogramme et la partition en 3 classes.
+
+```{r}
+#| include: !expr params$correction
+#| fig-width: 8
+#| fig-height: 6
+#| out-width: "80%"
+
+
+d_eucl <- dist(X)
+cah_non_norm <- hclust(d_eucl, method = "ward.D2")
+
+# Dendrogramme avec les 3 classes
+library(factoextra)
+fviz_dend(
+  cah_non_norm,
+  k = 3, palette = "jco",
+  main = "Dendrogramme (données brutes)"
+) + theme_metropolis
+
+# Coupure en 3 classes
+groupes_non_norm <- cutree(cah_non_norm, k = 3)
+```
+
+
+3. Avec la fonction PCA du package FactoMineR, faire l’ACP non normée (sur matrice des variances-covariances) de X.
+
+```{r}
+#| include: !expr params$correction
+
+library(FactoMineR)
+res_pca_non_norm <- PCA(X, scale.unit = FALSE, graph = FALSE)
+```
+
+
+4. Représentez le nuage des 29 fromages dans le premier plan factoriel des individus et le nuage des 9 variables dans le premier plan factoriel des variables. Commentez.
+
+
+::: {.columns}
+
+::: {.column}
+
+```{r}
+#| include: !expr params$correction
+#| echo: false
+#| fig-width: 6
+#| fig-height: 6
+library(factoextra)
+
+fviz_pca_var(res_pca_non_norm,
+            axes = c(1, 2),
+            col.var = "contrib",
+            gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+            repel = TRUE
+            ) +
+  theme_metropolis +
+  theme(legend.position = "bottom")
+```
+
+:::
+
+::: {.column}
+
+```{r}
+#| include: !expr params$correction
+#| echo: false
+#| fig-width: 6
+#| fig-height: 6
+
+fviz_pca_ind(res_pca_non_norm,
+            geom = c("point", "text"),
+            pointsize = "cos2",
+            col.ind = "contrib",
+            gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+            labelsize = 6,
+            repel = TRUE) +
+  scale_size_continuous(
+    limits = c(0, 1),
+    breaks = seq(0, 1, by = 0.5),
+    range = c(1, 10),
+    name = expression(cos^2)
+  ) + theme_metropolis +
+  theme(legend.position = "bottom")
+```
+
+:::
+
+:::
+
+
+
+5. Interprétez à l’aide de ces graphiques les classes de la partition en trois classes obtenue avec la méthode de Ward. En déduire pourquoi il peut-être utile ici de centrer-réduire les données avant de faire la classification.
+
+```{r}
+#| include: !expr params$correction
+#| echo: false
+#| fig-width: 8
+#| fig-height: 6
+#| out-width: "80%"
+ 
+fviz_pca_ind(res_pca_non_norm, habillage = as.factor(groupes_non_norm), 
+             addEllipses = TRUE, palette = "jco") +
+  ggplot2::labs(title = "Partition en 3 classes (données brutes) sur l'ACP non normée") + theme_metropolis
+
+```
+
+::: {.content-visible when-meta="params.correction"}
+
+Sans centrer-réduire, la classification et le premier axe factoriel de l'ACP sont dictés quasi exclusivement par les variables ayant la plus grande variance. Les classes obtenues séparent les fromages principalement selon ces dimensions dominantes, masquant les autres caractéristiques nutritionnelles. Il est donc indispensable de centrer-réduire pour donner le même poids (variance égale à 1) à toutes les variables.
+:::
+
+### Avec normalisation
+
+Il s'agit de faire une classification hiérarchique de Ward avec la distance Euclidienne normalisée par l’inverse de la variance (i.e distance Euclidienne standard sur la matrice $Z$ centrée-réduite) et d’interpréter les résultats à l’aide d’une ACP normée (analyse du nuage des individus centrés-réduits).
+
+1. Créer la matrice $Z$ des données centrées-réduites avec la fonction `scale()` (en utilisant la variance empirique « population » i.e. non corrigée).
+
+```{r}
+#| include: !expr params$correction
+n <- nrow(X)
+moy <- apply(X, 2, mean)
+ecartype <- apply(X, 2, sd) * sqrt((n-1)/n) # écart-type biaisé (diviseur n)
+
+Z <- scale(X, center = moy, scale = ecartype)
+```
+
+2. Faire la classification hiérarchique de Ward avec la distance Euclidienne normalisée par l’inverse de la variance et visualisez le dendrogramme.
+
+```{r}
+#| include: !expr params$correction
+#| fig-width: 8
+#| fig-height: 6
+#| out-width: "80%"
+
+d_norm <- dist(Z)
+cah_norm <- hclust(d_norm, method = "ward.D2")
+
+# Dendrogramme avec les 4 classes
+fviz_dend(
+  cah_norm,
+  palette = "jco",
+  k = 4,
+  main = "Dendrogramme (données centrées-réduites - var pop)"
+) + theme_metropolis
+
+groupes_norm <- cutree(cah_norm, k = 4)
+```
+
+3. Avec la fonction `PCA` du package `FactoMineR`, faire l’ACP normée (sur matrice des corrélations) de $X$. Interprétez la partition en 4 classes issues de la classification de Ward.
+
+```{r}
+#| fig-width: 8
+#| fig-height: 6
+#| out-width: "80%"
+
+# 3. ACP normée cohérente (sur la matrice Z déjà centrée-réduite, scale.unit = FALSE)
+library(FactoMineR)
+res_pca_norm <- PCA(X, scale.unit = TRUE, graph = FALSE)
+
+# 4. Interprétation de la partition en 4 classes sur l'ACP
+library(factoextra)
+fviz_pca_ind(res_pca_norm, habillage = as.factor(groupes_norm), 
+             addEllipses = TRUE, palette = "jco") +
+  ggplot2::labs(title = "Partition en 3 classes (données brutes) sur l'ACP non normée") + theme_metropolis
+```
+
+
+## Exercice 1 : Segmentation de données qualitatives
 
 ### Problématique
 
@@ -111,7 +316,7 @@ head(sort(effectifs_modalites, decreasing = FALSE), 3)
 
 ::: {.content-visible when-meta="params.correction"}
 
-À partir de ce tableau de Burt, on peut détecter dans un premier temps la tendance principale de l'échantillon : les clients n'ayant aucun produit. Cela est visible par exemple sur la ligne `eplog.0` : 702 clients (sur 810) n'ont pas d'épargne logement et, parmi ceux-là, 567 n'ont pas non plus de livret d'épargne, 634 n'ont pas de crédit immobilier, etc. Ce groupe d'individus "sans produit bancaire" constitue la majeure partie de l'échantillon et se situera au centre du nuage projeté des modalités.
+À partir de ce tableau de Burt, on peut détecter dans un premier temps la tendance principale de l'échantillon : les clients n'ayant aucun produit bancaire. Cela est visible par exemple sur la ligne `eplog.0` : 702 clients (sur 810) n'ont pas d'épargne logement et, parmi ceux-là, 576 n'ont pas non plus de livret d'épargne, 634 n'ont pas de crédit immobilier, etc. Ce groupe d'individus "sans produit bancaire" constitue la majeure partie de l'échantillon et se situera au centre du nuage projeté des modalités.
 
 Par opposition, on peut repérer les catégories ayant les plus faibles effectifs (`prtre.2`, `eplog.1` et `epliv.2`), qui peuvent se démarquer dans l'analyse en raison de cette rareté. On veillera, dans la suite des analyses, à ce que ces modalités ne soient pas trop prédominantes dans les résultats de l'ACM et ne masquent pas d'autres phénomènes.
 :::
@@ -321,7 +526,7 @@ Au vu des positions des modalités correspondantes, on observe que :
 4. Synthétisez vos observations et décrivez les groupes possibles de consommateurs de produits bancaires.
 
 ::: {.content-visible when-meta="params.correction"}
-En résumé, l'Analyse des Correspondances Multiples (ACM) permet de mettre en évidence une typologie claire des clients selon leurs comportements d'équipement et leurs profils sociodémographiques :
+En résumé, l'Analyse des Correspondances Multiples (ACM) permet de mettre en évidence une typologie des clients selon leurs comportements d'équipement et leurs profils sociodémographiques :
 
 - *Le groupe "sans équipement" (majoritaire)* : il rassemble la majeure partie de l'échantillon, caractérisée par l'absence de produits bancaires, qu'il s'agisse de crédits ou d'épargne (modalités `.0`). Ce profil est particulièrement représenté par les jeunes (moins de 25 ans), les étudiants et les clients récents (moins de 2 ans d'ancienneté).
 - *Le groupe des clients "épargnants / hauts revenus"* : composé de clients utilisant la banque principalement pour des placements sur des livrets d'épargne ou des portefeuilles de titres boursiers (`epliv.3` et `port.3`). Ce groupe se superpose aux profils de retraités (plus de 75 ans) et de personnes disposant d'un patrimoine constitué.
@@ -340,23 +545,33 @@ Une solution éprouvée consiste à réaliser une **Classification sur Composant
 
 1. Réaliser une CAH sur les 2 premières coordonnées factorielles de l'ACM contenues dans `...$ind$coord`.
 
-   a. Calculer la distance euclidienne au carré sur les coordonnées des axes retenus :
+   a. Calculer la distance euclidienne sur les coordonnées des axes retenus :
 ```{r}
-#| out-fig: "60%"
+#| fig-width: 8
+#| fig-height: 6
+#| out-width: "80%"
 #| include: !expr params$correction
 
 
 acm.b.clust <- MCA(banque[,c(10:13,17:18,21)], ncp = 2, graph = FALSE)
 points_coord <- acm.b.clust$ind$coord
 
-DE.ind <- dist(points_coord, method = "euclidean")^2
-fviz_dist(DE.ind, show_labels = FALSE) + theme_metropolis +
-  theme(legend.position = "right")
+DE.ind <- dist(points_coord, method = "euclidean")
+fviz_dist(DE.ind, show_labels = FALSE) +
+  theme_metropolis +
+  theme(
+    legend.position = "right",
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank()
+  )
 ```
 
-   b. Réaliser la classification et afficher l'arbre (dendrogramme) :
+   b. Réaliser la classification avec la méthode `ward.D2` et afficher l'arbre (dendrogramme) :
 
 ```{r}
+#| fig-width: 8
+#| fig-height: 6
+#| out-width: "80%"
 #| include: !expr params$correction
 cah.ind <- hclust(DE.ind, method = "ward.D2")
 fviz_dend(
@@ -364,15 +579,15 @@ fviz_dend(
      k = 4,                   # Nombre de classes suggéré (ex: 4 groupes)
      cex = 0.5, 
      palette = "jco", 
-     rect = TRUE, 
-     rect_fill = TRUE,
      main = "CAH sur les individus (ACM)"
    ) + theme_metropolis 
 ```
 
    c. Tracer les sauts d'inertie.
 ```{r}
-#| out-fig: "60%"
+#| fig-width: 8
+#| fig-height: 6
+#| out-width: "80%"
 #| include: !expr params$correction
  
 nb_max <- min(50, length(cah.ind$height))
@@ -396,6 +611,7 @@ theme_metropolis
 #| include: !expr params$correction
 #| fig-width: 8
 #| fig-height: 6
+#| out-width: "80%"
 
 library(factoextra)
 library(ggplot2)
@@ -421,6 +637,7 @@ fviz_cluster(
 #| include: !expr params$correction
 #| fig-width: 8
 #| fig-height: 6
+#| out-width: "80%"
 
 library(factoextra)
 library(ggplot2)
@@ -478,6 +695,7 @@ La fonction `nb.clust` peut prendre les valeurs :
 #| include: !expr params$correction
 #| fig-width: 8
 #| fig-height: 6
+#| out-width: "80%"
 
 library(FactoMineR)
 library(factoextra)
@@ -539,6 +757,9 @@ fviz_cluster(res.hcpc, axes = c(1, 2))
 #| echo: false
 #| fig-width: 8
 #| fig-height: 6
+#| out-width: "80%"
+
+
 fviz_cluster(
   res.hcpc,
   axes = c(1, 2),
@@ -552,7 +773,7 @@ fviz_cluster(
   theme_metropolis +
   theme(legend.position = "right")
 ```
-
+<!--
    - Pour tester la relation entre les variables initiales et le partitionnement proposé :
 
 ```{r}
@@ -572,11 +793,13 @@ res.hcpc$desc.var$test.chi2
 
 res.hcpc$desc.var$category
 ```
+
 ```{r}
 #| include: !expr params$correction
 #| echo: false
 res.hcpc$desc.var$category
-```
+``` 
+-->
    - Pour afficher les « parangons », points les plus représentatifs de chaque cluster (centres de gravité locaux) :
 ```{r}
 #| eval: false
@@ -607,7 +830,7 @@ res.hcpc$desc.ind$dist
 
 
 
-## Exercice 2.
+## Exercice 2. $K$-means et quantification des couleurs
 
 ```{r}
 #| include: false
@@ -630,7 +853,9 @@ Dans cet exercice, nous allons :
 
 ### Chargement et préparation de l'image
 
-Nous utilisons une image de test intégrée ou accessible pour manipuler les matrices de pixels.
+Nous utilisons une image de test pour manipuler les matrices de pixels.
+
+![Arachnothera Magna](data/Arachnothera_magna_-_Kaeng_Krachan.jpg){height=200}
 
 1. Analyser le code suivant. À quoi sert la dernière ligne ?
 ```{r}
@@ -644,10 +869,9 @@ img <- readJPEG(temp_file)
 img <- img[, , 1:3]
 ```
 
+On pourra afficher des images avec ce code :
 ```{r}
-#| echo: false
-#| fig-width: 3
-#| fig-height: 4
+#| eval: false
 
 plot(c(1, 2), c(1, 2), type = 'n', axes = FALSE, xlab = "", ylab = "")
 rasterImage(img, 1, 1, 2, 2)

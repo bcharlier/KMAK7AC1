@@ -88,7 +88,7 @@ library(ggplot2)
 
 theme_metropolis <- theme_minimal(base_size = 18) +
   theme(
-    plot.title = element_text(size = 20, face = "bold"),
+    plot.title = element_text(size = 16, face = "plain"),
     axis.title = element_text(size = 18),
     axis.text = element_text(size = 16),
     legend.title = element_text(size = 16),
