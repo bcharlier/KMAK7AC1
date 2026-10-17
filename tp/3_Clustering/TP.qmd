@@ -84,7 +84,7 @@ groupes_non_norm <- cutree(cah_non_norm, k = 3)
 ```
 
 
-3. Avec la fonction PCA du package FactoMineR, faire l’ACP non normée (sur matrice des variances-covariances) de X.
+3. Avec la fonction `PCA` du package `FactoMineR`, faire l’ACP non normée (sur matrice des variances-covariances) de $X$.
 
 ```{r}
 #| include: !expr params$correction
@@ -95,7 +95,6 @@ res_pca_non_norm <- PCA(X, scale.unit = FALSE, graph = FALSE)
 
 
 4. Représentez le nuage des 29 fromages dans le premier plan factoriel des individus et le nuage des 9 variables dans le premier plan factoriel des variables. Commentez.
-
 
 ::: {.columns}
 
@@ -207,18 +206,75 @@ fviz_dend(
 groupes_norm <- cutree(cah_norm, k = 4)
 ```
 
-3. Avec la fonction `PCA` du package `FactoMineR`, faire l’ACP normée (sur matrice des corrélations) de $X$. Interprétez la partition en 4 classes issues de la classification de Ward.
+3. Avec la fonction `PCA` du package `FactoMineR`, faire l’ACP normée (sur matrice des corrélations) de $X$. 
 
 ```{r}
+#| include: !expr params$correction
+
+library(FactoMineR)
+res_pca_norm <- PCA(X, scale.unit = TRUE, graph = FALSE)
+```
+
+
+::: {.columns}
+
+::: {.column}
+
+```{r}
+#| include: !expr params$correction
+#| echo: false
+#| fig-width: 6
+#| fig-height: 6
+library(factoextra)
+
+fviz_pca_var(res_pca_norm,
+            axes = c(1, 2),
+            col.var = "contrib",
+            gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+            repel = TRUE
+            ) +
+  theme_metropolis +
+  theme(legend.position = "bottom")
+```
+
+:::
+
+::: {.column}
+
+```{r}
+#| include: !expr params$correction
+#| echo: false
+#| fig-width: 6
+#| fig-height: 6
+
+fviz_pca_ind(res_pca_norm,
+            geom = c("point", "text"),
+            pointsize = "cos2",
+            col.ind = "contrib",
+            gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+            labelsize = 6,
+            repel = TRUE) +
+  scale_size_continuous(
+    limits = c(0, 1),
+    breaks = seq(0, 1, by = 0.5),
+    range = c(1, 10),
+    name = expression(cos^2)
+  ) + theme_metropolis +
+  theme(legend.position = "bottom")
+```
+
+:::
+
+:::
+
+4. Interprétez la partition en 4 classes issues de la classification de Ward.
+
+```{r}
+#| include: !expr params$correction
 #| fig-width: 8
 #| fig-height: 6
 #| out-width: "80%"
 
-# 3. ACP normée cohérente (sur la matrice Z déjà centrée-réduite, scale.unit = FALSE)
-library(FactoMineR)
-res_pca_norm <- PCA(X, scale.unit = TRUE, graph = FALSE)
-
-# 4. Interprétation de la partition en 4 classes sur l'ACP
 library(factoextra)
 fviz_pca_ind(res_pca_norm, habillage = as.factor(groupes_norm), 
              addEllipses = TRUE, palette = "jco") +
@@ -232,13 +288,13 @@ fviz_pca_ind(res_pca_norm, habillage = as.factor(groupes_norm),
 
 On souhaite analyser des données relatives à une enquête réalisée sur $810$ clients d'une banque, contenues dans le fichier `banque.csv`. On s'intéresse tout d'abord aux variables suivantes :
 
-- `crcon` : a des crédits à la consommation ? (`0` : non, `1` : $< 3000$ €, `3` : $> 3000$ €)
-- `crhab` : a des crédits immobiliers ? (`0` : non, `1` : oui)
-- `port` :  a un portefeuille de titres boursiers ? (`0` : non, `1` : $< 3000$, `2` : $> 3000$ et $< 15000$, `3` : $> 15000$)
-- `epliv` : possède un livret d'épargne ? (`0` : non, `1` : $< 3000$, `3` : $> 3000$)
-- `eplog` : possède un plan d'épargne logement ? (`0` : non, `1` : $< 3000$, `3` : $> 3000$)
-- `prfin` : prélèvements par un organisme financier (`0` : non, `1` : $< 150$, `2` : $> 150$)
-- `prtre` : prélèvements par le Trésor public (`0` : non, `1` : $< 150$, `2` : $> 150$)
+  - `crcon` : a des crédits à la consommation ? (`0` : non, `1` : $< 3000$ €, `3` : $> 3000$ €)
+  - `crhab` : a des crédits immobiliers ? (`0` : non, `1` : oui)
+  - `port` :  a un portefeuille de titres boursiers ? (`0` : non, `1` : $< 3000$, `2` : $> 3000$ et $< 15000$, `3` : $> 15000$)
+  - `epliv` : possède un livret d'épargne ? (`0` : non, `1` : $< 3000$, `3` : $> 3000$)
+  - `eplog` : possède un plan d'épargne logement ? (`0` : non, `1` : $< 3000$, `3` : $> 3000$)
+  - `prfin` : prélèvements par un organisme financier (`0` : non, `1` : $< 150$, `2` : $> 150$)
+  - `prtre` : prélèvements par le Trésor public (`0` : non, `1` : $< 150$, `2` : $> 150$)
 
 On charge les données
 
@@ -253,7 +309,9 @@ summary(donnees.actives)
 
 
 ```{r}
+#| include: !expr params$correction
 #| echo: false
+
 fname <- file.path(get_script_dir(), "data", "banque.csv")
 banque <- read.table(fname, header = TRUE, colClasses = "factor")
 donnees.actives <- banque[, c(10:13, 17:18, 21)]
@@ -266,8 +324,9 @@ summary(donnees.actives)
 ### Réduction de dimension
 
 1. Le tableau de Burt $\mathbf{B}$ associé à $Q$ variables qualitatives est une matrice symétrique de taille $\sum_{j=1}^Q K_j \times \sum_{j=1}^Q K_j$ (où $K_j$ est le nombre de modalités de la variable $j$). 
-- Les **blocs diagonaux** contiennent les tables de contingence de chaque variable avec elle-même (matrices diagonales dont les éléments sont les effectifs marginaux des modalités).
-- Les **blocs extra-diagonaux** contiennent les tables de contingence croisées entre paires de variables qualitatives.
+   
+   - Les **blocs diagonaux** contiennent les tables de contingence de chaque variable avec elle-même (matrices diagonales dont les éléments sont les effectifs marginaux des modalités).
+   - Les **blocs extra-diagonaux** contiennent les tables de contingence croisées entre paires de variables qualitatives.
 
 Calculer le avec la fonction `acm.burt` de la librairie `ade4`, retrouvez sa structure et
 relevez les 3 catégories à plus fort effectif, et les 3 catégories à plus faible effectif.
@@ -292,8 +351,8 @@ ggcorrplot(
   type = "full",
   lab = TRUE,
   legend.limit = NULL, # <-- Désactive les bornes par défaut [-1, 1] au profit des vraies valeurs
-  colors = c("#3B528B", "#FDE725", "#440154"),
-  title = "Tableau de Burt (Échelle adaptée aux effectifs)"
+  colors = c("#00AFBB", "#E7B800", "#FC4E07"),
+  title = "Tableau de Burt"
 ) +
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
@@ -332,7 +391,7 @@ library(FactoMineR)
 acm.b <- MCA(donnees.actives, graph = FALSE, ncp = 10)
 ```
   
-  b. Combien d'axes peut-on raisonnablement conserver ?
+   b. Combien d'axes peut-on raisonnablement conserver ?
 ```{r}
 #| out-width: "50%"
 #| include: !expr params$correction
@@ -438,9 +497,10 @@ Dans un premier temps, on identifie les modalités les plus contributives. Dans 
 Sur le premier plan factoriel, les modalités qui se distinguent par leur forte contribution sont : `eplog.3` (et `1`), `epliv.3` (et `1`), `crhab.1`, `crcon.1` (et `3`), `prtre.1` (et `2`), `prfin.1` et `2`, ainsi que `port.1`, `2` et `3`. Globalement, les modalités `.0` de toutes les variables (absence de produit bancaire) contribuent peu puisqu'elles constituent la classe majoritaire au centre du nuage. Parmi ces modalités contributives, les mieux représentées sont `eplog.3`, `epliv.3` (et `1`), `crcon.1`, `crhab.1`, `prtre.1`, `port.1` et `port.3`.
 
 En examinant les coordonnées des modalités sur les trois premiers axes, on relève les points les plus excentrés :
-- **Sur l'axe 1** : `epliv.3`, `eplog.3` et `port.3` s'opposent à `crcon.1`.
-- **Sur l'axe 2** : `prtre.1`, `prtre.2` et `eplog.3` portent l'essentiel de l'axe.
-- **Sur l'axe 3** : `prtre.2` s'oppose à `prfin.1`.
+
+- *Sur l'axe 1* : `epliv.3`, `eplog.3` et `port.3` s'opposent à `crcon.1`.
+- *Sur l'axe 2* : `prtre.1`, `prtre.2` et `eplog.3` portent l'essentiel de l'axe.
+- *Sur l'axe 3* : `prtre.2` s'oppose à `prfin.1`.
 
 Cette structure met en évidence une opposition nette entre les clients dépositaires d'une épargne importante, ceux ayant recours à de petits crédits à la consommation, et ceux cumulant des placements d'épargne avec des engagements financiers plus lourds (crédits immobiliers en particulier).
 :::
@@ -450,20 +510,26 @@ Cette structure met en évidence une opposition nette entre les clients déposit
 
 ```{r}
 #| echo: false
-#| fig-width: 12
-#| fig-height: 9
+#| include: !expr params$correction
 
 base_colors <- c("#0073C2", "#EFC000", "#868686", "#CD534C", "#7AA6DC", 
                  "#003C67", "#8F7700", "#3B3B3B", "#A73030", "#4A6984")
 
 
-# 2. Créer une fonction de palette dynamique qui s'adapte au nombre de groupes (ex: toutes les modalités)
+# Créer une fonction de palette dynamique qui s'adapte au nombre de groupes (ex: toutes les modalités)
 nb_modalites <- sum(sapply(donnees.actives, function(x) length(levels(as.factor(x)))))
 my_custom_palette <- colorRampPalette(base_colors)(nb_modalites)
+```
+
+```{r}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 9
+#| include: !expr params$correction
 
 fviz_ellipses(
   acm.b, 
-  habillage = 1:ncol(donnees.actives), # Indices ou noms des variables à illustrer (ex: c("eplog", "epliv"))
+  habillage = 1:ncol(donnees.actives),
   axes = c(1, 2), 
   ellipse.type = "norm",         # Type d'ellipse ("confidence", "convex", "t", "norm", "euclid")
   geom = "point",          
@@ -668,15 +734,14 @@ res.km <- kmeans(points_coord, centers = 4, nstart = 25)
 3. Comparer les deux methodes.
 
 ```{r}
+
 library(knitr)
 
 # Matrice de confusion comparant les partitions de la CAH et des K-means (k = 4)
 
 groupes.cah <- cutree(cah.ind, k = 4)
 table_comp <- table(CAH = groupes.cah, Kmeans = res.km$cluster)
-kable(
-  table_comp
-)
+kable(table_comp, row.names = TRUE)
 ```
 
 4. Vous pouvez tester la fonction `HCPC` sur les résultats de l'AFCM. Elle a pour avantage de mettre en œuvre une CAH puis des $k$-means de manière intégrée.
@@ -728,104 +793,112 @@ library(knitr)
 
 # Matrice de confusion comparant les partitions des K-means (k = 4) et HCPC
 
-kable(
-  table(HCPC = res.hcpc$data.clust$clust, Kmeans = res.km$cluster)
-)
+kable(table(HCPC = res.hcpc$data.clust$clust, Kmeans = res.km$cluster), row.names = TRUE)
 ```
 
 5. À partir du choix du nombre de clusters fait à la question précédente, la fonction met en œuvre la méthode des $k$-means. Les individus sont ainsi répartis dans ces nouveaux clusters dont on peut étudier les caractéristiques par les commandes suivantes :
 
    - Pour afficher la répartition des individus dans les clusters :
-```{r}
-#| eval: false
-table(res.hcpc$data.clust$clust)
-```
-```{r}
-#| echo: false
-#| include: !expr params$correction
 
-table(res.hcpc$data.clust$clust)
-```
+     ```{r}
+     #| eval: false
+     table(res.hcpc$data.clust$clust)
+     ```
+
+     ```{r}
+     #| echo: false
+     #| include: !expr params$correction
+
+     table(res.hcpc$data.clust$clust)
+     ```
 
    - Pour représenter les clusters sur les axes factoriels de l'ACM :
-```{r}
-#| eval: false
-fviz_cluster(res.hcpc, axes = c(1, 2))
-```
-```{r}
-#| include: !expr params$correction
-#| echo: false
-#| fig-width: 8
-#| fig-height: 6
-#| out-width: "80%"
 
+     ```{r}
+     #| eval: false
+     fviz_cluster(res.hcpc, axes = c(1, 2))
+     ```
 
-fviz_cluster(
-  res.hcpc,
-  axes = c(1, 2),
-  palette = "jco",
-  ellipse.type = "convex",
-  geom = "point",
-  pointsize = 1.5,
-  show.clust.cent = TRUE,
-  main = "Représentation des clusters HCPC"
-) + 
-  theme_metropolis +
-  theme(legend.position = "right")
-```
+     ```{r}
+     #| include: !expr params$correction
+     #| echo: false
+     #| fig-width: 8
+     #| fig-height: 6
+     #| out-width: "80%"
+
+     fviz_cluster(
+       res.hcpc,
+       axes = c(1, 2),
+       palette = "jco",
+       ellipse.type = "convex",
+       geom = "point",
+       pointsize = 1.5,
+       show.clust.cent = TRUE,
+       main = "Représentation des clusters HCPC"
+     ) +
+       theme_metropolis +
+       theme(legend.position = "right")
+     ```
+
 <!--
    - Pour tester la relation entre les variables initiales et le partitionnement proposé :
 
-```{r}
-#| eval: false
+     ```{r}
+     #| eval: false
 
-res.hcpc$desc.var$test.chi2
-```
-```{r}
-#| include: !expr params$correction
-#| echo: false
-res.hcpc$desc.var$test.chi2
-```
+     res.hcpc$desc.var$test.chi2
+     ```
+
+     ```{r}
+     #| include: !expr params$correction
+     #| echo: false
+
+     res.hcpc$desc.var$test.chi2
+     ```
 
    - Pour décrire chaque cluster par les modalités les plus corrélées avec la classe :
-```{r}
-#| eval: false
 
-res.hcpc$desc.var$category
-```
+     ```{r}
+     #| eval: false
 
-```{r}
-#| include: !expr params$correction
-#| echo: false
-res.hcpc$desc.var$category
-``` 
+     res.hcpc$desc.var$category
+     ```
+
+     ```{r}
+     #| include: !expr params$correction
+     #| echo: false
+
+     res.hcpc$desc.var$category
+     ```
 -->
+
    - Pour afficher les « parangons », points les plus représentatifs de chaque cluster (centres de gravité locaux) :
-```{r}
-#| eval: false
 
-res.hcpc$desc.ind$para
-```
-```{r}
-#| include: !expr params$correction
-#| echo: false
+     ```{r}
+     #| eval: false
+     res.hcpc$desc.ind$para
+     ```
 
-res.hcpc$desc.ind$para
-```
+     ```{r}
+     #| include: !expr params$correction
+     #| echo: false
 
-   - Pour afficher les 5 points les plus extrêmes (les plus éloignés du centre) de chaque cluster : 
-```{r}
-#| eval: false
+     res.hcpc$desc.ind$para
+     ```
 
-res.hcpc$desc.ind$dist
-```
+   - Pour afficher les points les plus extrêmes (les plus éloignés du centre) de chaque cluster :
 
-```{r}
-#| include: !expr params$correction
-#| echo: false
+     ```{r}
+     #| eval: false
+     res.hcpc$desc.ind$dist
+     ```
 
-res.hcpc$desc.ind$dist
-```
+     ```{r}
+     #| include: !expr params$correction
+     #| echo: false
+
+     res.hcpc$desc.ind$dist
+     ```
 
 
 
