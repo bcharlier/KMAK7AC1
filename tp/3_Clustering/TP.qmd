@@ -22,7 +22,7 @@ params:
 source("../../R/functions.R")
 ```
 
-## Exercice 1. Faut-t-il centrer-réduire les données avant de faire la classification ?
+## Exercice. Faut-t-il centrer-réduire les données avant de faire la classification ?
 
 On utilise le jeu de données [`fromages.txt`](data/fromage.txt) » où 29 fromages sont décrits par 9 variables continues.
 
@@ -226,7 +226,7 @@ fviz_pca_ind(res_pca_norm, habillage = as.factor(groupes_norm),
 ```
 
 
-## Exercice 1 : Segmentation de données qualitatives
+## Exercice. Clustering de données qualitatives.
 
 ### Problématique
 
@@ -830,7 +830,7 @@ res.hcpc$desc.ind$dist
 
 
 
-## Exercice 2. $K$-means et quantification des couleurs
+## Exercice. $K$-means et quantification des couleurs.
 
 ```{r}
 #| include: false
