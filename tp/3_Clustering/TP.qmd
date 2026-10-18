@@ -37,7 +37,7 @@ X <- read.table("https://bcharlier.github.io/KMAK7AC1/tp/3_Clustering/data/froma
 
 fname <- file.path(get_script_dir(), "data", "fromage.txt")
 X <- read.table(fname, sep="	", header=TRUE, row.names=1)
-print_table(X, scroll=10, max.col.width="5em")
+print_table(X, scroll=10, max.col.width="5em", vertical.headers = TRUE)
 ```
 
 ### Sans normalisation
@@ -47,127 +47,133 @@ Dans cet partie, il s’agit de faire une classification hiérarchique de Ward a
 
 1. Avec la fonction `var()` de R, calculer les variances des 9 variables. Que pouvez-vous en conclure ?
 
-```{r}
-#| include: !expr params$correction
+   ::: {.correction}
+   ```{r}
 
-vars <- apply(X, 2, var)
-print(vars)
-```
+   vars <- apply(X, 2, var)
+   print(vars)
+   ```
+   :::
 
-::: {.content-visible when-meta="params.correction"}
-De très fortes disparités existent entre les variances des variables (les variables `calories`, `sodium` et `calcium` dominent largement). Sans centrer-réduire, ces variables pèseront de manière excessive dans le calcul de la distance euclidienne.
-:::
+   ::: {.correction}
+   De très fortes disparités existent entre les variances des variables (les variables `calories`, `sodium` et `calcium` dominent largement). Sans centrer-réduire, ces variables pèseront de manière excessive dans le calcul de la distance euclidienne.
+   :::
 
 
 2. Faire la classification hiérarchique de Ward avec la distance Euclidienne simple. Regarder le dendrogramme et la partition en 3 classes.
 
-```{r}
-#| include: !expr params$correction
-#| fig-width: 8
-#| fig-height: 6
-#| out-width: "80%"
+   ::: {.correction}
+   ```{r}
+   #| fig-width: 8
+   #| fig-height: 6
+   #| out-width: "80%"
 
 
-d_eucl <- dist(X)
-cah_non_norm <- hclust(d_eucl, method = "ward.D2")
+   d_eucl <- dist(X)
+   cah_non_norm <- hclust(d_eucl, method = "ward.D2")
 
-# Dendrogramme avec les 3 classes
-library(factoextra)
-fviz_dend(
-  cah_non_norm,
-  k = 3, palette = "jco",
-  main = "Dendrogramme (données brutes)"
-) + theme_metropolis
+   # Dendrogramme avec les 3 classes
+   library(factoextra)
+   fviz_dend(
+     cah_non_norm,
+     k = 3, palette = "jco",
+     main = "Dendrogramme (données brutes)"
+   ) + theme_metropolis
 
-# Coupure en 3 classes
-groupes_non_norm <- cutree(cah_non_norm, k = 3)
-```
+   # Coupure en 3 classes
+   groupes_non_norm <- cutree(cah_non_norm, k = 3)
+   ```
+   :::
 
 
 3. Avec la fonction `PCA` du package `FactoMineR`, faire l’ACP non normée (sur matrice des variances-covariances) de $X$.
 
-```{r}
-#| include: !expr params$correction
+   ::: {.correction}
+   ```{r}
 
-library(FactoMineR)
-res_pca_non_norm <- PCA(X, scale.unit = FALSE, graph = FALSE)
-```
+   library(FactoMineR)
+   res_pca_non_norm <- PCA(X, scale.unit = FALSE, graph = FALSE)
+   ```
+   :::
 
 
 4. Représentez le nuage des 29 fromages dans le premier plan factoriel des individus et le nuage des 9 variables dans le premier plan factoriel des variables. Commentez.
 
-::: {.columns}
+   ::: {.columns}
 
-::: {.column}
+   ::: {.column}
 
-```{r}
-#| include: !expr params$correction
-#| echo: false
-#| fig-width: 6
-#| fig-height: 6
-library(factoextra)
+   ::: {.correction}
+   ```{r}
+   #| echo: false
+   #| fig-width: 6
+   #| fig-height: 6
+   library(factoextra)
 
-fviz_pca_var(res_pca_non_norm,
-            axes = c(1, 2),
-            col.var = "contrib",
-            gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-            repel = TRUE
-            ) +
-  theme_metropolis +
-  theme(legend.position = "bottom")
-```
+   fviz_pca_var(res_pca_non_norm,
+               axes = c(1, 2),
+               col.var = "contrib",
+               gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+               repel = TRUE
+               ) +
+     theme_metropolis +
+     theme(legend.position = "bottom")
+   ```
+   :::
 
-:::
+   :::
 
-::: {.column}
+   ::: {.column}
 
-```{r}
-#| include: !expr params$correction
-#| echo: false
-#| fig-width: 6
-#| fig-height: 6
+   ::: {.correction}
+   ```{r}
+   #| echo: false
+   #| fig-width: 6
+   #| fig-height: 6
 
-fviz_pca_ind(res_pca_non_norm,
-            geom = c("point", "text"),
-            pointsize = "cos2",
-            col.ind = "contrib",
-            gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-            labelsize = 6,
-            repel = TRUE) +
-  scale_size_continuous(
-    limits = c(0, 1),
-    breaks = seq(0, 1, by = 0.5),
-    range = c(1, 10),
-    name = expression(cos^2)
-  ) + theme_metropolis +
-  theme(legend.position = "bottom")
-```
+   fviz_pca_ind(res_pca_non_norm,
+               geom = c("point", "text"),
+               pointsize = "cos2",
+               col.ind = "contrib",
+               gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+               labelsize = 6,
+               repel = TRUE) +
+     scale_size_continuous(
+       limits = c(0, 1),
+       breaks = seq(0, 1, by = 0.5),
+       range = c(1, 10),
+       name = expression(cos^2)
+     ) + theme_metropolis +
+     theme(legend.position = "bottom")
+   ```
+   :::
 
-:::
+   :::
 
-:::
+   :::
 
 
 
 5. Interprétez à l’aide de ces graphiques les classes de la partition en trois classes obtenue avec la méthode de Ward. En déduire pourquoi il peut-être utile ici de centrer-réduire les données avant de faire la classification.
 
-```{r}
-#| include: !expr params$correction
-#| echo: false
-#| fig-width: 8
-#| fig-height: 6
-#| out-width: "80%"
- 
-fviz_pca_ind(res_pca_non_norm, habillage = as.factor(groupes_non_norm), 
-             addEllipses = TRUE, palette = "jco") +
-  ggplot2::labs(title = "Partition en 3 classes (données brutes) sur l'ACP non normée") + theme_metropolis
+   ::: {.correction}
+   ```{r}
+   #| echo: false
+   #| fig-width: 8
+   #| fig-height: 6
+   #| out-width: "80%"
 
-```
+   fviz_pca_ind(res_pca_non_norm, habillage = as.factor(groupes_non_norm), 
+                addEllipses = TRUE, palette = "jco") +
+     ggplot2::labs(title = "Partition en 3 classes (données brutes) sur l'ACP non normée") + theme_metropolis
 
-::: {.content-visible when-meta="params.correction"}
+   ```
+   :::
 
-Sans centrer-réduire, la classification et le premier axe factoriel de l'ACP sont dictés quasi exclusivement par les variables ayant la plus grande variance. Les classes obtenues séparent les fromages principalement selon ces dimensions dominantes, masquant les autres caractéristiques nutritionnelles. Il est donc indispensable de centrer-réduire pour donner le même poids (variance égale à 1) à toutes les variables.
-:::
+   ::: {.correction}
+
+   Sans centrer-réduire, la classification et le premier axe factoriel de l'ACP sont dictés quasi exclusivement par les variables ayant la plus grande variance. Les classes obtenues séparent les fromages principalement selon ces dimensions dominantes, masquant les autres caractéristiques nutritionnelles. Il est donc indispensable de centrer-réduire pour donner le même poids (variance égale à 1) à toutes les variables.
+   :::
 
 ### Avec normalisation
 
@@ -175,111 +181,117 @@ Il s'agit de faire une classification hiérarchique de Ward avec la distance Euc
 
 1. Créer la matrice $Z$ des données centrées-réduites avec la fonction `scale()` (en utilisant la variance empirique « population » i.e. non corrigée).
 
-```{r}
-#| include: !expr params$correction
-n <- nrow(X)
-moy <- apply(X, 2, mean)
-ecartype <- apply(X, 2, sd) * sqrt((n-1)/n) # écart-type biaisé (diviseur n)
+   ::: {.correction}
+   ```{r}
+   n <- nrow(X)
+   moy <- apply(X, 2, mean)
+   ecartype <- apply(X, 2, sd) * sqrt((n-1)/n) # écart-type biaisé (diviseur n)
 
-Z <- scale(X, center = moy, scale = ecartype)
-```
+   Z <- scale(X, center = moy, scale = ecartype)
+   ```
+   :::
 
 2. Faire la classification hiérarchique de Ward avec la distance Euclidienne normalisée par l’inverse de la variance et visualisez le dendrogramme.
 
-```{r}
-#| include: !expr params$correction
-#| fig-width: 8
-#| fig-height: 6
-#| out-width: "80%"
+   ::: {.correction}
+   ```{r}
+   #| fig-width: 8
+   #| fig-height: 6
+   #| out-width: "80%"
 
-d_norm <- dist(Z)
-cah_norm <- hclust(d_norm, method = "ward.D2")
+   d_norm <- dist(Z)
+   cah_norm <- hclust(d_norm, method = "ward.D2")
 
-# Dendrogramme avec les 4 classes
-fviz_dend(
-  cah_norm,
-  palette = "jco",
-  k = 4,
-  main = "Dendrogramme (données centrées-réduites - var pop)"
-) + theme_metropolis
+   # Dendrogramme avec les 4 classes
+   fviz_dend(
+     cah_norm,
+     palette = "jco",
+     k = 4,
+     main = "Dendrogramme (données centrées-réduites - var pop)"
+   ) + theme_metropolis
 
-groupes_norm <- cutree(cah_norm, k = 4)
-```
+   groupes_norm <- cutree(cah_norm, k = 4)
+   ```
+   :::
 
 3. Avec la fonction `PCA` du package `FactoMineR`, faire l’ACP normée (sur matrice des corrélations) de $X$. 
 
-```{r}
-#| include: !expr params$correction
+   ::: {.correction}
+   ```{r}
 
-library(FactoMineR)
-res_pca_norm <- PCA(X, scale.unit = TRUE, graph = FALSE)
-```
+   library(FactoMineR)
+   res_pca_norm <- PCA(X, scale.unit = TRUE, graph = FALSE)
+   ```
+   :::
 
 
-::: {.columns}
+   ::: {.columns}
 
-::: {.column}
+   ::: {.column}
 
-```{r}
-#| include: !expr params$correction
-#| echo: false
-#| fig-width: 6
-#| fig-height: 6
-library(factoextra)
+   ::: {.correction}
+   ```{r}
+   #| echo: false
+   #| fig-width: 6
+   #| fig-height: 6
+   library(factoextra)
 
-fviz_pca_var(res_pca_norm,
-            axes = c(1, 2),
-            col.var = "contrib",
-            gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-            repel = TRUE
-            ) +
-  theme_metropolis +
-  theme(legend.position = "bottom")
-```
+   fviz_pca_var(res_pca_norm,
+               axes = c(1, 2),
+               col.var = "contrib",
+               gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+               repel = TRUE
+               ) +
+     theme_metropolis +
+     theme(legend.position = "bottom")
+   ```
+   :::
 
-:::
+   :::
 
-::: {.column}
+   ::: {.column}
 
-```{r}
-#| include: !expr params$correction
-#| echo: false
-#| fig-width: 6
-#| fig-height: 6
+   ::: {.correction}
+   ```{r}
+   #| echo: false
+   #| fig-width: 6
+   #| fig-height: 6
 
-fviz_pca_ind(res_pca_norm,
-            geom = c("point", "text"),
-            pointsize = "cos2",
-            col.ind = "contrib",
-            gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-            labelsize = 6,
-            repel = TRUE) +
-  scale_size_continuous(
-    limits = c(0, 1),
-    breaks = seq(0, 1, by = 0.5),
-    range = c(1, 10),
-    name = expression(cos^2)
-  ) + theme_metropolis +
-  theme(legend.position = "bottom")
-```
+   fviz_pca_ind(res_pca_norm,
+               geom = c("point", "text"),
+               pointsize = "cos2",
+               col.ind = "contrib",
+               gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+               labelsize = 6,
+               repel = TRUE) +
+     scale_size_continuous(
+       limits = c(0, 1),
+       breaks = seq(0, 1, by = 0.5),
+       range = c(1, 10),
+       name = expression(cos^2)
+     ) + theme_metropolis +
+     theme(legend.position = "bottom")
+   ```
+   :::
 
-:::
+   :::
 
-:::
+   :::
 
 4. Interprétez la partition en 4 classes issues de la classification de Ward.
 
-```{r}
-#| include: !expr params$correction
-#| fig-width: 8
-#| fig-height: 6
-#| out-width: "80%"
+   ::: {.correction}
+   ```{r}
+   #| fig-width: 8
+   #| fig-height: 6
+   #| out-width: "80%"
 
-library(factoextra)
-fviz_pca_ind(res_pca_norm, habillage = as.factor(groupes_norm), 
-             addEllipses = TRUE, palette = "jco") +
-  ggplot2::labs(title = "Partition en 3 classes (données brutes) sur l'ACP non normée") + theme_metropolis
-```
+   library(factoextra)
+   fviz_pca_ind(res_pca_norm, habillage = as.factor(groupes_norm), 
+                addEllipses = TRUE, palette = "jco") +
+     ggplot2::labs(title = "Partition en 3 classes (données brutes) sur l'ACP non normée") + theme_metropolis
+   ```
+   :::
 
 
 ## Exercice. Clustering de données qualitatives.
@@ -308,8 +320,8 @@ summary(donnees.actives)
 ```
 
 
+::: {.correction}
 ```{r}
-#| include: !expr params$correction
 #| echo: false
 
 fname <- file.path(get_script_dir(), "data", "banque.csv")
@@ -318,6 +330,7 @@ donnees.actives <- banque[, c(10:13, 17:18, 21)]
 
 summary(donnees.actives)
 ```
+:::
 
 
 
@@ -328,215 +341,224 @@ summary(donnees.actives)
    - Les **blocs diagonaux** contiennent les tables de contingence de chaque variable avec elle-même (matrices diagonales dont les éléments sont les effectifs marginaux des modalités).
    - Les **blocs extra-diagonaux** contiennent les tables de contingence croisées entre paires de variables qualitatives.
 
-Calculer le avec la fonction `acm.burt` de la librairie `ade4`, retrouvez sa structure et
-relevez les 3 catégories à plus fort effectif, et les 3 catégories à plus faible effectif.
+   Calculer le avec la fonction `acm.burt` de la librairie `ade4`, retrouvez sa structure et
+   relevez les 3 catégories à plus fort effectif, et les 3 catégories à plus faible effectif.
 
-```{r}
-#| include: !expr params$correction
+   ::: {.correction}
+   ```{r}
 
-library(ade4)
-library(ggcorrplot)
-tb <- as.matrix(acm.burt(donnees.actives, donnees.actives))
-```
+   library(ade4)
+   library(ggcorrplot)
+   tb <- as.matrix(acm.burt(donnees.actives, donnees.actives))
+   ```
+   :::
 
-```{r}
-#| echo: false
-#| fig-width: 7
-#| fig-height: 7
+   ```{r}
+   #| echo: false
+   #| fig-width: 7
+   #| fig-height: 7
+   #| out-width: "60%"
 
-ggcorrplot(
-  tb,
-  method = "square",
-  hc.order = FALSE,
-  type = "full",
-  lab = TRUE,
-  legend.limit = NULL, # <-- Désactive les bornes par défaut [-1, 1] au profit des vraies valeurs
-  colors = c("#00AFBB", "#E7B800", "#FC4E07"),
-  title = "Tableau de Burt"
-) +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
-    axis.text.y = element_text(size = 6),
-    plot.title = element_text(face = "bold", hjust = 0.5)
-  )
-```
+   ggcorrplot(
+     tb,
+     method = "square",
+     hc.order = FALSE,
+     type = "full",
+     lab = TRUE,
+     legend.limit = NULL, # <-- Désactive les bornes par défaut [-1, 1] au profit des vraies valeurs
+     colors = c("#00AFBB", "#E7B800", "#FC4E07"),
+     title = "Tableau de Burt"
+   ) +
+     theme(
+       axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
+       axis.text.y = element_text(size = 6),
+       plot.title = element_text(face = "bold", hjust = 0.5)
+     )
+   ```
 
 
-```{r}
-#| include: !expr params$correction
+   ::: {.correction}
+   ```{r}
 
-effectifs_modalites <- diag(tb)
-# Les 3 catégories à plus fort effectif
-head(sort(effectifs_modalites, decreasing = TRUE), 3)
+   effectifs_modalites <- diag(tb)
+   # Les 3 catégories à plus fort effectif
+   head(sort(effectifs_modalites, decreasing = TRUE), 3)
 
-# Les 3 catégories à plus faible effectif
-head(sort(effectifs_modalites, decreasing = FALSE), 3)
-```
+   # Les 3 catégories à plus faible effectif
+   head(sort(effectifs_modalites, decreasing = FALSE), 3)
+   ```
+   :::
 
-::: {.content-visible when-meta="params.correction"}
+   ::: {.correction}
 
-À partir de ce tableau de Burt, on peut détecter dans un premier temps la tendance principale de l'échantillon : les clients n'ayant aucun produit bancaire. Cela est visible par exemple sur la ligne `eplog.0` : 702 clients (sur 810) n'ont pas d'épargne logement et, parmi ceux-là, 576 n'ont pas non plus de livret d'épargne, 634 n'ont pas de crédit immobilier, etc. Ce groupe d'individus "sans produit bancaire" constitue la majeure partie de l'échantillon et se situera au centre du nuage projeté des modalités.
+   À partir de ce tableau de Burt, on peut détecter dans un premier temps la tendance principale de l'échantillon : les clients n'ayant aucun produit bancaire. Cela est visible par exemple sur la ligne `eplog.0` : 702 clients (sur 810) n'ont pas d'épargne logement et, parmi ceux-là, 576 n'ont pas non plus de livret d'épargne, 634 n'ont pas de crédit immobilier, etc. Ce groupe d'individus "sans produit bancaire" constitue la majeure partie de l'échantillon et se situera au centre du nuage projeté des modalités.
 
-Par opposition, on peut repérer les catégories ayant les plus faibles effectifs (`prtre.2`, `eplog.1` et `epliv.2`), qui peuvent se démarquer dans l'analyse en raison de cette rareté. On veillera, dans la suite des analyses, à ce que ces modalités ne soient pas trop prédominantes dans les résultats de l'ACM et ne masquent pas d'autres phénomènes.
-:::
+   Par opposition, on peut repérer les catégories ayant les plus faibles effectifs (`prtre.2`, `eplog.1` et `epliv.2`), qui peuvent se démarquer dans l'analyse en raison de cette rareté. On veillera, dans la suite des analyses, à ce que ces modalités ne soient pas trop prédominantes dans les résultats de l'ACM et ne masquent pas d'autres phénomènes.
+   :::
 
 
 2. On procède à une Analyse des Correspondances Multiples (ACM) :
 
    a. Utilisez la fonction `MCA` de `FactoMineR` sur le tableau `donnees.actives`.
-```{r}
-#| include: !expr params$correction
 
-library(FactoMineR)
-acm.b <- MCA(donnees.actives, graph = FALSE, ncp = 10)
-```
-  
+      ::: {.correction}
+      ```{r}
+
+      library(FactoMineR)
+      acm.b <- MCA(donnees.actives, graph = FALSE, ncp = 10)
+      ```
+      :::
+
    b. Combien d'axes peut-on raisonnablement conserver ?
-```{r}
-#| out-width: "50%"
-#| include: !expr params$correction
 
-library(factoextra)
-fviz_eig(acm.b, geom = "bar", choice = "eigenvalue", ncp = 15) + theme_metropolis 
-```
+      ::: {.correction}
+      ```{r}
+      #| out-width: "50%"
 
-::: {.content-visible when-meta="params.correction"}
-Selon la règle de Kaiser, on retient en ACM les valeurs propres supérieures à $1/p = 1/7 \approx 0.142$, soit 5 axes. En complément, on peut également visualiser l'éboulis des valeurs propres et on observe un coude après la deuxième valeur propre ou après la troisième valeur propre. On peut donc retenir 3 axes en vérifiant que chacun (et en particulier l'axe 3) apporte une interprétation intéressante. Pour rappel, en ACM, le pourcentage d'inertie projetée ne doit pas être utilisé naïvement, puisque la somme des valeurs propres n'a pas la même signification qu'en ACP ou en AFC.
-:::
+      library(factoextra)
+      fviz_eig(acm.b, geom = "bar", choice = "eigenvalue", ncp = 15) + theme_metropolis 
+      ```
+      :::
+
+      ::: {.correction}
+      Selon la règle de Kaiser, on retient en ACM les valeurs propres supérieures à $1/p = 1/7 \approx 0.142$, soit 5 axes. En complément, on peut également visualiser l'éboulis des valeurs propres et on observe un coude après la deuxième valeur propre ou après la troisième valeur propre. On peut donc retenir 3 axes en vérifiant que chacun (et en particulier l'axe 3) apporte une interprétation intéressante. Pour rappel, en ACM, le pourcentage d'inertie projetée ne doit pas être utilisé naïvement, puisque la somme des valeurs propres n'a pas la même signification qu'en ACP ou en AFC.
+      :::
 
    c. Quelles sont les catégories qui déterminent ces axes factoriels ? Que peut-on dire de la qualité de représentation de ces catégories sur les axes ?
 
-::: {.columns}
+      ::: {.columns}
 
-::: {.column}
-```{r}
-#| echo: false
+      ::: {.column}
+      ```{r}
+      #| echo: false
 
-# Contributions des modalités aux axes 1 et 2
-fviz_contrib(acm.b, choice = "var", axes = 1:2, top = 15) + theme_metropolis  +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1))
-```
-:::
+      # Contributions des modalités aux axes 1 et 2
+      fviz_contrib(acm.b, choice = "var", axes = 1:2, top = 15) + theme_metropolis  +
+        theme(
+          axis.text.x = element_text(angle = 45, hjust = 1))
+      ```
+      :::
 
-::: {.column}
-```{r}
-#| echo: false
+      ::: {.column}
+      ```{r}
+      #| echo: false
 
-# Qualité de représentation (cos2) des modalités
-fviz_cos2(acm.b, choice = "var", axes = 1:2, top = 15) + theme_metropolis  +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1))
-```
-:::
+      # Qualité de représentation (cos2) des modalités
+      fviz_cos2(acm.b, choice = "var", axes = 1:2, top = 15) + theme_metropolis  +
+        theme(
+          axis.text.x = element_text(angle = 45, hjust = 1))
+      ```
+      :::
 
-:::
-
-
-
-::: {.columns}
-
-::: {.column}
-
-```{r}
-#| echo: false
-#| fig-width: 6
-#| fig-height: 6
-
-fviz_mca_var(acm.b,
-            axes = c(1, 2),
-            pointsize = "cos2",
-            col.var = "contrib",
-            gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-            labelsize = 6,
-            repel = TRUE) +
-  scale_size_continuous(
-    limits = c(0, 1),
-    breaks = seq(0, 1, by = 0.5),
-    range = c(1, 10),
-    name = expression(cos^2)
-  ) + theme_metropolis +
-  theme(legend.position = "bottom")
-```
+      :::
 
 
-:::
 
-::: {.column}
+      ::: {.columns}
 
-```{r}
-#| echo: false
-#| fig-width: 6
-#| fig-height: 6
+      ::: {.column}
 
-fviz_mca_ind(acm.b,
-            axes = c(1, 2),
-            geom = "point",
-            pointsize = "cos2",
-            col.ind = "contrib",
-            gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-            repel = TRUE) +
-  scale_size_continuous(
-    limits = c(0, 1),
-    breaks = seq(0, 1, by = 0.5),
-    range = c(1, 10),
-    name = expression(cos^2)
-  ) + theme_metropolis +
-  theme(legend.position = "bottom")
-```
+      ```{r}
+      #| echo: false
+      #| fig-width: 6
+      #| fig-height: 6
 
-
-:::
-
-:::
+      fviz_mca_var(acm.b,
+                  axes = c(1, 2),
+                  pointsize = "cos2",
+                  col.var = "contrib",
+                  gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+                  labelsize = 6,
+                  repel = TRUE) +
+        scale_size_continuous(
+          limits = c(0, 1),
+          breaks = seq(0, 1, by = 0.5),
+          range = c(1, 10),
+          name = expression(cos^2)
+        ) + theme_metropolis +
+        theme(legend.position = "bottom")
+      ```
 
 
-::: {.content-visible when-meta="params.correction"}
-Dans un premier temps, on identifie les modalités les plus contributives. Dans un deuxième temps, on vérifie lesquelles de ces modalités sont le mieux représentées (grâce à un $cos^2$ élevé).
+      :::
 
-Sur le premier plan factoriel, les modalités qui se distinguent par leur forte contribution sont : `eplog.3` (et `1`), `epliv.3` (et `1`), `crhab.1`, `crcon.1` (et `3`), `prtre.1` (et `2`), `prfin.1` et `2`, ainsi que `port.1`, `2` et `3`. Globalement, les modalités `.0` de toutes les variables (absence de produit bancaire) contribuent peu puisqu'elles constituent la classe majoritaire au centre du nuage. Parmi ces modalités contributives, les mieux représentées sont `eplog.3`, `epliv.3` (et `1`), `crcon.1`, `crhab.1`, `prtre.1`, `port.1` et `port.3`.
+      ::: {.column}
 
-En examinant les coordonnées des modalités sur les trois premiers axes, on relève les points les plus excentrés :
+      ```{r}
+      #| echo: false
+      #| fig-width: 6
+      #| fig-height: 6
 
-- *Sur l'axe 1* : `epliv.3`, `eplog.3` et `port.3` s'opposent à `crcon.1`.
-- *Sur l'axe 2* : `prtre.1`, `prtre.2` et `eplog.3` portent l'essentiel de l'axe.
-- *Sur l'axe 3* : `prtre.2` s'oppose à `prfin.1`.
+      fviz_mca_ind(acm.b,
+                  axes = c(1, 2),
+                  geom = "point",
+                  pointsize = "cos2",
+                  col.ind = "contrib",
+                  gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+                  repel = TRUE) +
+        scale_size_continuous(
+          limits = c(0, 1),
+          breaks = seq(0, 1, by = 0.5),
+          range = c(1, 10),
+          name = expression(cos^2)
+        ) + theme_metropolis +
+        theme(legend.position = "bottom")
+      ```
 
-Cette structure met en évidence une opposition nette entre les clients dépositaires d'une épargne importante, ceux ayant recours à de petits crédits à la consommation, et ceux cumulant des placements d'épargne avec des engagements financiers plus lourds (crédits immobiliers en particulier).
-:::
+
+      :::
+
+      :::
+
+
+      ::: {.correction}
+      Dans un premier temps, on identifie les modalités les plus contributives. Dans un deuxième temps, on vérifie lesquelles de ces modalités sont le mieux représentées (grâce à un $cos^2$ élevé).
+
+      Sur le premier plan factoriel, les modalités qui se distinguent par leur forte contribution sont : `eplog.3` (et `1`), `epliv.3` (et `1`), `crhab.1`, `crcon.1` (et `3`), `prtre.1` (et `2`), `prfin.1` et `2`, ainsi que `port.1`, `2` et `3`. Globalement, les modalités `.0` de toutes les variables (absence de produit bancaire) contribuent peu puisqu'elles constituent la classe majoritaire au centre du nuage. Parmi ces modalités contributives, les mieux représentées sont `eplog.3`, `epliv.3` (et `1`), `crcon.1`, `crhab.1`, `prtre.1`, `port.1` et `port.3`.
+
+      En examinant les coordonnées des modalités sur les trois premiers axes, on relève les points les plus excentrés :
+
+      - *Sur l'axe 1* : `epliv.3`, `eplog.3` et `port.3` s'opposent à `crcon.1`.
+      - *Sur l'axe 2* : `prtre.1`, `prtre.2` et `eplog.3` portent l'essentiel de l'axe.
+      - *Sur l'axe 3* : `prtre.2` s'oppose à `prfin.1`.
+
+      Cette structure met en évidence une opposition nette entre les clients dépositaires d'une épargne importante, ceux ayant recours à de petits crédits à la consommation, et ceux cumulant des placements d'épargne avec des engagements financiers plus lourds (crédits immobiliers en particulier).
+      :::
 
 
    d. Lisez la documentation de `factoextra::fviz_ellipses` et représentez le nuage d'individus en y ajoutant les ellipses `norm` :
 
-```{r}
-#| echo: false
-#| include: !expr params$correction
+      ::: {.correction}
+      ```{r}
+      #| echo: false
 
-base_colors <- c("#0073C2", "#EFC000", "#868686", "#CD534C", "#7AA6DC", 
-                 "#003C67", "#8F7700", "#3B3B3B", "#A73030", "#4A6984")
+      base_colors <- c("#0073C2", "#EFC000", "#868686", "#CD534C", "#7AA6DC", 
+                       "#003C67", "#8F7700", "#3B3B3B", "#A73030", "#4A6984")
 
 
-# Créer une fonction de palette dynamique qui s'adapte au nombre de groupes (ex: toutes les modalités)
-nb_modalites <- sum(sapply(donnees.actives, function(x) length(levels(as.factor(x)))))
-my_custom_palette <- colorRampPalette(base_colors)(nb_modalites)
-```
+      # Créer une fonction de palette dynamique qui s'adapte au nombre de groupes (ex: toutes les modalités)
+      nb_modalites <- sum(sapply(donnees.actives, function(x) length(levels(as.factor(x)))))
+      my_custom_palette <- colorRampPalette(base_colors)(nb_modalites)
+      ```
+      :::
 
-```{r}
-#| echo: false
-#| fig-width: 12
-#| fig-height: 9
-#| include: !expr params$correction
+      ::: {.correction}
+      ```{r}
+      #| echo: false
+      #| fig-width: 12
+      #| fig-height: 9
 
-fviz_ellipses(
-  acm.b, 
-  habillage = 1:ncol(donnees.actives),
-  axes = c(1, 2), 
-  ellipse.type = "norm",         # Type d'ellipse ("confidence", "convex", "t", "norm", "euclid")
-  geom = "point",          
-palette = my_custom_palette
-) +  theme_metropolis +
-  theme(legend.position ="none")
-```
+      fviz_ellipses(
+        acm.b, 
+        habillage = 1:ncol(donnees.actives),
+        axes = c(1, 2), 
+        ellipse.type = "norm",         # Type d'ellipse ("confidence", "convex", "t", "norm", "euclid")
+        geom = "point",          
+      palette = my_custom_palette
+      ) +  theme_metropolis +
+        theme(legend.position ="none")
+      ```
+      :::
 
 3. On cherche à préciser les caractéristiques des axes en termes de type de client. On s'intéresse donc aux variables supplémentaires suivantes :
    - `csp` : `agric` (agriculteur), `artis` (artisan), `cadsu` (cadre supérieur), `emplo` (employé), `etudi` (étudiant), `inact` (inactif), `inter` (profession intermédiaire), `ouvri` (ouvrier), `retra` (retraité) ;
@@ -550,55 +572,62 @@ palette = my_custom_palette
 
    a. Quelles sont les catégories supplémentaires les plus pertinentes ? *Indication: utiliser le coefficient $\eta^2$.*
 
-```{r}
-#| include: !expr params$correction
+      ::: {.correction}
+      ```{r}
 
-# Ajoute les variables supplémentaires
-donnees=banque[,c(1:7,10:13,17:18,21)]
-acm.b.sup <- MCA(donnees, quali.sup=1:7, ncp = 10)
+      # Ajoute les variables supplémentaires
+      donnees=banque[,c(1:7,10:13,17:18,21)]
+      acm.b.sup <- MCA(donnees, quali.sup=1:7, ncp = 10)
 
-# Extraction des valeurs de p-value ou du eta2 via FactoMineR pour justifier la sélection
-sort(rowSums(acm.b.sup$quali.sup$eta2[,1:2]), decreasing = TRUE)
-```
+      # Extraction des valeurs de p-value ou du eta2 via FactoMineR pour justifier la sélection
+      sort(rowSums(acm.b.sup$quali.sup$eta2[,1:2]), decreasing = TRUE)
+      ```
+      :::
 
-::: {.content-visible when-meta="params.correction"}
-Le coefficient $\eta^2$ (rapport de corrélation) permet d'évaluer la force de liaison entre un axe factoriel et une variable qualitative supplémentaire. Les variables telles que `csp`, `age`, `duree` et `cableue` affichent les $\eta^2$ les plus élevés sur les premiers axes, ce qui légitime leur sélection pour l'interprétation sociodémographique et comportementale des profils clients, tandis que d'autres variables (comme le sexe ou des incidents très rares) peuvent s'avérer moins discriminantes.
-:::
+      ::: {.correction}
+      Le coefficient $\eta^2$ (rapport de corrélation) permet d'évaluer la force de liaison entre un axe factoriel et une variable qualitative supplémentaire. Les variables telles que `csp`, `age`, `duree` et `cableue` affichent les $\eta^2$ les plus élevés sur les premiers axes, ce qui légitime leur sélection pour l'interprétation sociodémographique et comportementale des profils clients, tandis que d'autres variables (comme le sexe ou des incidents très rares) peuvent s'avérer moins discriminantes.
+      :::
 
    b. À l'aide des graphiques suivants, identifiez les tendances des profils en termes de variables supplémentaires :
 
-```{r}
-#| echo: false
-#| fig-width: 12
-#| fig-height: 6
+      ```{r}
+      #| echo: false
+      #| fig-width: 12
+      #| fig-height: 9
+      #| out-width: "80%"
 
 
-donnees <- banque[,c(1,2,4,7,10:13,17:18,21)]
-acm.b.sup <- MCA(donnees, quali.sup=c(1:4), ncp = 3, graph = FALSE)
+      donnees <- banque[,c(1,2,4,7,10:13,17:18,21)]
+      acm.b.sup <- MCA(donnees, quali.sup=c(1:4), ncp = 3, graph = FALSE)
 
-fviz_mca_var(acm.b.sup, axes = c(1, 2), repel = TRUE, palette = "jco") 
-```
+      fviz_mca_biplot(
+        acm.b.sup, 
+        axes = c(1, 2), 
+        geom.ind = "point", 
+        palette = "jco", 
+        map = "symbiplot", col.ind= "lightgrey", repel = TRUE) + theme_metropolis 
+      ```
 
 
-::: {.content-visible when-meta="params.correction"}
-Au vu des positions des modalités correspondantes, on observe que :
+      ::: {.correction}
+      Au vu des positions des modalités correspondantes, on observe que :
 
-- *Les retraités et les clients de plus de 75 ans* correspondent aux profils détenant des produits d'épargne (portefeuille et livret) ;
-- *Les étudiants de moins de 25 ans*, clients depuis peu (moins de 2 ans), caractérisent davantage les individus sans produit bancaire ;
-- *Les ouvriers et employés* se positionnent plus près du groupe d'individus ayant de petits crédits à la consommation et ne possédant pas d'épargne ;
-- *Les agriculteurs, cadres supérieurs et professions intermédiaires* sont proches des individus disposant d'un crédit immobilier et d'un peu d'épargne.
-:::
+      - *Les retraités et les clients de plus de 75 ans* correspondent aux profils détenant des produits d'épargne (portefeuille et livret) ;
+      - *Les étudiants de moins de 25 ans*, clients depuis peu (moins de 2 ans), caractérisent davantage les individus sans produit bancaire ;
+      - *Les ouvriers et employés* se positionnent plus près du groupe d'individus ayant de petits crédits à la consommation et ne possédant pas d'épargne ;
+      - *Les agriculteurs, cadres supérieurs et professions intermédiaires* sont proches des individus disposant d'un crédit immobilier et d'un peu d'épargne.
+      :::
 
 4. Synthétisez vos observations et décrivez les groupes possibles de consommateurs de produits bancaires.
 
-::: {.content-visible when-meta="params.correction"}
-En résumé, l'Analyse des Correspondances Multiples (ACM) permet de mettre en évidence une typologie des clients selon leurs comportements d'équipement et leurs profils sociodémographiques :
+   ::: {.correction}
+   En résumé, l'Analyse des Correspondances Multiples (ACM) permet de mettre en évidence une typologie des clients selon leurs comportements d'équipement et leurs profils sociodémographiques :
 
-- *Le groupe "sans équipement" (majoritaire)* : il rassemble la majeure partie de l'échantillon, caractérisée par l'absence de produits bancaires, qu'il s'agisse de crédits ou d'épargne (modalités `.0`). Ce profil est particulièrement représenté par les jeunes (moins de 25 ans), les étudiants et les clients récents (moins de 2 ans d'ancienneté).
-- *Le groupe des clients "épargnants / hauts revenus"* : composé de clients utilisant la banque principalement pour des placements sur des livrets d'épargne ou des portefeuilles de titres boursiers (`epliv.3` et `port.3`). Ce groupe se superpose aux profils de retraités (plus de 75 ans) et de personnes disposant d'un patrimoine constitué.
-- *Le groupe "propriétaires / installés"* : regroupe des clients ayant souscrit un crédit immobilier tout en maintenant un niveau d'épargne modéré (`crhab.1` et `epliv.1`). On y retrouve préférentiellement les cadres supérieurs, les professions intermédiaires et les agriculteurs.
-- *Le groupe "crédit de consommation / budget contraint"* : constitué de clients aux ressources financières plus limitées, recourant à des petits crédits à la consommation et des prélèvements spécifiques (`crcon.1` et `prfin.1`). Ce profil correspond principalement aux ouvriers et aux employés.
-:::
+   - *Le groupe "sans équipement" (majoritaire)* : il rassemble la majeure partie de l'échantillon, caractérisée par l'absence de produits bancaires, qu'il s'agisse de crédits ou d'épargne (modalités `.0`). Ce profil est particulièrement représenté par les jeunes (moins de 25 ans), les étudiants et les clients récents (moins de 2 ans d'ancienneté).
+   - *Le groupe des clients "épargnants / hauts revenus"* : composé de clients utilisant la banque principalement pour des placements sur des livrets d'épargne ou des portefeuilles de titres boursiers (`epliv.3` et `port.3`). Ce groupe se superpose aux profils de retraités (plus de 75 ans) et de personnes disposant d'un patrimoine constitué.
+   - *Le groupe "propriétaires / installés"* : regroupe des clients ayant souscrit un crédit immobilier tout en maintenant un niveau d'épargne modéré (`crhab.1` et `epliv.1`). On y retrouve préférentiellement les cadres supérieurs, les professions intermédiaires et les agriculteurs.
+   - *Le groupe "crédit de consommation / budget contraint"* : constitué de clients aux ressources financières plus limitées, recourant à des petits crédits à la consommation et des prélèvements spécifiques (`crcon.1` et `prfin.1`). Ce profil correspond principalement aux ouvriers et aux employés.
+   :::
 
 
 ### Classification non supervisée sur données qualitatives
@@ -612,189 +641,200 @@ Une solution éprouvée consiste à réaliser une **Classification sur Composant
 1. Réaliser une CAH sur les 2 premières coordonnées factorielles de l'ACM contenues dans `...$ind$coord`.
 
    a. Calculer la distance euclidienne sur les coordonnées des axes retenus :
-```{r}
-#| fig-width: 8
-#| fig-height: 6
-#| out-width: "80%"
-#| include: !expr params$correction
+
+      ::: {.correction}
+      ```{r}
+      #| fig-width: 8
+      #| fig-height: 6
+      #| out-width: "80%"
 
 
-acm.b.clust <- MCA(banque[,c(10:13,17:18,21)], ncp = 2, graph = FALSE)
-points_coord <- acm.b.clust$ind$coord
+      acm.b.clust <- MCA(banque[,c(10:13,17:18,21)], ncp = 2, graph = FALSE)
+      points_coord <- acm.b.clust$ind$coord
 
-DE.ind <- dist(points_coord, method = "euclidean")
-fviz_dist(DE.ind, show_labels = FALSE) +
-  theme_metropolis +
-  theme(
-    legend.position = "right",
-    axis.text.x = element_blank(),
-    axis.text.y = element_blank()
-  )
-```
+      DE.ind <- dist(points_coord, method = "euclidean")
+      fviz_dist(DE.ind, show_labels = FALSE) +
+        theme_metropolis +
+        theme(
+          legend.position = "right",
+          axis.text.x = element_blank(),
+          axis.text.y = element_blank()
+        )
+      ```
+      :::
 
    b. Réaliser la classification avec la méthode `ward.D2` et afficher l'arbre (dendrogramme) :
 
-```{r}
-#| fig-width: 8
-#| fig-height: 6
-#| out-width: "80%"
-#| include: !expr params$correction
-cah.ind <- hclust(DE.ind, method = "ward.D2")
-fviz_dend(
-     cah.ind,
-     k = 4,                   # Nombre de classes suggéré (ex: 4 groupes)
-     cex = 0.5, 
-     palette = "jco", 
-     main = "CAH sur les individus (ACM)"
-   ) + theme_metropolis 
-```
+      ::: {.correction}
+      ```{r}
+      #| fig-width: 8
+      #| fig-height: 6
+      #| out-width: "80%"
+
+      cah.ind <- hclust(DE.ind, method = "ward.D2")
+      fviz_dend(
+           cah.ind,
+           k = 4,                   # Nombre de classes suggéré (ex: 4 groupes)
+           cex = 0.5, 
+           palette = "jco", 
+           main = "CAH sur les individus (ACM)"
+         ) + theme_metropolis 
+      ```
+      :::
 
    c. Tracer les sauts d'inertie.
-```{r}
-#| fig-width: 8
-#| fig-height: 6
-#| out-width: "80%"
-#| include: !expr params$correction
- 
-nb_max <- min(50, length(cah.ind$height))
-inertie.ind <- sort(cah.ind$height, decreasing = TRUE)
-df_inertie <- data.frame(k = 1:nb_max, inertie = inertie.ind[1:nb_max])
 
-# limite à 50 classes
-ggplot(df_inertie, aes(x = k[1:50], y = inertie[1:50])) +
-    geom_line(color = "#0073C2", linewidth = 1) +
-    geom_point(color = "#0073C2", size = 2) +
-    labs(
-    title = "Évolution de l'inertie inter-classes",
-    x = "Nombre de classes",
-    y = "Inertie"
-    ) +
-theme_metropolis
-```
+      ::: {.correction}
+      ```{r}
+      #| fig-width: 8
+      #| fig-height: 6
+      #| out-width: "80%"
+
+      nb_max <- min(50, length(cah.ind$height))
+      inertie.ind <- sort(cah.ind$height, decreasing = TRUE)
+      df_inertie <- data.frame(k = 1:nb_max, inertie = inertie.ind[1:nb_max])
+
+      # limite à 50 classes
+      ggplot(df_inertie, aes(x = k[1:50], y = inertie[1:50])) +
+          geom_line(color = "#0073C2", linewidth = 1) +
+          geom_point(color = "#0073C2", size = 2) +
+          labs(
+          title = "Évolution de l'inertie inter-classes",
+          x = "Nombre de classes",
+          y = "Inertie"
+          ) +
+      theme_metropolis
+      ```
+      :::
 
    d. Combien de clusters peut-on choisir ? Representer les groupes sur le premier plan factoriel.
-```{r}
-#| include: !expr params$correction
-#| fig-width: 8
-#| fig-height: 6
-#| out-width: "80%"
 
-library(factoextra)
-library(ggplot2)
-# Découpage de l'arbre hiérarchique en 4 classes
-groupes.cah <- cutree(cah.ind, k = 4)
-# Visualisation des clusters de la CAH sur le premier plan factoriel (1, 2)
-fviz_cluster(
-  list(data = points_coord, cluster = groupes.cah),
-  axes = c(1, 2),
-  palette = "jco",
-  ellipse.type = "convex",
-  geom = "point",
-  pointsize = 1.5,
-  show.clust.cent = TRUE,
-  main = "Partitionnement par CAH (k = 4) sur les axes de l'ACM"
-) + 
-  theme_metropolis +
-  theme(legend.position = "right")
-```
+      ::: {.correction}
+      ```{r}
+      #| fig-width: 8
+      #| fig-height: 6
+      #| out-width: "80%"
+
+      library(factoextra)
+      library(ggplot2)
+      # Découpage de l'arbre hiérarchique en 4 classes
+      groupes.cah <- cutree(cah.ind, k = 4)
+      # Visualisation des clusters de la CAH sur le premier plan factoriel (1, 2)
+      fviz_cluster(
+        list(data = points_coord, cluster = groupes.cah),
+        axes = c(1, 2),
+        palette = "jco",
+        ellipse.type = "convex",
+        geom = "point",
+        pointsize = 1.5,
+        show.clust.cent = TRUE,
+        main = "Partitionnement par CAH (k = 4) sur les axes de l'ACM"
+      ) + 
+        theme_metropolis +
+        theme(legend.position = "right")
+      ```
+      :::
 
 2. Une fois le nombre de clusters choisi, mettre en œuvre la méthode des $k$-means (toujours à partir des coordonnées factorielles de l'ACM). *Indication : définir une graine pour le générateur de nombres aléatoires. Utiliser l'option `nstart` de `kmeans`.*
-```{r}
-#| include: !expr params$correction
-#| fig-width: 8
-#| fig-height: 6
-#| out-width: "80%"
 
-library(factoextra)
-library(ggplot2)
+   ::: {.correction}
+   ```{r}
+   #| fig-width: 8
+   #| fig-height: 6
+   #| out-width: "80%"
 
-# Fixer une graine aléatoire pour la reproductibilité des k-means
-set.seed(123)
+   library(factoextra)
+   library(ggplot2)
 
-# Application des k-means sur les premiers axes factoriels (coordonnées des individus)
-res.km <- kmeans(points_coord, centers = 4, nstart = 25)
+   # Fixer une graine aléatoire pour la reproductibilité des k-means
+   set.seed(123)
 
-# 3. Visualisation graphique des clusters sur le premier plan factoriel (1, 2)
+   # Application des k-means sur les premiers axes factoriels (coordonnées des individus)
+   res.km <- kmeans(points_coord, centers = 4, nstart = 25)
+
+   # 3. Visualisation graphique des clusters sur le premier plan factoriel (1, 2)
+      fviz_cluster(
+        res.km, 
+        data = points_coord,
+        axes = c(1, 2),
+        palette = "jco",
+        ellipse.type = "convex",
+        geom = "point",
+        pointsize = 1.5,
+        show.clust.cent = TRUE,
+        main = "Partitionnement par K-means (k = 4) sur les axes de l'ACM"
+      ) + 
+        theme_metropolis +
+        theme(legend.position = "right")
+   ```
+   :::
+
+
+3. Comparer les deux methodes.
+
+   ```{r}
+
+   library(knitr)
+
+   # Matrice de confusion comparant les partitions de la CAH et des K-means (k = 4)
+
+   groupes.cah <- cutree(cah.ind, k = 4)
+   table_comp <- table(CAH = groupes.cah, Kmeans = res.km$cluster)
+   kable(table_comp, row.names = TRUE)
+   ```
+
+4. Vous pouvez tester la fonction `HCPC` sur les résultats de l'AFCM. Elle a pour avantage de mettre en œuvre une CAH puis des $k$-means de manière intégrée.
+
+   ```{r}
+   res.hcpc <- HCPC(acm.b.clust, graph = FALSE, nb.clust = 4)
+   ```
+
+   La fonction `nb.clust` peut prendre les valeurs :
+   - `-1` pour que R choisisse automatiquement le nombre de clusters ;
+   - `0` pour que vous choisissiez le nombre de clusters (en cliquant sur le dendrogramme), en vous basant sur le graphique de perte d'inertie inter-classe ;
+   - `3` par exemple, pour fixer à 3 le nombre de clusters.
+
+
+   ::: {.correction}
+   ```{r}
+   #| fig-width: 8
+   #| fig-height: 6
+   #| out-width: "80%"
+
+   library(FactoMineR)
+   library(factoextra)
+
+   # Visualisation des individus et des clusters sur le plan factoriel avec factoextra
    fviz_cluster(
-     res.km, 
-     data = points_coord,
+     res.hcpc, 
      axes = c(1, 2),
      palette = "jco",
      ellipse.type = "convex",
      geom = "point",
      pointsize = 1.5,
      show.clust.cent = TRUE,
-     main = "Partitionnement par K-means (k = 4) sur les axes de l'ACM"
+     main = "Classification HCPC sur les axes de l'ACM"
    ) + 
      theme_metropolis +
      theme(legend.position = "right")
-```
+   ```
+   :::
 
+   ::: {.correction}
+   La fonction `HCPC()` automatise et intègre l'ensemble de la démarche que nous avons menée pas à pas : 
+   1. Elle extrait les coordonnées factorielles de l'ACM.
+   2. Elle réalise une Classification Ascendante Hiérarchique (CAH) selon le critère de Ward.
+   3. Elle consolide la partition obtenue par un algorithme des $k$-means en utilisant les centres de gravité de la CAH comme initialisation.
+   4. Elle génère automatiquement des rapports de description statistique des classes (`res.hcpc$desc.var`), permettant de caractériser précisément chaque profil de client par ses sur-représentations de modalités.
+   :::
 
-3. Comparer les deux methodes.
+   ```{r}
+   library(knitr)
 
-```{r}
+   # Matrice de confusion comparant les partitions des K-means (k = 4) et HCPC
 
-library(knitr)
-
-# Matrice de confusion comparant les partitions de la CAH et des K-means (k = 4)
-
-groupes.cah <- cutree(cah.ind, k = 4)
-table_comp <- table(CAH = groupes.cah, Kmeans = res.km$cluster)
-kable(table_comp, row.names = TRUE)
-```
-
-4. Vous pouvez tester la fonction `HCPC` sur les résultats de l'AFCM. Elle a pour avantage de mettre en œuvre une CAH puis des $k$-means de manière intégrée.
-
-```{r}
-res.hcpc <- HCPC(acm.b.clust, graph = FALSE, nb.clust = 4)
-```
-
-La fonction `nb.clust` peut prendre les valeurs :
-   - `-1` pour que R choisisse automatiquement le nombre de clusters ;
-   - `0` pour que vous choisissiez le nombre de clusters (en cliquant sur le dendrogramme), en vous basant sur le graphique de perte d'inertie inter-classe ;
-   - `3` par exemple, pour fixer à 3 le nombre de clusters.
-
-
-```{r}
-#| include: !expr params$correction
-#| fig-width: 8
-#| fig-height: 6
-#| out-width: "80%"
-
-library(FactoMineR)
-library(factoextra)
-
-# Visualisation des individus et des clusters sur le plan factoriel avec factoextra
-fviz_cluster(
-  res.hcpc, 
-  axes = c(1, 2),
-  palette = "jco",
-  ellipse.type = "convex",
-  geom = "point",
-  pointsize = 1.5,
-  show.clust.cent = TRUE,
-  main = "Classification HCPC sur les axes de l'ACM"
-) + 
-  theme_metropolis +
-  theme(legend.position = "right")
-```
-
-::: {.content-visible when-meta="params.correction"}
-La fonction `HCPC()` automatise et intègre l'ensemble de la démarche que nous avons menée pas à pas : 
-1. Elle extrait les coordonnées factorielles de l'ACM.
-2. Elle réalise une Classification Ascendante Hiérarchique (CAH) selon le critère de Ward.
-3. Elle consolide la partition obtenue par un algorithme des $k$-means en utilisant les centres de gravité de la CAH comme initialisation.
-4. Elle génère automatiquement des rapports de description statistique des classes (`res.hcpc$desc.var`), permettant de caractériser précisément chaque profil de client par ses sur-représentations de modalités.
-:::
-
-```{r}
-library(knitr)
-
-# Matrice de confusion comparant les partitions des K-means (k = 4) et HCPC
-
-kable(table(HCPC = res.hcpc$data.clust$clust, Kmeans = res.km$cluster), row.names = TRUE)
-```
+   kable(table(HCPC = res.hcpc$data.clust$clust, Kmeans = res.km$cluster), row.names = TRUE)
+   ```
 
 5. À partir du choix du nombre de clusters fait à la question précédente, la fonction met en œuvre la méthode des $k$-means. Les individus sont ainsi répartis dans ces nouveaux clusters dont on peut étudier les caractéristiques par les commandes suivantes :
 
@@ -805,12 +845,13 @@ kable(table(HCPC = res.hcpc$data.clust$clust, Kmeans = res.km$cluster), row.name
      table(res.hcpc$data.clust$clust)
      ```
 
+     ::: {.correction}
      ```{r}
      #| echo: false
-     #| include: !expr params$correction
 
      table(res.hcpc$data.clust$clust)
      ```
+     :::
 
    - Pour représenter les clusters sur les axes factoriels de l'ACM :
 
@@ -819,8 +860,8 @@ kable(table(HCPC = res.hcpc$data.clust$clust, Kmeans = res.km$cluster), row.name
      fviz_cluster(res.hcpc, axes = c(1, 2))
      ```
 
+     ::: {.correction}
      ```{r}
-     #| include: !expr params$correction
      #| echo: false
      #| fig-width: 8
      #| fig-height: 6
@@ -839,8 +880,9 @@ kable(table(HCPC = res.hcpc$data.clust$clust, Kmeans = res.km$cluster), row.name
        theme_metropolis +
        theme(legend.position = "right")
      ```
+     :::
 
-<!--
+   <!--
    - Pour tester la relation entre les variables initiales et le partitionnement proposé :
 
      ```{r}
@@ -849,12 +891,13 @@ kable(table(HCPC = res.hcpc$data.clust$clust, Kmeans = res.km$cluster), row.name
      res.hcpc$desc.var$test.chi2
      ```
 
+     ::: {.correction}
      ```{r}
-     #| include: !expr params$correction
      #| echo: false
 
      res.hcpc$desc.var$test.chi2
      ```
+     :::
 
    - Pour décrire chaque cluster par les modalités les plus corrélées avec la classe :
 
@@ -864,13 +907,15 @@ kable(table(HCPC = res.hcpc$data.clust$clust, Kmeans = res.km$cluster), row.name
      res.hcpc$desc.var$category
      ```
 
+     ::: {.correction}
      ```{r}
-     #| include: !expr params$correction
      #| echo: false
 
      res.hcpc$desc.var$category
      ```
--->
+     :::
+
+   -->
 
    - Pour afficher les « parangons », points les plus représentatifs de chaque cluster (centres de gravité locaux) :
 
@@ -879,12 +924,13 @@ kable(table(HCPC = res.hcpc$data.clust$clust, Kmeans = res.km$cluster), row.name
      res.hcpc$desc.ind$para
      ```
 
+     ::: {.correction}
      ```{r}
-     #| include: !expr params$correction
      #| echo: false
 
      res.hcpc$desc.ind$para
      ```
+     :::
 
    - Pour afficher les points les plus extrêmes (les plus éloignés du centre) de chaque cluster :
 
@@ -893,12 +939,13 @@ kable(table(HCPC = res.hcpc$data.clust$clust, Kmeans = res.km$cluster), row.name
      res.hcpc$desc.ind$dist
      ```
 
+     ::: {.correction}
      ```{r}
-     #| include: !expr params$correction
      #| echo: false
 
      res.hcpc$desc.ind$dist
      ```
+     :::
 
 
 
@@ -931,58 +978,61 @@ Nous utilisons une image de test pour manipuler les matrices de pixels.
 ![Arachnothera Magna](data/Arachnothera_magna_-_Kaeng_Krachan.jpg){height=200}
 
 1. Analyser le code suivant. À quoi sert la dernière ligne ?
-```{r}
+   ```{r}
 
-# Chargement d'une image exemple
-url_img <- "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Arachnothera_magna_-_Kaeng_Krachan.jpg/500px-Arachnothera_magna_-_Kaeng_Krachan.jpg"
-temp_file <- tempfile(fileext = ".jpg")
-download.file(url_img, temp_file, mode = "wb")
+   # Chargement d'une image exemple
+   url_img <- "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Arachnothera_magna_-_Kaeng_Krachan.jpg/500px-Arachnothera_magna_-_Kaeng_Krachan.jpg"
+   temp_file <- tempfile(fileext = ".jpg")
+   download.file(url_img, temp_file, mode = "wb")
 
-img <- readJPEG(temp_file)
-img <- img[, , 1:3]
-```
+   img <- readJPEG(temp_file)
+   img <- img[, , 1:3]
+   ```
 
-On pourra afficher des images avec ce code :
-```{r}
-#| eval: false
+   On pourra afficher des images avec ce code :
+   ```{r}
+   #| eval: false
 
-plot(c(1, 2), c(1, 2), type = 'n', axes = FALSE, xlab = "", ylab = "")
-rasterImage(img, 1, 1, 2, 2)
-```
+   plot(c(1, 2), c(1, 2), type = 'n', axes = FALSE, xlab = "", ylab = "")
+   rasterImage(img, 1, 1, 2, 2)
+   ```
 
-::: {.content-visible when-meta="params.correction"}
-Explication de la dernière ligne : `img <- img[, , 1:3]` ne conserve que les trois premiers canaux de couleur (Rouge, Vert, Bleu). Elle permet d'éliminer un éventuel quatrième canal (canal Alpha correspondant à la transparence) afin de garantir que l'image est bien représentée sous la forme d'un tableau tridimensionnel de taille $H \times W \times 3$.
-:::
+   ::: {.correction}
+   Explication de la dernière ligne : `img <- img[, , 1:3]` ne conserve que les trois premiers canaux de couleur (Rouge, Vert, Bleu). Elle permet d'éliminer un éventuel quatrième canal (canal Alpha correspondant à la transparence) afin de garantir que l'image est bien représentée sous la forme d'un tableau tridimensionnel de taille $H \times W \times 3$.
+   :::
 
 2. Afficher les niveaux RGB du pixel situé à la ligne 5 et colonne 67.
-```{r}
-#| include: !expr params$correction
-img[5, 67, 1:3]
-```
+
+   ::: {.correction}
+   ```{r}
+   img[5, 67, 1:3]
+   ```
+   :::
 
 3. On enregistre maintenant les dimensions de l'image originale :
-```{r}
-dims <- dim(img)  # H <- dims[1]; W <- dims[2]; C <- dim[3]
-```
+   ```{r}
+   dims <- dim(img)  # H <- dims[1]; W <- dims[2]; C <- dim[3]
+   ```
 
-Créez ensuite la matrice `pixels` de taille $(H \times W) \times 3$, dont les lignes contiennent les niveaux RGB de tous les pixels.
+   Créez ensuite la matrice `pixels` de taille $(H \times W) \times 3$, dont les lignes contiennent les niveaux RGB de tous les pixels.
 
-```{r}
-#| include: !expr params$correction
+   ::: {.correction}
+   ```{r}
 
-# Transformation du tableau (H x W x 3) en matrice 2D (Pixels x 3 canaux)
-pixels <- matrix(img, ncol = 3)
-```
+   # Transformation du tableau (H x W x 3) en matrice 2D (Pixels x 3 canaux)
+   pixels <- matrix(img, ncol = 3)
+   ```
+   :::
 
-Vérifier alors que 
+   Vérifier alors que 
 
-```{r}
-i <- 5
-j <- 67
-H <- dims[1]
+   ```{r}
+   i <- 5
+   j <- 67
+   H <- dims[1]
 
-stopifnot(all(img[i, j, 1:3] == pixels[(j - 1) * H + i, 1:3]))
-```
+   stopifnot(all(img[i, j, 1:3] == pixels[(j - 1) * H + i, 1:3]))
+   ```
 
 ### Application de l'algorithme des $k$-means pour $k \in \{8, 16, 32\}$
 
@@ -1011,8 +1061,8 @@ img_k32 <- quantifier_kmeans(pixels, k = 32, dims)
 ```
 
 
+::: {.correction}
 ```{r}
-#| include: !expr params$correction
 
 set.seed(42) # Reproductibilité
 
@@ -1031,6 +1081,7 @@ img_k8  <- quantifier_kmeans(pixels, k = 8, dims)
 img_k16 <- quantifier_kmeans(pixels, k = 16, dims)
 img_k32 <- quantifier_kmeans(pixels, k = 32, dims)
 ```
+:::
 
 
 
@@ -1038,29 +1089,31 @@ img_k32 <- quantifier_kmeans(pixels, k = 32, dims)
 
 La quantification uniforme consiste à tronquer uniformément les bits de poids faible de chaque canal indépendamment de la distribution réelle des couleurs.
 
-1.  À partir de l'image originale, créer des images avec $k=2,3$ bit par canal
-```{r}
+1. À partir de l'image originale, créer des images avec $k=2,3$ bit par canal
 
-# Fonction de quantification uniforme sur b bits par canal
-quantifier_bits <- function(img_mat, bits) {
-  niveaux <- 2^bits
-  img_bits <- round(img_mat * (niveaux - 1)) / (niveaux - 1)
-  return(img_bits)
-}
+   ```{r}
 
-# Simulation de réductions de profondeur de bits
-img_bit2 <- quantifier_bits(img, bits = 2) # 2 bit/canal (64 couleurs max au total)
-img_bit3 <- quantifier_bits(img, bits = 3) # 3 bits/canal (512 couleurs max au total)
-```
+   # Fonction de quantification uniforme sur b bits par canal
+   quantifier_bits <- function(img_mat, bits) {
+     niveaux <- 2^bits
+     img_bits <- round(img_mat * (niveaux - 1)) / (niveaux - 1)
+     return(img_bits)
+   }
+
+   # Simulation de réductions de profondeur de bits
+   img_bit2 <- quantifier_bits(img, bits = 2) # 2 bit/canal (64 couleurs max au total)
+   img_bit3 <- quantifier_bits(img, bits = 3) # 3 bits/canal (512 couleurs max au total)
+   ```
 
 2. Comparer les résultats des deux méthodes.
-```{r}
-# 4. Visualisation comparative
-par(mfrow = c(2, 3), mar = c(1, 1, 2, 1))
-plot(c(1, 2), c(1, 2), type = 'n', axes = FALSE, xlab = "", ylab = ""); rasterImage(img, 1, 1, 2, 2); title("1. Originale")
-plot(c(1, 2), c(1, 2), type = 'n', axes = FALSE, xlab = "", ylab = ""); rasterImage(img_k8, 1, 1, 2, 2); title("2. K-means (k = 8)")
-plot(c(1, 2), c(1, 2), type = 'n', axes = FALSE, xlab = "", ylab = ""); rasterImage(img_k16, 1, 1, 2, 2); title("3. K-means (k = 16)")
-plot(c(1, 2), c(1, 2), type = 'n', axes = FALSE, xlab = "", ylab = ""); rasterImage(img_k32, 1, 1, 2, 2); title("4. K-means (k = 32)")
-plot(c(1, 2), c(1, 2), type = 'n', axes = FALSE, xlab = "", ylab = ""); rasterImage(img_bit2, 1, 1, 2, 2); title("5. 64 couleurs")
-plot(c(1, 2), c(1, 2), type = 'n', axes = FALSE, xlab = "", ylab = ""); rasterImage(img_bit3, 1, 1, 2, 2); title("6. 512 couleurs")
-```
+
+   ```{r}
+   # 4. Visualisation comparative
+   par(mfrow = c(2, 3), mar = c(1, 1, 2, 1))
+   plot(c(1, 2), c(1, 2), type = 'n', axes = FALSE, xlab = "", ylab = ""); rasterImage(img, 1, 1, 2, 2); title("1. Originale")
+   plot(c(1, 2), c(1, 2), type = 'n', axes = FALSE, xlab = "", ylab = ""); rasterImage(img_k8, 1, 1, 2, 2); title("2. K-means (k = 8)")
+   plot(c(1, 2), c(1, 2), type = 'n', axes = FALSE, xlab = "", ylab = ""); rasterImage(img_k16, 1, 1, 2, 2); title("3. K-means (k = 16)")
+   plot(c(1, 2), c(1, 2), type = 'n', axes = FALSE, xlab = "", ylab = ""); rasterImage(img_k32, 1, 1, 2, 2); title("4. K-means (k = 32)")
+   plot(c(1, 2), c(1, 2), type = 'n', axes = FALSE, xlab = "", ylab = ""); rasterImage(img_bit2, 1, 1, 2, 2); title("5. 64 couleurs")
+   plot(c(1, 2), c(1, 2), type = 'n', axes = FALSE, xlab = "", ylab = ""); rasterImage(img_bit3, 1, 1, 2, 2); title("6. 512 couleurs")
+   ```

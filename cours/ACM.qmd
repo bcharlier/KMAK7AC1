@@ -457,7 +457,7 @@ data(hobbies)
 ```{r}
 #| echo: false
 
-print_table(head(hobbies), max.col.width="4em")
+print_table(head(hobbies), max.col.width="4em", vertical.headers = TRUE)
 ```
 
 

@@ -135,13 +135,6 @@ plot_ly(
 )
 ```
 
-### Nuage 3D+t
-```{r}
-#| echo: false
-
-# exemple de nuage 3D+t. 
-```
-
 :::
 
 
@@ -952,7 +945,7 @@ print_table(
 
 ```{r}
 #| echo: false
-#| fig-width: 4
+#| fig-width: 6
 #| fig-height: 3 
 
 library(FactoMineR)
@@ -964,11 +957,13 @@ acp <- PCA(
   scale.unit = TRUE,
   quanti.sup = c("Lati", "Long", "Moye", "Ampl"),
   quali.sup = "Région",
+  ncp = 14,
   graph = FALSE
 )
 
 fviz_eig(acp,
          geom= "bar",
+         ncp = 14,
          labelsize = 6,
          addlabels = FALSE) +
   labs(title = NULL, y = "% de variance") +
@@ -1081,7 +1076,7 @@ df_clean$Age_cat <- cut(
 # 3. Sélection des variables (Fare est placée en dernière position)
 df_titanic <- df_clean[, c("Survived", "Pclass", "Sex", "Age_cat", "Embarked", "Fare")]
 
-titanic.mca <- MCA(df_titanic, quanti.sup = 6, ncp=10, graph = FALSE)
+titanic.mca <- MCA(df_titanic, quanti.sup = 6, ncp=20, graph = FALSE)
 
 eig.titanic <- data.frame(
   axe = 1:nrow(titanic.mca$eig),

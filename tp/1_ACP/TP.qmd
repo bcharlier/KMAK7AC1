@@ -65,160 +65,176 @@ eaux <- read.table("https://bcharlier.github.io/KMAK7AC1/tp/1_ACP/data/eaux.txt"
 
 
 1. Calculez la matrice des corrélations $R$ à partir de la matrice des données centrées-réduites $Z$, en pondérant les lignes par $1/n$. *Indication : définissez un vecteur `moy` et un vecteur `ecartype` contenant respectivement la moyenne et l'écart-type biaisé des colonnes de la matrice de données $X$. Utilisez ensuite la fonction `scale()` pour normaliser les données. Voir aussi : `?mean`, `?sd` et `?apply`.*
+
+   ::: {.correction}
+
    ```{r}
-#| include: !expr params$correction
 
-###### Importation du tableau de données ######
+   ###### Importation du tableau de données ######
 
-X <- eaux
-n <- nrow(X)
-p <- ncol(X)
+   X <- eaux
+   n <- nrow(X)
+   p <- ncol(X)
 
-###### Calcul de la matrice centrée-réduite avec la fonction `scale()` ######
+   ###### Calcul de la matrice centrée-réduite avec la fonction `scale()` ######
 
-moy <- apply(X, 2, mean)
-ecartype <- apply(X, 2, sd) * sqrt((n-1)/n) # écart-type biaisé (diviseur n)
+   moy <- apply(X, 2, mean)
+   ecartype <- apply(X, 2, sd) * sqrt((n-1)/n) # écart-type biaisé (diviseur n)
 
-?scale
-Z <- scale(X, center = moy, scale = ecartype)
+   ?scale
+   Z <- scale(X, center = moy, scale = ecartype)
 
-apply(Z, 2, mean) # Vérification de la nullité des moyennes
-apply(Z, 2, sd) * sqrt((n-1)/n) # Vérification des écarts-types égaux à 1
-###### Calcul de la matrice des corrélations ######
+   apply(Z, 2, mean) # Vérification de la nullité des moyennes
+   apply(Z, 2, sd) * sqrt((n-1)/n) # Vérification des écarts-types égaux à 1
+   ###### Calcul de la matrice des corrélations ######
 
-N <- diag(rep(1/n, n))
-R <- t(Z) %*% N %*% Z
+   N <- diag(rep(1/n, n))
+   R <- t(Z) %*% N %*% Z
    ```
+   :::
 
    ```{r}
-round(unname(Z[,]), 3)
-N
-round(unname(R), 3)
+   round(unname(Z[,]), 3)
+   N
+   round(unname(R), 3)
    ```
 
 
 2. Effectuez la décomposition spectrale de $R$ et déduisez-en la matrice $V$ des vecteurs propres de $R$ triés par ordre décroissant des valeurs propres. Vérifiez que les vecteurs propres sont bien normés à 1 et orthogonaux (i.e., orthonormés). *Indication : utiliser la fonction `eigen()` de `R`. Voir donc `?eigen`.*
-```{r}
-#| include: !expr params$correction
 
-###### Décomposition spectrale avec la fonction `eigen()` ######
+   ::: {.correction}
 
-e <- eigen(R)
-e$values
-e$vectors
+   ```{r}
 
-t(e$vectors) %*% e$vectors # Les vecteurs propres sont bien orthonormés
+   ###### Décomposition spectrale avec la fonction `eigen()` ######
+
+   e <- eigen(R)
+   e$values
+   e$vectors
+
+   t(e$vectors) %*% e$vectors # Les vecteurs propres sont bien orthonormés
 
 
-sum(e$values)
-```
+   sum(e$values)
+   ```
+   :::
 
 3. On peut maintenant projeter les individus sur les axes factoriels.
 
    a. Calculez la matrice $\psi$ des coordonnées des 5 eaux sur les trois axes factoriels.
 
+      ::: {.correction}
+
       ```{r}
-#| include: !expr params$correction
 
-
-###### Matrice des coordonnées factorielles des individus (scores) ######
-Psi<-Z %*% e$vectors
+      ###### Matrice des coordonnées factorielles des individus (scores) ######
+      Psi<-Z %*% e$vectors
       ```
+      :::
 
    b. Calculez les moyennes et les variances des trois colonnes de $\psi$. Comparez-les aux valeurs propres de $R$.
 
+      ::: {.correction}
+
       ```{r}
-#| include: !expr params$correction
 
+      ###### Matrice des coordonnées factorielles des individus (scores) ######
+      Psi<-Z %*% e$vectors
 
-###### Matrice des coordonnées factorielles des individus (scores) ######
-Psi<-Z %*% e$vectors
+      apply(Psi, 2, mean) # Vérification de la nullité des moyennes
+      apply(Psi, 2, var) * (n - 1) / n
 
-apply(Psi, 2, mean) # Vérification de la nullité des moyennes
-apply(Psi, 2, var) * (n - 1) / n
-
-e$values
+      e$values
       ```
+      :::
 
       ```{r}
-round(unname(Psi), 3)
+      round(unname(Psi), 3)
       ```
 
 4. Représentez graphiquement les 5 eaux sur le premier plan factoriel (1-2) des individus et sur le plan (1-3).
 
-```{r}
-#| include: !expr params$correction
+   ::: {.correction}
 
-###### Matrice des coordonnées factorielles des individus (scores) ######
-Psi <- Z %*% e$vectors
-apply(Psi, 2, mean) # Vérification de la nullité des moyennes
-apply(Psi, 2, var) * (n-1) / n
-e$values
-```
+   ```{r}
 
-```{r}
-#| include: !expr params$correction
+   ###### Matrice des coordonnées factorielles des individus (scores) ######
+   Psi <- Z %*% e$vectors
+   apply(Psi, 2, mean) # Vérification de la nullité des moyennes
+   apply(Psi, 2, var) * (n-1) / n
+   e$values
+   ```
+   :::
 
+   ::: {.correction}
 
-###### Représentation graphique des individus sur les plans factoriels ######
-par(mfrow=c(1,2))
-plot(Psi[,1:2])
-text(Psi[,1:2],rownames(X))
+   ```{r}
 
-plot(Psi[,2:3])
-text(Psi[,2:3],rownames(X))
+   ###### Représentation graphique des individus sur les plans factoriels ######
+   par(mfrow=c(1,2))
+   plot(Psi[,1:2])
+   text(Psi[,1:2],rownames(X))
 
-```
+   plot(Psi[,2:3])
+   text(Psi[,2:3],rownames(X))
 
-```{r}
-#| include: !expr params$correction
+   ```
+   :::
 
+   ::: {.correction}
 
-library(ggplot2)
+   ```{r}
 
-scores_12 <- data.frame(
-  Eau = rownames(X),
-  x = Psi[, 1],
-  y = Psi[, 2]
-)
+   library(ggplot2)
 
-plot_12 <- qplot(x, y, data = scores_12, label = Eau, geom = c("point", "text"),
-  color = I("#2e74b5"), size = I(3)) +
-  labs(title = "Plan factoriel 1–2", x = "Axe 1", y = "Axe 2") +
-  theme_minimal(base_size = 13)
+   scores_12 <- data.frame(
+     Eau = rownames(X),
+     x = Psi[, 1],
+     y = Psi[, 2]
+   )
 
-scores_23 <- data.frame(
-  Eau = rownames(X),
-  x = Psi[, 2],
-  y = Psi[, 3]
-)
+   plot_12 <- qplot(x, y, data = scores_12, label = Eau, geom = c("point", "text"),
+     color = I("#2e74b5"), size = I(3)) +
+     labs(title = "Plan factoriel 1–2", x = "Axe 1", y = "Axe 2") +
+     theme_minimal(base_size = 13)
 
-plot_23 <- qplot(x, y, data = scores_23, label = Eau, geom = c("point", "text"),
-  color = I("#2e74b5"), size = I(3)) +
-  labs(title = "Plan factoriel 2–3", x = "Axe 2", y = "Axe 3") +
-  theme_minimal(base_size = 13)
+   scores_23 <- data.frame(
+     Eau = rownames(X),
+     x = Psi[, 2],
+     y = Psi[, 3]
+   )
 
-gridExtra::grid.arrange(plot_12, plot_23, ncol = 2)
-```
+   plot_23 <- qplot(x, y, data = scores_23, label = Eau, geom = c("point", "text"),
+     color = I("#2e74b5"), size = I(3)) +
+     labs(title = "Plan factoriel 2–3", x = "Axe 2", y = "Axe 3") +
+     theme_minimal(base_size = 13)
+
+   gridExtra::grid.arrange(plot_12, plot_23, ncol = 2)
+   ```
+   :::
 
 5. On sait que l'inertie satisfait la relation $I(\psi) = p = I(Z)$.
 
    a. Quelle est l'inertie du nuage des 5 eaux calculée à partir des coordonnées factorielles $\psi$ ? 
 
-```{r}
-#| include: !expr params$correction
+      ::: {.correction}
 
-# Inertie totale du nuage des 5 eaux minérales
-sum(e$values) 
-```
+      ```{r}
+
+      # Inertie totale du nuage des 5 eaux minérales
+      sum(e$values) 
+      ```
+      :::
 
    b. Quel est le pourcentage d'inertie expliquée par chaque composante principale ? Quel est le pourcentage cumulé ? Combien de composantes retiendriez-vous ?
 
-      ```{r}
-#| include: !expr params$correction
+      ::: {.correction}
 
-e$values / p * 100 # Pourcentages d'inertie expliquée par chaque composante
+      ```{r}
+
+      e$values / p * 100 # Pourcentages d'inertie expliquée par chaque composante
       ```
+      :::
 
 ### II. On va maintenant calculer l'ACP avec `R` et le package `FactoMineR`.
 
@@ -226,69 +242,73 @@ e$values / p * 100 # Pourcentages d'inertie expliquée par chaque composante
 
    a. En vous aidant de l'aide, retrouvez les résultats du I, en particulier la matrice $\Psi$ et les valeurs propres.
 
-      ```{r}
-#| include: !expr params$correction
-
-###### ACP avec les fonctions `prcomp()` et `princomp()` ######
-?prcomp
-res<-prcomp(X,center=TRUE,scale.=TRUE)
-res$sdev^2 # Carrés des racines des valeurs propres
-res$x
-      ```
-
+      ::: {.correction}
 
       ```{r}
-#| include: !expr params$correction
 
-?princomp
-res<-princomp(X, cor = TRUE)
-res$sdev^2 # Carrés des racines des valeurs propres
-res$scores
+      ###### ACP avec les fonctions `prcomp()` et `princomp()` ######
+      ?prcomp
+      res<-prcomp(X,center=TRUE,scale.=TRUE)
+      res$sdev^2 # Carrés des racines des valeurs propres
+      res$x
       ```
+      :::
+
+
+      ::: {.correction}
+
+      ```{r}
+
+      ?princomp
+      res<-princomp(X, cor = TRUE)
+      res$sdev^2 # Carrés des racines des valeurs propres
+      res$scores
+      ```
+      :::
 
    b. Laquelle des deux fonctions utilise $n$ et $n-1$ au dénominateur pour le calcul des variances ? Expliquez les sorties suivantes.
 
       ```{r}
-# Comparaison des valeurs propres selon la normalisation utilisée
-valeurs_ecart_type_n <- prcomp(
-  X,
-  center = TRUE,
-  scale. = apply(X, 2, sd) * sqrt((n - 1) / n)
-)$sdev^2
+      # Comparaison des valeurs propres selon la normalisation utilisée
+      valeurs_ecart_type_n <- prcomp(
+        X,
+        center = TRUE,
+        scale. = apply(X, 2, sd) * sqrt((n - 1) / n)
+      )$sdev^2
 
-valeurs_ecart_type_n_1 <- prcomp(
-  X,
-  center = TRUE,
-  scale. = apply(X, 2, sd)
-)$sdev^2
+      valeurs_ecart_type_n_1 <- prcomp(
+        X,
+        center = TRUE,
+        scale. = apply(X, 2, sd)
+      )$sdev^2
       ```
       ```{r}
-#| echo: false
-comparaison_ecarts_types <- data.frame(
-  `Écart-type avec diviseur n` = valeurs_ecart_type_n,
-  `Écart-type avec diviseur n-1` = valeurs_ecart_type_n_1,
-  `Rapport des valeurs propres` = valeurs_ecart_type_n / valeurs_ecart_type_n_1,
-  check.names = FALSE
-)
+      #| echo: false
+      comparaison_ecarts_types <- data.frame(
+        `Écart-type avec diviseur n` = valeurs_ecart_type_n,
+        `Écart-type avec diviseur n-1` = valeurs_ecart_type_n_1,
+        `Rapport des valeurs propres` = valeurs_ecart_type_n / valeurs_ecart_type_n_1,
+        check.names = FALSE
+      )
 
-print_table(comparaison_ecarts_types, digits = 3, caption = "Valeurs propres selon la convention d'écart-type")
+      print_table(comparaison_ecarts_types, digits = 3, caption = "Valeurs propres selon la convention d'écart-type")
       ```
 
       ```{r}
-# Comparaison des variances-covariances sans réduction des variables
-valeurs_princomp <- princomp(X, cor = FALSE)$sdev^2
-valeurs_prcomp <- prcomp(X, center = TRUE, scale. = FALSE)$sdev^2
+      # Comparaison des variances-covariances sans réduction des variables
+      valeurs_princomp <- princomp(X, cor = FALSE)$sdev^2
+      valeurs_prcomp <- prcomp(X, center = TRUE, scale. = FALSE)$sdev^2
       ```
       ```{r}
-#| echo: false
-comparaison_covariances <- data.frame(
-  `princomp sans réduction` = valeurs_princomp,
-  `prcomp sans réduction` = valeurs_prcomp,
-  `Rapport covariance` = valeurs_prcomp / valeurs_princomp,
-  check.names = FALSE
-)
+      #| echo: false
+      comparaison_covariances <- data.frame(
+        `princomp sans réduction` = valeurs_princomp,
+        `prcomp sans réduction` = valeurs_prcomp,
+        `Rapport covariance` = valeurs_prcomp / valeurs_princomp,
+        check.names = FALSE
+      )
 
-print_table(comparaison_covariances, digits = 3, caption = "Valeurs propres des matrices de covariance")
+      print_table(comparaison_covariances, digits = 3, caption = "Valeurs propres des matrices de covariance")
       ```
 
 
@@ -298,42 +318,43 @@ print_table(comparaison_covariances, digits = 3, caption = "Valeurs propres des 
 
    b. Combien d'axes factoriels peut-on conserver ? Quelle est la qualité de représentation ? Quelles sont les contributions aux axes ? Quelle est l'interprétation du plan factoriel (1-2) des individus ?
 
-   ```{r}
-library(FactoMineR)
-eaux.pca <-PCA(eaux)    # Tous les calculs de l'ACP sont stockés dans l'objet "res"
-   ```
+      ```{r}
+      library(FactoMineR)
+      eaux.pca <-PCA(eaux)    # Tous les calculs de l'ACP sont stockés dans l'objet "res"
+      ```
 
 3. Pour faire des graphiques plus avancés, on installera le package `factoextra`. Reproduisez la figure suivante :
-```{r}
-#| fig-width: 12
-#| fig-height: 9
-#| echo: false
+   ```{r}
+   #| fig-width: 12
+   #| fig-height: 9
+   #| out-width: "80%"
+   #| echo: false
 
-library(factoextra)
+   library(factoextra)
 
-fviz_pca_ind(eaux.pca, 
-                pointsize = "cos2",
-                pointshape = 21,
-                fill.ind = "contrib",
-                col.ind ="black",
-                col.var = "darkgreen",
-                repel = TRUE,
-                labelsize=8,
-                axes = c(1, 2)
-                 ) +
-  scale_fill_gradientn(
-    colours = c("#00AFBB", "#E7B800", "#FC4E07"),
-    limits = c(0, 50),
-    breaks = seq(0, 50, by = 10)
-  ) +
-  scale_size_continuous(
-    limits = c(0, 1),
-    breaks = seq(0, 1, by = 0.2),
-    range = c(1, 10),
-    name = expression(cos^2),
-  ) + theme_metropolis
+   fviz_pca_ind(eaux.pca, 
+                   pointsize = "cos2",
+                   pointshape = 21,
+                   fill.ind = "contrib",
+                   col.ind ="black",
+                   col.var = "darkgreen",
+                   repel = TRUE,
+                   labelsize=8,
+                   axes = c(1, 2)
+                    ) +
+     scale_fill_gradientn(
+       colours = c("#00AFBB", "#E7B800", "#FC4E07"),
+       limits = c(0, 50),
+       breaks = seq(0, 50, by = 10)
+     ) +
+     scale_size_continuous(
+       limits = c(0, 1),
+       breaks = seq(0, 1, by = 0.2),
+       range = c(1, 10),
+       name = expression(cos^2),
+     ) + theme_metropolis
 
-```
+   ```
 
 
 
@@ -346,54 +367,60 @@ fviz_pca_ind(eaux.pca,
 
 L'idée est toujours de retrouver les quantités définies dans le cours.
 
-
 1. Calculez la matrice des produits scalaires des 5 eaux $NZZ^\top$ avec $N = \operatorname{Diag}(\tfrac{1}{n}, \dots, \tfrac{1}{n})$.
 
-```{r}
-#| include: !expr params$correction
+   ::: {.correction}
 
-PS <- N %*% Z %*% t(Z)
+   ```{r}
 
-```
+   PS <- N %*% Z %*% t(Z)
+   ```
+   :::
 
 2. Effectuez la décomposition spectrale de cette matrice et déduisez-en la matrice $U$ de ses vecteurs propres, triés par ordre décroissant des valeurs propres et $N$-normés. Comparez ces valeurs propres à celles de la matrice des corrélations $R$, puis vérifiez que $U$ est bien $N$-orthonormée.
 
-```{r}
-#| include: !expr params$correction
+   ::: {.correction}
 
-###### Décomposition spectrale avec la fonction `eigen()` ######
-e <- eigen(PS)
-e$values
-U <- sqrt(n) * e$vectors[,1:3] # Pour obtenir des vecteurs de norme N égale à 1
-t(U) %*% N %*% U
+   ```{r}
 
-t(e$vectors) %*% e$vectors # Les vecteurs propres sont bien orthonormés
-```
+   ###### Décomposition spectrale avec la fonction `eigen()` ######
+   e <- eigen(PS)
+   e$values
+   U <- sqrt(n) * e$vectors[,1:3] # Pour obtenir des vecteurs de norme N égale à 1
+   t(U) %*% N %*% U
+
+   t(e$vectors) %*% e$vectors # Les vecteurs propres sont bien orthonormés
+   ```
+   :::
 
 3. Calculez la matrice $\varphi$ des coordonnées factorielles des 3 variables sur les trois axes factoriels. Représentez graphiquement les 3 variables sur le premier plan factoriel (1-2).
 
-```{r}
-#| include: !expr params$correction
+   ::: {.correction}
 
-###### Matrice des coordonnées factorielles des variables (charges factorielles) ######
-Phi<- t(Z) %*% N %*% U
-```
+   ```{r}
 
-```{r}
-round(unname(Phi), 3)
-```
+   ###### Matrice des coordonnées factorielles des variables (charges factorielles) ######
+   Phi<- t(Z) %*% N %*% U
+   ```
+   :::
 
-```{r}
-#| include: !expr params$correction
+   ```{r}
+   round(unname(Phi), 3)
+   ```
 
-###### Représentation graphique des variables sur les plans factoriels ######
-par(mfrow = c(1, 2))
-plot(Phi[, 1:2])
-text(Phi[, 1:2], colnames(X))
+   ::: {.correction}
 
-plot(Phi[, 2:3])
-text(Phi[, 2:3], colnames(X))
-```
+   ```{r}
+
+   ###### Représentation graphique des variables sur les plans factoriels ######
+   par(mfrow = c(1, 2))
+   plot(Phi[, 1:2])
+   text(Phi[, 1:2], colnames(X))
+
+   plot(Phi[, 2:3])
+   text(Phi[, 2:3], colnames(X))
+   ```
+   :::
 
 4. Effectuez la décomposition en valeurs singulières (SVD) de $Z$ avec les métriques $I_p$ et $N$. *Indication : vous pouvez utiliser la fonction `FactoMineR::svd.triplet()`.*
 
@@ -403,69 +430,79 @@ text(Phi[, 2:3], colnames(X))
 
    c. Calculez la corrélation entre l'intensité des bulles et la première composante principale $\psi_{:1}$. Vérifiez que vous retrouvez bien $\varphi_{11}$.
 
-```{r}
-#| include: !expr params$correction
+      ::: {.correction}
 
-###### SVD classique ######
-svd_vanilla<-svd(N^0.5 %*% Z)
+      ```{r}
 
-svd_vanilla$d^2 # On retrouve bien les valeurs propres
-e$values
-```
+      ###### SVD classique ######
+      svd_vanilla<-svd(N^0.5 %*% Z)
 
-```{r}
-#| include: !expr params$correction
+      svd_vanilla$d^2 # On retrouve bien les valeurs propres
+      e$values
+      ```
+      :::
 
-###### SVD pondérée ######
+      ::: {.correction}
 
-?svd.triplet()
-row.w <- diag(N)
-col.w <- rep(1, p)
-svd_weighted <- svd.triplet(Z, row.w, col.w)
+      ```{r}
 
-svd_weighted$vs^2 # On retrouve bien les valeurs propres
-e$values
+      ###### SVD pondérée ######
 
-```
+      ?svd.triplet()
+      row.w <- diag(N)
+      col.w <- rep(1, p)
+      svd_weighted <- svd.triplet(Z, row.w, col.w)
+
+      svd_weighted$vs^2 # On retrouve bien les valeurs propres
+      e$values
+
+      ```
+      :::
 
 
-```{r}
-#| include: !expr params$correction
+      ::: {.correction}
 
-###### SVD classique ######
+      ```{r}
 
-U <- sqrt(n) * svd_vanilla$u
-V <- svd_vanilla$v
+      ###### SVD classique ######
 
-U %*% diag(svd_vanilla$d) # Première formule de passage vérifiée
-unname(Psi)
+      U <- sqrt(n) * svd_vanilla$u
+      V <- svd_vanilla$v
 
-V %*% diag(svd_vanilla$d) # Seconde formule de passage vérifiée
-unname(Phi)
-```
+      U %*% diag(svd_vanilla$d) # Première formule de passage vérifiée
+      unname(Psi)
 
-```{r}
-#| include: !expr params$correction
+      V %*% diag(svd_vanilla$d) # Seconde formule de passage vérifiée
+      unname(Phi)
+      ```
+      :::
 
-###### SVD pondérée ######
+      ::: {.correction}
 
-U <- svd_weighted$U
-V <- svd_weighted$V
+      ```{r}
 
-U %*% diag(svd_weighted$vs) # Première formule de passage vérifiée
-unname(Psi)
+      ###### SVD pondérée ######
 
-V %*% diag(svd_weighted$vs) # Seconde formule de passage vérifiée
-unname(Phi)
+      U <- svd_weighted$U
+      V <- svd_weighted$V
 
-```
+      U %*% diag(svd_weighted$vs) # Première formule de passage vérifiée
+      unname(Psi)
 
-```{r}
-#| include: !expr params$correction
+      V %*% diag(svd_weighted$vs) # Seconde formule de passage vérifiée
+      unname(Phi)
 
-Phi[1, 1]
-cor(X[, 1], Psi[, 1]) # Corrélation entre la variable et la composante
-```
+      ```
+      :::
+
+      ::: {.correction}
+
+      ```{r}
+
+      Phi[1, 1]
+      cor(X[, 1], Psi[, 1]) # Corrélation entre la variable et la composante
+      ```
+      :::
 
 ### II. Avec `R` et le package `FactoMineR`
 
@@ -473,32 +510,31 @@ cor(X[, 1], Psi[, 1]) # Corrélation entre la variable et la composante
 
 2. Retrouvez ensuite $\varphi$ avec la fonction `FactoMineR::PCA()`.
 
-```{r}
-#| include: !expr params$correction
+   ::: {.correction}
 
-eaux.pca$var$coord
-Phi
-```
+   ```{r}
+
+   eaux.pca$var$coord
+   Phi
+   ```
+   :::
 
 3. Retrouvez la représentation graphique des trois variables sur le premier plan factoriel et interprétez-la. Interprétez ensuite le premier plan factoriel des eaux à partir de ce graphique.
 
-```{r}
-#| fig-width: 12
-#| fig-height: 9
-#| echo: false
+   ```{r}
+   #| fig-width: 12
+   #| fig-height: 9
+   #| echo: false
 
-library(factoextra)
-fviz_pca_var (eaux.pca, col.var = "cos2",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE,
-             labelsize=8
-             ) + scale_colour_gradientn(
-    colours = c("#00AFBB", "#E7B800", "#FC4E07"),
-    limits = c(0, 1),
-    breaks = seq(0, 1, by = .2)
-  ) + theme_metropolis
-
-
-
-plot(eaux.pca, choix="var")
-```
+   #plot(eaux.pca, choix="var")
+   library(factoextra)
+   fviz_pca_var (eaux.pca, col.var = "cos2",
+                gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+                repel = TRUE,
+                labelsize=8
+                ) + scale_colour_gradientn(
+       colours = c("#00AFBB", "#E7B800", "#FC4E07"),
+       limits = c(0, 1),
+       breaks = seq(0, 1, by = .2)
+     ) + theme_metropolis
+   ```

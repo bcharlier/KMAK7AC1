@@ -1,102 +1,55 @@
-/* Shared table styling for HTML pages and RevealJS slides. */
-.table {
+/* Shared table styling for HTML pages and RevealJS slides.
+   Tables inside a .data-table wrapper get exactly the same look as .table. */
+:is(.table, .data-table table) {
   width: auto;
   margin: auto;
   table-layout: auto;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 0.68em !important;
-  border-radius: 8px;
+  border-radius: 0px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  background: #ffffff;
 }
 
-.table > :not(caption) > * > * {
+:is(.table, .data-table table) > :not(caption) > * > * {
   padding: 0.25em 0.6em;
   border-bottom-width: 0;
+  /* Bootstrap peint rayures et survol via un box-shadow inset : on le neutralise */
+  box-shadow: none;
+  background-color: transparent;
 }
 
-.table > :not(caption) > tr > :first-child {
+:is(.table, .data-table table) > :not(caption) > tr > :first-child {
   white-space: nowrap;
 }
 
-.table > :not(caption) > tr > :not(:first-child) {
+:is(.table, .data-table table) > :not(caption) > tr > :not(:first-child) {
   text-align: center;
 }
 
-.table > thead > tr > th {
-  background: #8495a7;
-  color: #ffffff;
+:is(.table, .data-table table) > thead > tr > th {
+  background: #e9ecef;
+  color: #000000;
   font-weight: 600;
   text-align: center !important;
   padding: 0.3em 0.6em;
   border: none;
+  text-transform: none;
 }
 
-.table > tbody > tr:nth-child(even) > * {
+:is(.table, .data-table table) > tbody > tr:nth-child(even) > * {
   background: #e9ecef;
 }
 
-.table > tbody > tr:nth-child(odd) > * {
+:is(.table, .data-table table) > tbody > tr:nth-child(odd) > * {
   background: #ffffff;
 }
 
-.table > tbody > tr > td:first-child {
+:is(.table, .data-table table) > tbody > tr > td:first-child {
   font-weight: 600;
 }
 
-.table > tbody > tr:hover > * {
+:is(.table, .data-table table) > tbody > tr:hover > * {
   background: #dbeafe;
 }
-
-/* Shared centering for data tables to keep a uniform look across slides */
-.data-table table {
-  margin: auto;
-  width: fit-content !important;
-  max-width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  text-align: center !important;
-  font-size: 0.68em;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.data-table th,
-.data-table td {
-  text-align: center !important;
-  padding: 0.3em 0.6em;
-  line-height: 1.1;
-  vertical-align: middle;
-  border: none;
-}
-
-.data-table thead th {
-  vertical-align: middle;
-  text-align: center !important;
-  background: #8495a7;
-  color: #ffffff;
-  font-weight: 600;
-}
-
-.data-table thead th[colspan] {
-  text-align: center !important;
-}
-
-.data-table tbody tr:nth-child(even) {
-  background: #e9ecef;
-}
-
-.data-table tbody tr:nth-child(odd) {
-  background: #ffffff;
-}
-
-.data-table tbody td:first-child {
-  font-weight: 600;
-}
-
-.data-table tbody tr:hover {
-  background: #dbeafe;
-}
-

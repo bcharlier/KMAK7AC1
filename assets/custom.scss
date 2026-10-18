@@ -74,3 +74,13 @@ overflow-x: scroll;
 .blue {
   color: $metro-accent-dark;
 }
+
+
+/* Bloc de correction : visuellement distinct du contenu de l'énoncé */
+.correction {
+  color: #555;
+  margin: 0.8em 0 0.8em 1.5em;
+  padding-left: 0.9em;
+  border-left: 3px solid #bbb;
+  border-right: 3px solid #bbb;
+}

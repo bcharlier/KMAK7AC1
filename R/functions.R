@@ -1,4 +1,5 @@
-print_table <- function(data, digits = 3, caption = "", scroll = 0, max.col.width = NULL) {
+print_table <- function(data, digits = 3, caption = "", scroll = 0, max.col.width = NULL,
+                        vertical.headers = FALSE) {
   data <- as.data.frame(data)
 
   if (digits >= 0) {
@@ -24,17 +25,23 @@ print_table <- function(data, digits = 3, caption = "", scroll = 0, max.col.widt
   has_scroll <- is.numeric(scroll) && scroll > 0
   has_max_width <- !is.null(max.col.width)
 
-  if (has_scroll || has_max_width) {
+  if (has_scroll || has_max_width || vertical.headers) {
     container_id <- basename(tempfile(pattern = "tbl_"))
     css_style <- ""
+    if (vertical.headers) {
+      css_style <- sprintf(
+        '<style>#%s th:not(:first-child) { writing-mode: vertical-rl; rotate: 180deg; vertical-align: bottom; white-space: nowrap; }</style>',
+        container_id
+      )
+    }
     
     # Target all columns EXCEPT the first one using :not(:first-child)
     if (has_max_width) {
       width_str <- if (is.numeric(max.col.width)) sprintf("%spx", max.col.width) else max.col.width
-      css_style <- sprintf(
+      css_style <- paste0(css_style, sprintf(
         '<style>#%s th:not(:first-child), #%s td:not(:first-child) { max-width: %s; overflow-wrap: break-word; word-wrap: break-word; }</style>',
         container_id, container_id, width_str
-      )
+      ))
     }
 
     # Scroll container styling
