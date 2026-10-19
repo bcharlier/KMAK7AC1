@@ -11,7 +11,40 @@
      ========================================================= */
   @page {
     size: A4 portrait;
-    margin: 15mm;
+    margin: 8mm 15mm 15mm 15mm;
+    
+    @top-left {
+      content: "Statistique Exploratoire";
+      vertical-align: bottom;
+      padding-bottom: 1.5mm;
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 9px;
+      font-weight: 200;
+      color: #555;
+      border-bottom: 0.5pt solid #888;
+    }
+
+    @top-center {
+      content: "2026 -- 2027";
+      vertical-align: bottom;
+      padding-bottom: 1.5mm;
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 9px;
+      font-weight: 200;
+      color: #555;
+      border-bottom: 0.5pt solid #888;
+    }
+
+    @top-right {
+      content: "Université de Toulouse";
+      vertical-align: bottom;
+      padding-bottom: 1.5mm;
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 9px;
+      font-weight: 200;
+      color: #555;
+      border-bottom: 0.5pt solid #888;
+    }
 
     @bottom-center {
       content: counter(page) " / " counter(pages);
@@ -62,7 +95,9 @@
     max-width: 100% !important;
     width: 100% !important;
     margin: 0 !important;
-    padding: 0 !important;
+    padding: 1mm 0 0 0 !important;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone; 
   }
 
   /* =========================================================

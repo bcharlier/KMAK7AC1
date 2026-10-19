@@ -981,11 +981,8 @@ Nous utilisons une image de test pour manipuler les matrices de pixels.
    ```{r}
 
    # Chargement d'une image exemple
-   url_img <- "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Arachnothera_magna_-_Kaeng_Krachan.jpg/500px-Arachnothera_magna_-_Kaeng_Krachan.jpg"
-   temp_file <- tempfile(fileext = ".jpg")
-   download.file(url_img, temp_file, mode = "wb")
-
-   img <- readJPEG(temp_file)
+   fname <- file.path(get_script_dir(), "data", "Arachnothera_magna_-_Kaeng_Krachan.jpg")
+   img <- readJPEG(fname)
    img <- img[, , 1:3]
    ```
 

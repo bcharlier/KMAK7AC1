@@ -86,8 +86,9 @@ On est rapidement limité
 ### Nuage 2D
 ```{r}
 #| echo: false
-#| fig-width: 4
-#| fig-height: 3
+#| fig-width: 8
+#| fig-height: 6
+#| out-width: "40%"
 
 library(ggplot2)
 
@@ -99,7 +100,7 @@ df <- data.frame(
 df$y <- 0.7 * df$x + rnorm(n, sd = 0.7)
 
 ggplot(df, aes(x = x, y = y)) +
-  geom_point(size = 2) +
+  geom_point(size = 1) +
   labs(
     title = expression("Nuage des individus dans " ~ R^2),
     x = "Variable 1",
@@ -112,6 +113,10 @@ ggplot(df, aes(x = x, y = y)) +
 ### Nuage 3D
 ```{r}
 #| echo: false
+#| fig-width: 8
+#| fig-height: 5
+#| out-width: "40%"
+
 
 library(plotly)
 
@@ -131,7 +136,7 @@ plot_ly(
   x = x, y = y, z = z,
   type = "scatter3d",
   mode = "markers",
-  marker = list(size = 4, opacity = 0.8, color = "#2e74b5")
+  marker = list(size = 3, opacity = 0.8, color = "#2e74b5")
 )
 ```
 
@@ -237,12 +242,23 @@ L’**analyse en composantes principales (ACP)** est une méthode de statistique
 
 - Certains points de vue sont meilleurs que d’autres : ce sont ceux où la forme du nuage est la moins altérée.
 
-::: {layout-ncol=2}
+::: {.columns}
+
+::: {.column width="60%"}
+
 ![Kumi Yamashita](data/projection.jpg){height=300}
+
+:::
+
+::: {.column width="40%"}
 
 ![https://kumiyamashita.com/light-shadow](data/projection2.jpg){height=300}
 
+
 :::
+
+:::
+
 
 :::{.callout-important}
 ### Objectif de l’ACP
@@ -416,9 +432,10 @@ On part d’un nuage qui vit dans $\mathbb R^2$, et on veut une image approchée
 
 ```{r}
 #| echo: false
-#| out-width: "100%"
+#| out-width: "800px"
 #| fig-align: "center"
-#| fig-height: 5
+#| fig-width: 8.33
+#| fig-height: 5.625
 
 library(plotly)
 
@@ -451,7 +468,8 @@ projection <- function(theta) {
 }
 
 # Données initiales
-d <- projection(angles[1])
+active_step <- 50
+d <- projection(angles[active_step + 1])
 idx <- seq(1, nrow(X_2D), by = 4)
 
 # Figure initiale
@@ -518,8 +536,11 @@ steps <- lapply(seq_along(angles), function(i) {
 
 fig %>%
 layout(
-  # Let Quarto/Plotly handle the sizing automatically
-  autosize = TRUE,
+  # Taille fixe : le slider sous un repère orthonormé fausse le calcul auto
+  autosize = FALSE,
+  width = 800,
+  height = 540,
+  legend = list(x = 0.78, y = 1),
 
   title = list(
     text = "Quelle est la meilleure droite de projection ?",
@@ -529,24 +550,25 @@ layout(
   margin = list(l = 40, r = 30, b = 85, t = 45),
 
   xaxis = list(
-    title = "$X_1$",
-    range = c(-5.5, 5.5), # Matched to Y axis span
+    title = "X<sub>1</sub>",
+    range = c(-4.8, 6.2), # Matched to Y axis span
     scaleanchor = "y",
-    scaleratio = 1
+    scaleratio = 1,
+    constrain = "domain"
   ),
 
   yaxis = list(
-    title = "$X_2$",
+    title = "X<sub>2</sub>",
     range = c(-5.5, 5.5)  # Matched to X axis span
   ),
 
   sliders = list(
     list(
-      active = 50,
+      active = active_step,
       x = 0.15,
       y = -0.16,
       len = 0.7,
-      currentvalue = list(prefix = "Angle $\\theta$ = "),
+      currentvalue = list(prefix = "Angle θ = "),
       steps = steps
     )
   )
@@ -577,9 +599,10 @@ soit maximale, où $H_i$ est le projeté orthogonal de l'individu $X_{i,:}$ sur 
 
 ```{r}
 #| echo: false
-#| out-width: "100%"
+#| out-width: "800px"
+#| fig-width: 8.33
+#| fig-height: 5.42
 #| fig-align: "center"
-#| fig-height: 6
 
 library(plotly)
 
@@ -741,7 +764,9 @@ buttons_list <- list(
 
 fig %>%
   layout(
-    autosize = TRUE,
+    autosize = FALSE,
+    width = 800,
+    height = 520,
     
     title = list(
       text = "Projection progressive sur les axes principaux",
