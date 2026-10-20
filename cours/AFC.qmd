@@ -938,8 +938,8 @@ Le $\cos^2$ mesure la qualité de projection d'une modalité sur l'axe factoriel
 
 $$
 \begin{cases}
-\cos^2_\alpha(i) = \tfrac{x_{i\alpha}^2}{d^2_{D_r^{-1}}(L_{i:}, c^\top)} & \text{(Profils-lignes)} \\[12pt]
-\cos^2_\alpha(s) = \tfrac{y_{s\alpha}^2}{d^2(c_s, r)} & \text{(Profils-colonnes)}
+\cos^2_\alpha(i) = \tfrac{x_{i\alpha}^2}{d^2_{D_c^{-1}}(L_{i:}, c^\top)} & \text{(Profils-lignes)} \\[12pt]
+\cos^2_\alpha(s) = \tfrac{y_{s\alpha}^2}{d^2_{D_r^{-1}}(C_{:s}, r)} & \text{(Profils-colonnes)}
 \end{cases}
 \quad \text{avec} \quad \sum_{\alpha=1}^r \cos^2_\alpha(\cdot) = 1
 $$
