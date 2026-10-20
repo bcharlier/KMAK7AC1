@@ -75,3 +75,32 @@ as a Pages artifact and deploys it to GitHub Pages.
 The workflow can also be started manually from the **Actions** tab on GitHub.
 Set the repository Pages source to **GitHub Actions** under
 **Settings > Pages**.
+
+## PDF rendering
+
+### Current pipeline
+
+It currently uses the HTML/CSS `@media print{}` feature to render a 
+printable version of the `html` target. The styles are stored in a 
+[custom CSS](assets/print-clean.css) file. At build time, a 
+[bash script](assets/make-pdf.sh) is launched to generate the PDF using 
+the Google Chrome browser engine.
+
+In the `.qmd` file header, should appear:
+
+```yaml
+format: 
+  html:
+    output-file: fileName_topdf.html  # suffix "_topdf.html" is used to discover files to process 
+
+other-links:
+  - text: "Version PDF"
+    icon: file-pdf
+    href: "fileName.pdf"              # keep name consistency here to get the link work in webpage
+```
+
+### TODO 
+
+Consider using [`paged.js`](https://pagedjs.org/), [`weasyprint`](https://weasyprint.org/), or any other option capable of handling PDF generation directly from `css` and compatible with HTML content (table, plotly, etc...) to use `format: pdf`. See, for example:
+
+https://github.com/orgs/quarto-dev/discussions/2538#discussioncomment-3739791
