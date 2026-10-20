@@ -25,4 +25,6 @@ Imports:
     dbscan,
     ggforce,
     ggcorrplot,
-    jpeg
+    jpeg,
+    cluster,
+    gridExtra

@@ -3,12 +3,12 @@ title: "TD 4 -- Classification Ascendante Hiérarchique & $K$-means"
 
 format: 
   html:
-    output-file: TD_AFM_topdf.html
+    output-file: TD_clustering_topdf.html
 
 other-links:
   - text: "Version PDF"
     icon: file-pdf
-    href: "TD_AFM.pdf"
+    href: "TD_Clustering.pdf"
 ---
 
 ```{r}
@@ -20,7 +20,7 @@ source("../../R/functions.R")
 
 ## Exercice 1. 
 
-On reprend le jeu de données du Décastar du TD 1.
+On reprend le jeu de données du Décastar :
 
 ```{r}
 #| echo: false
@@ -36,7 +36,7 @@ decastar = decathlon[decathlon$Competition == 'Decastar', ]
 # Supprimer la colonne « Competition », désormais inutile
 decastar = decastar[ , colnames(decastar) != 'Competition']
 
-print_table(decastar, max.col.width = "3.5em")
+print_table(decastar, vertical.headers = TRUE)
 ```
 
 1. Pourquoi une CAH est-elle préférable à l'algorithme des $K$-means dans ce contexte ?
@@ -145,7 +145,7 @@ partition_3 <- factor(res_hcpc$data.clust$clust)
 names(partition_3) <- rownames(res_hcpc$data.clust)
 
 # ACP des 10 épreuves pour représenter les individus
-deca.acp <- PCA(decastar_normalized, ncp=10, graph = FALSE)
+deca.acp <- PCA(decastar_normalized, ncp = 10, graph = FALSE)
 
 fviz_pca_ind(
   deca.acp,
@@ -180,6 +180,8 @@ deca.acp <- PCA(decastar, ncp=5, graph = FALSE)
 # Partition en trois classes telle que calculée par HCPC et utilisée dans le dendrogramme
 partition_3_acp <- HCPC(deca.acp, nb.clust = 3, graph = FALSE)
 
+plot(partition_3_acp)
+
 fviz_pca_ind(
   deca.acp,
   habillage = factor(partition_3_acp$data.clust$clust),
@@ -193,7 +195,144 @@ fviz_pca_ind(
   theme(legend.position = "bottom")
 ```
 
-## Exercice 2.Démonstration du théorème de Huygens
+
+## Exercice 2. Choisir le nombre $K$ de partition
+
+
+La méthode $K$-means se calcule simplement à l’aide de la fonction `kmeans`
+
+```{r}
+data("iris")
+head(iris)
+# Remove species column (5) and scale the data
+iris.scaled <- scale(iris[, -5])
+
+## Classification selon 3 groupes par kmeans des données normalisées
+data.km = kmeans(iris.scaled, centers = 3)
+```
+
+
+L’objet `data.km` ainsi construit contient les éléments suivants
+
+- `cluster` indique le groupe auquel appartient chaque observation de `iris.scaled`
+- `centers` donne la position des centres de chaque groupe
+- `withins` contient la somme des carrés des écarts intra-classe de chaque classe
+- `betweens` contient la somme des carrés des écarts inter-classe
+
+1. On effectue le regroupement par $K$-means pour $K = 2, 3, 4, 5$ et comparer l’évolution de ces valeurs:
+
+```{r}
+#| label: kmeans-comparison
+#| fig-cap: "Comparaison des partitions K-means"
+#| echo: false
+library(cluster)
+
+library(factoextra)
+library(gridExtra)
+
+# Définition des valeurs de K à tester
+k_values <- c(2, 3, 4, 5)
+models <- list()
+inerties_intra <- c()
+
+# Boucle pour ajuster les K-means et récupérer les métriques
+for (k in k_values) {
+  set.seed(42) # Fixer la graine pour assurer la reproductibilité
+  km_res <- kmeans(iris.scaled, centers = k, nstart = 25)
+  models[[paste0("K_", k)]] <- km_res
+  inerties_intra[paste0("K_", k)] <- km_res$tot.withinss
+}
+
+# Affichage de l'évolution de l'inertie intra-classe totale
+#print(c("Somme des carrés intra-classe (tot.withinss) : ",round(inerties_intra, 2)))
+
+# Tracé des graphiques de partition pour K = 3, 4 et 6
+p2 <- fviz_cluster(models$K_2, data = iris.scaled, geom = "point", main = "K = 2") + theme_minimal() + theme(legend.position = "none")
+p3 <- fviz_cluster(models$K_3, data = iris.scaled, geom = "point", main = "K = 3") + theme_minimal() + theme(legend.position = "none")
+p4 <- fviz_cluster(models$K_4, data = iris.scaled, geom = "point", main = "K = 4") + theme_minimal() + theme(legend.position = "none")
+p5 <- fviz_cluster(models$K_5, data = iris.scaled, geom = "point", main = "K = 5") + theme_minimal() + theme(legend.position = "none")
+
+# Affichage combiné des graphiques (nécessite gridExtra si affichage simultané)
+grid.arrange(p2, p3, p4, p5, ncol = 2)
+```
+
+2. De nombreuses méthodes ont été développées pour choisir $K$ de manière automatique. On peut par exemple effectuer d’abord une CAH pour nous aider dans notre choix, mais il n’est parfois pas possible d’effectuer une CAH (notamment en présence de très grands volumes de données). La fonction `factoextra::fviz_nbclust()` fournit 3 outils principaux pour aider à prendre une décision sur la valeur de $K$. Déterminer le choix optimal dans chacun des cas.
+
+- *Étude de l’inertie intra-classe `wss` :* on applique $K$-means pour différentes valeurs de $K$, et pour chaque résultat on calcule l’inertie intra-classe. En traçant ces valeurs, on obtient (nécessairement) une courbe décroissante en fonction de $K$, et l’on peut alors repérer sur cette courbe un **coude**, c'est-à-dire un point d'inflexion à partir duquel la vitesse de décroissance s’atténue fortement.
+
+```{r}
+#| fig-width: 6
+#| fig-height: 3
+#| out-width: "75%"
+
+fviz_nbclust(iris.scaled, kmeans, method = "wss") 
+```
+
+- *Analyse de la silhouette `silhouette` :*  cette approche mesure la qualité de la partition en évaluant à quel point chaque objet est bien classé dans son groupe par rapport aux autres groupes (cohésion interne vs séparation externe). On cherche la valeur de $K$ qui maximise la largeur moyenne de la silhouette. Le graphique de la silhouette permet d’étudier l’homogénéité des groupes formés : plus la valeur de la silhouette est élevée, meilleure est la qualité de la classification. Dans le cas où il y a des mesures négatives, cela incite à repenser la classification de l’observation en question.
+
+Soit $a(i)$ la dissimilarité moyenne entre l'observation $i$ et tous les autres points du cluster auquel $i$ appartient (si $i$ est la seule observation de son cluster, on pose $s(i) := 0$ sans calculs supplémentaires). Pour tous les autres clusters $C$, soit $d(i, C)$ la dissimilarité moyenne de $i$ à toutes les observations de $C$. La plus petite de ces valeurs est notée :
+$$b(i) := \min_{C} d(i, C)$$
+Cette quantité représente la dissimilarité entre $i$ et son cluster "voisin", c'est-à-dire le plus proche cluster auquel il n'appartient pas. Enfin, le coefficient de silhouette est défini par :
+$$s(i) := \frac{b(i) - a(i)}{\max(a(i), b(i))}$$
+
+On a donc des valeurs allant de $-1$ (possible mauvais classement) à $1$ (possible bon classement). On trace l’évolution de la silhouette globale (via sa moyenne sur l'ensemble des observations) en fonction de $K$ et l’on choisit la valeur de $K$ maximisant cette courbe.
+
+```{r}
+#| eval: false
+
+fviz_nbclust(iris.scaled, kmeans, method = "silhouette")
+```
+
+```{r}
+#| fig-width: 6
+#| fig-height: 3
+#| out-width: "75%"
+#| echo: false
+
+p <- fviz_nbclust(iris.scaled, kmeans, method = "silhouette", print.summary = FALSE)
+
+# On retire la couche geom_vline
+p$layers <- Filter(function(l) !inherits(l$geom, "GeomVline"), p$layers)
+
+p
+```
+
+```{r}
+#| fig-width: 4
+#| fig-height: 3
+#| out-width: "75%"
+#| echo: false
+
+
+# Calcul de l'objet silhouette à partir des clusters et de la matrice de distance
+sil <- silhouette(data.km$cluster, dist(iris.scaled))
+
+# Affichage graphique avec factoextra
+fviz_silhouette(sil)
+```
+
+- *Méthode du Gap `Gap Stat` :* On reprend le calcul des variances de la première méthode (inertie intra-classe), et on compare les valeurs obtenues à celles qu’on obtiendrait en appliquant les $K$-means sur des données de référence sans structure de regroupement (par exemple, uniformément réparties). On trace alors l’évolution de la différence obtenue (le *gap*), qui est censée croître puis se stabiliser ou décroître avec $K$ (dans le sens où la variabilité sur données uniformes décroît de manière prévisible jusqu'à une certaine valeur de $K$). On choisit alors la valeur optimale de $K$ en maximisant cette statistique (ou en utilisant la règle de l'écart type de Tibshirani).
+
+```{r}
+#| eval: false
+
+fviz_nbclust(iris.scaled, kmeans, method = "gap_stat")
+```
+```{r}
+#| fig-width: 6
+#| fig-height: 3
+#| out-width: "75%"
+#| echo: false
+
+p <- fviz_nbclust(iris.scaled, kmeans, method = "gap_stat", verbose = FALSE)
+
+# On retire la couche geom_vline
+p$layers <- Filter(function(l) !inherits(l$geom, "GeomVline"), p$layers)
+
+p
+```
+
+## Exercice 3. Démonstration du théorème de Huygens
 
 Soient $x_1, \dots, x_n$ des observations dans $\mathbb{R}^p$ partitionnées en $K$ groupes disjoints $\mathcal{G}^{(1)}, \dots, \mathcal{G}^{(K)}$. 
 
@@ -203,3 +342,52 @@ $$
 $$
 
 où $g = \frac{1}{n} \sum_{i=1}^n x_i$ est le centre de gravité global, $n_k = |\mathcal{G}^{(k)}|$ désigne l'effectif du groupe $k$ et $g^{(k)} = \frac{1}{n_k} \sum_{x_i \in \mathcal{G}^{(k)}} x_i$ est le centre de gravité du groupe $k$.
+
+
+
+::::{.correction}
+
+Pour chaque groupe $\mathcal{G}^{(k)}$, on écrit :
+$$
+x_i-g=(x_i-g^{(k)})+(g^{(k)}-g).
+$$
+
+En développant le carré de la norme euclidienne, on obtient :
+$$
+\begin{aligned}
+d(x_i,g)^2 = \|x_i-g\|^2 = \|x_i-g^{(k)}\|^2+\|g^{(k)}-g\|^2 +2\langle x_i-g^{(k)},g^{(k)}-g\rangle.
+\end{aligned}
+$$
+
+En sommant sur les observations de chaque groupe, puis sur les $K$ groupes :
+$$
+\begin{aligned}
+\sum_{k=1}^K\sum_{x_i\in\mathcal{G}^{(k)}}d(x_i,g)^2
+&=\sum_{k=1}^K\sum_{x_i\in\mathcal{G}^{(k)}}\|x_i-g^{(k)}\|^2\\
+&\quad+\sum_{k=1}^K n_k\|g^{(k)}-g\|^2\\
+&\quad+2\sum_{k=1}^K\left\langle
+\sum_{x_i\in\mathcal{G}^{(k)}}(x_i-g^{(k)}),g^{(k)}-g
+\right\rangle.
+\end{aligned}
+$$
+
+Par définition du centre de gravité du groupe $k$ :
+$$
+\begin{aligned}
+\sum_{x_i\in\mathcal{G}^{(k)}}(x_i-g^{(k)})
+&=\sum_{x_i\in\mathcal{G}^{(k)}}x_i-n_k g^{(k)}\\
+&=n_k g^{(k)}-n_k g^{(k)}\\
+&=0.
+\end{aligned}
+$$
+
+Le terme croisé est donc nul. Il reste :
+$$
+\begin{aligned}
+\sum_{i=1}^n d(x_i,g)^2
+&=\sum_{k=1}^K\sum_{x_i\in\mathcal{G}^{(k)}}d(x_i,g^{(k)})^2 + \sum_{k=1}^K n_k d(g^{(k)},g)^2.
+\end{aligned}
+$$
+
+En divisant par $n$, on obtient la décomposition de l'inertie.
+::::

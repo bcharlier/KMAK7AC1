@@ -37,7 +37,7 @@ X <- read.table("https://bcharlier.github.io/KMAK7AC1/tp/3_Clustering/data/froma
 
 fname <- file.path(get_script_dir(), "data", "fromage.txt")
 X <- read.table(fname, sep="	", header=TRUE, row.names=1)
-print_table(X, scroll=10, max.col.width="5em", vertical.headers = TRUE)
+print_table(X, scroll=15, max.col.width="5em", vertical.headers = TRUE)
 ```
 
 ### Sans normalisation
@@ -477,7 +477,8 @@ summary(donnees.actives)
         acm.b.sup, 
         axes = c(1, 2), 
         geom.ind = "point", 
-        palette = "jco", 
+        palette = "jco",
+          labelsize = 6, 
         map = "symbiplot", col.ind= "lightgrey", repel = TRUE) + theme_metropolis 
       ```
 
