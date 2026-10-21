@@ -313,7 +313,7 @@ On charge les données
 ```{r}
 #| eval: false
 
-banque <- read.csv("https://bcharlier.github.io/KMAK7AC1/tp/3_Clustering/data/banque.csv", header = TRUE, row.names = 1)
+banque = read.csv("https://raw.githubusercontent.com/bcharlier/KMAK7AC1/main/tp/3_Clustering/data/banque.csv", sep = "\t")
 
 donnees.actives=banque[,c(10:13,17:18,21)]
 summary(donnees.actives)
