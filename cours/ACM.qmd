@@ -1042,7 +1042,7 @@ $$\eta_{r,k}^2 = \frac{\text{Inertie}_{\text{inter}, r, k}}{\lambda_r} \quad \in
 
 avec $\text{Inertie}_{\text{inter}, r, k}$ l'inertie inter-classe de la $k$-ième variable sur l'axe de rang $r$ :
 
-$$\text{Inertie}_{\text{inter}, r, k} = \sum_{j=1}^{J_k} \frac{f_j}{n} \left( \frac{1}{f_j} \sum_{i=1}^n t_{ij} C_r^{(\text{ind})}(i) \right)^2$$
+$$\text{Inertie}_{\text{inter}, r, k} = \sum_{j=1}^{J_k} \frac{f_j}{n^2} \left( \frac{1}{f_j} \sum_{i=1}^n t_{ij} C_r^{(\text{ind})}(i) \right)^2$$
 
 
 - Plus $\eta_{r,k}^2$ est proche de 1:
